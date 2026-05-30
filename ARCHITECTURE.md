@@ -113,3 +113,7 @@ When adding functionality:
 - **Script usage**: `python -m src.trajectory /path/to/dump.lammpstrj`
 - **API usage**: `from src import read_dump; traj = read_dump(...)`
 - **Examples**: See `examples/` folder for typical workflows
+
+## Minimum Python version
+1. All generated code must be compatible with Python 3.14. 
+2. Strictly utilize Python 3.14 type annotations and modern syntax features
