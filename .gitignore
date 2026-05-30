@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Data files (LAMMPS outputs can be large)
+*.lammpstrj
+*.dump
+*.trj
+*.dat
+*.out
+data/
+results/
+output/
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+config_local.yaml
+*.hdf5
+*.h5
