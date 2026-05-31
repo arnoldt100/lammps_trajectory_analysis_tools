@@ -1,0 +1,15 @@
+[project]
+name = "lammps-trajectory-analysis-tools"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "jupyterlab>=4.5.7",
+    "matplotlib>=3.10.9",
+    "mdanalysis>=2.10.0",
+    "mdanalysistests>=2.10.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "scipy>=1.17.1",
+]
