@@ -35,6 +35,7 @@ plot_rdf((r, g_r), filename="rdf.png")
 - 🌊 Structure factor S(q)
 - 🎨 Trajectory visualization
 - 💾 Multiple export formats (CSV, JSON, HDF5)
+- Jupyter notebooks: Run the command "uv run --with jupyter jupyter lab"
 
 ## Requirements
 
