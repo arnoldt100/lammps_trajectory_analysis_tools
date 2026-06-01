@@ -3,10 +3,14 @@
 Analysis and visualization toolkit for LAMMPS molecular dynamics simulations.
 
 ## Quick Start
+From the toplevel sevel directory run the command
 
 ```bash
-pip install -r requirements.txt
+	source runtime_env_configuration/core.env.sh
 ```
+
+to set the PYTHONPATH for the toolkit lib and bin directories.
+
 
 ```python
 from src import read_dump, RadialDistributionFunction, plot_rdf
