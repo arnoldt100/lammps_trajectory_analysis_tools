@@ -12,8 +12,6 @@ J. Chem. Phys. 116(21), 134503 (2002).
 
 """
 
-import lammps_analysis_tool_parser
-
 def main ():
     print("Stud print for main.")    
     
