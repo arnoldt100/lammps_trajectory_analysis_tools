@@ -91,8 +91,13 @@ class _LopSfFccSuparserFactory:
                              type=str,required=False,
                              default="output.data",help=self._ouput_help)
 
+        # Add the callable object for calculating the local structure factor
+        # fcc order parameter as an the callable attribute  'do_data_analysis'.
+        from lop_sf_fcc_builder import key_lop_sf_fcc_factory
         import lammps_analysis_tool_builder
-        my_function = lammps_analysis_tool_builder.create()
+        my_function = (
+            lammps_analysis_tool_builder.analysis_tool_factory.create(key_lop_sf_fcc_factory) )
+        parser1.set_defaults(do_data_analysis=my_function)
 
 # Register the concrete builder _LopSfFccSuparserFactory.
 # Each builder key must unique or the undefined behavoir will occur.

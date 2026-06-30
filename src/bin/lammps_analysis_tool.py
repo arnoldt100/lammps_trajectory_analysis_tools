@@ -19,5 +19,7 @@ def main ():
 
     my_args = lammps_analysis_tool_parser.top_level_parser.parse_args()
 
+    my_args.do_data_analysis(my_args)
+
 if __name__ == "__main__":
     main()
