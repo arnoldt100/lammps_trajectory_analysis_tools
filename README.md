@@ -3,14 +3,10 @@
 Analysis and visualization toolkit for LAMMPS molecular dynamics simulations.
 
 ## Quick Start
-From the toplevel sevel directory run the command
 
 ```bash
-	source runtime_env_configuration/core.env.sh
+pip install -r requirements.txt
 ```
-
-to set the PYTHONPATH for the toolkit lib and bin directories.
-
 
 ```python
 from src import read_dump, RadialDistributionFunction, plot_rdf
@@ -39,7 +35,6 @@ plot_rdf((r, g_r), filename="rdf.png")
 - 🌊 Structure factor S(q)
 - 🎨 Trajectory visualization
 - 💾 Multiple export formats (CSV, JSON, HDF5)
-- Jupyter notebooks: Run the command "uv run --with jupyter jupyter lab"
 
 ## Requirements
 
