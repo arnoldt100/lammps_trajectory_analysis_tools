@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """  This module creates the parsers for the command line arguments.
 
 This module's responsibility is to create the top level parser and the subparsers
@@ -21,6 +23,8 @@ an example.
 
 import argparse
 from typing import Any
+
+# Local library import 
 
 """ The top level parser for this package. """
 top_level_parser = argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
@@ -87,6 +91,9 @@ class _LopSfFccSuparserFactory:
                              type=str,required=False,
                              default="output.data",help=self._ouput_help)
 
+        import lammps_analysis_tool_builder
+        my_function = lammps_analysis_tool_builder.create()
+
 # Register the concrete builder _LopSfFccSuparserFactory.
 # Each builder key must unique or the undefined behavoir will occur.
 _lop_sf_fcc_builder_key = '__lop_sf_fcc__'
@@ -95,7 +102,7 @@ _subparser_factory.register_builder(_lop_sf_fcc_builder_key,
 
 # Invoke the add_subparser method to add the subparser
 # to the top level parser.
-_subparser_factory.add_subparser('__lop_sf_fcc__',_subparsers)
+_subparser_factory.add_subparser(_lop_sf_fcc_builder_key,_subparsers)
 
 # ----------
 # End of section that adds the subparser for the calculating
