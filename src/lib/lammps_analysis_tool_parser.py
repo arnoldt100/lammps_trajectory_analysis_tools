@@ -73,6 +73,8 @@ class _LopSfFccSuparserFactory:
 
     _ouput_help = "The file to write the results. (default : %(default)s)"
 
+    _psf_help = "The protein structure file for the corresponding dcd file."
+
     def __init__(self, *args, **kwargs)->None:
         return
 
@@ -83,6 +85,9 @@ class _LopSfFccSuparserFactory:
                                                   help=self._subcommand_help)
         parser1.add_argument("--dcd-file-name",
                              type=str,required=True,help=self._dcdfilename_help)
+
+        parser1.add_argument("--psf",
+                             type=str,required=True,help=self._psf_help)
 
         parser1.add_argument("--edge-length",
                              type=float,required=True,help=self._edgelength_help)
