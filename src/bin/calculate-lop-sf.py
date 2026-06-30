@@ -12,8 +12,12 @@ J. Chem. Phys. 116(21), 134503 (2002).
 
 """
 
+import lammps_analysis_tool_parser
+
 def main ():
     print("Stud print for main.")
+
+    my_args = lammps_analysis_tool_parser.top_level_parser.parse_args()
 
 if __name__ == "__main__":
     main()
