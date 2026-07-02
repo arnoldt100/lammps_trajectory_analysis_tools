@@ -17,7 +17,7 @@ from typing import Any
 """ A key that is uniquely associated with class LopSfFcc.
 
 This key is used by other classes, especially builder classes, to register the
-class LopSfFcc. These callable classses each have a unique key or undefined
+class LopSfFcc. These callable classes each have a unique key or undefined
 behavior may occur.
 """
 key_lop_sf_fcc = 'LopSfFcc'
@@ -30,6 +30,13 @@ class LopSfFcc:
     def __call__(self, command_line_arguments, *args: Any, **kwargs: Any) -> Any:
         print("Stud call LopSfFcc::__call__ for calculating fcc structure factor.")
         print(command_line_arguments)
+
+        # Read the dcd file using MDAnalysis
+
+        # Loop over every frame in the dcd trajectory, compute
+        # every atoms local order parameter. We acccumulate the lop values 
+
+
 
 # ----------
 # Private members
