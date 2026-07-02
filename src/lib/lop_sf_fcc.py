@@ -18,7 +18,7 @@ from typing import Any
 
 This key is used by other classes, especially builder classes, to register the
 class LopSfFcc. These callable classes each have a unique key or undefined
-behavior may occur.
+behavior may occur. This key is currently not used but reserved for future use.
 """
 key_lop_sf_fcc = 'LopSfFcc'
 

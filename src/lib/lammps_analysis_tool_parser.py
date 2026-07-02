@@ -8,29 +8,92 @@ for this project. Each analysis tool has a corresponding subparser.
 We use a factory or builder pattern where each subparser has a concrete 
 builder that adds the appropriates options, help messages, etc. 
 
-The procedure to add a new suparser do the following:
-
-(1) Create a concrete object that adds the appropriate options for the tool 
-
-(2) Register the 'concrete object' with the general subparser factory. 
-
-(3) Invoke the _GeneralSubparserFactory::add_subparser method to add the
-subparser to the top level parser.
-
-See the section that adds the LOP Structure FCC order parameter as
-an example.
 """
 
+# Python standard library imports.
 import argparse
 from typing import Any
+from typing import TypeAlias
 
-# Local library import 
+# Local library import
 
-""" The top level parser for this package. """
-top_level_parser = argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
-    description="Calculates various physical properties of LAMMPS simulations")
+# Import all definitions needed for the LOP FCC Structure subcommand.
+from lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
+from lop_sf_fcc_cli_parser import CLILopSfFcc
+from lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
+from lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
 
-_subparsers = top_level_parser.add_subparsers(help="subcommand help")
+# ----------
+# Public members
+# ----------
+
+""" A type alias that is the union of all subcommand command line interface types. """
+CLI_ID: TypeAlias = CLILopSfFcc
+
+""" A type alias that is the union of all subparser factories. """
+SubparserFactory_ID: TypeAlias = LopSfFccSubparserFactory
+
+def process_command_line_arguments()->CLI_ID:
+    """Processes the command line arguments. """
+
+    my_top_level_parser = argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
+        description="Calculates various physical properties of LAMMPS simulations")
+
+    my_top_level_subparser = my_top_level_parser.add_subparsers(dest="subcommand_name",help="subcommand help")
+
+    # Instatiate a general subparser factory.
+    general_subparser_factory = _GeneralSubparserFactory()
+
+    # Instatiate an empty dict to store functions that
+    # processs the subcommand command line arguments.
+    parse_subcommand_args = {}
+
+    # ----
+    # ---  Do over every subcommand.
+    # ----
+
+    (parse_subcommand_args,general_subparser_factory) = (
+        _process_subcommand_args(parse_subcommand_args,
+                                 my_top_level_subparser,
+                                 general_subparser_factory,
+                                 _lop_sf_fcc_builder_key,
+                                 LopSfFccSubparserFactory,
+                                 process_lop_sf_fcc_cli_args) )
+    # ----
+    # --- End of doing every sucommand 
+    # ----
+
+    #
+    # Now parse the command line args for the subcommand.
+    my_args = my_top_level_parser.parse_args()
+    subcommand_name = my_args.subcommand_name
+    my_CLIArgs : CLI_ID = parse_subcommand_args[subcommand_name](my_top_level_parser)
+    return my_CLIArgs
+
+# ----------
+# Private members
+# ----------
+
+_lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name()
+
+def _process_subcommand_args (parse_subcommand_args,
+                              my_top_level_subparser,
+                              general_subparser_factory,
+                              registration_key: str,
+                              subparser_factory: SubparserFactory_ID,
+                              func_process_cli_args):
+
+    # Register the builder and the function to process the command line arguments
+    # for the LOP FCC fcc structure factor.
+    general_subparser_factory.register_builder(registration_key,subparser_factory)
+
+    # Invoke the add_subparser method to add the subparser
+    # to the top level parser.
+    general_subparser_factory.add_subparser(registration_key,my_top_level_subparser)
+
+    parse_subcommand_args[registration_key] = func_process_cli_args
+    return (parse_subcommand_args,general_subparser_factory)
+
 
 class _GeneralSubparserFactory:
     """ The director for adding the subparsers to the top level parser."""
@@ -49,77 +112,4 @@ class _GeneralSubparserFactory:
         my_builder = builder()
         my_builder(top_level_subparsers,*args,**kwargs)
 
-# Instatiate a subparser factory.
-_subparser_factory = _GeneralSubparserFactory()
-
-# ----------
-# This section adds the subparser for the calculating
-# LOP Structure FCC.
-# ----------
-
-
-class _LopSfFccSuparserFactory:
-    """ The concrete builder for LOP Structure FCC order parameter. 
-
-    This a callable object. When called it adds the subparser
-    for LOP Structure FCC order parameter.
-    """
-    _subcommand_help = ( "The command calculates the local order "
-                         "parameter for the fcc structure factor." )
-
-    _dcdfilename_help = "The lammps dcd file."
-
-    _edgelength_help = "The length in angstroms of the edge of the fcc lattice."
-
-    _ouput_help = "The file to write the results. (default : %(default)s)"
-
-    _psf_help = "The protein structure file for the corresponding dcd file."
-
-    def __init__(self, *args, **kwargs)->None:
-        return
-
-    def __call__(self, top_level_subparsers,
-                 *kargs, **kwargs)->None:
-
-        parser1 = top_level_subparsers.add_parser("lop_sf_fcc",
-                                                  help=self._subcommand_help)
-        parser1.add_argument("--dcd-file-name",
-                             type=str,required=True,help=self._dcdfilename_help)
-
-        parser1.add_argument("--psf",
-                             type=str,required=True,help=self._psf_help)
-
-        parser1.add_argument("--edge-length",
-                             type=float,required=True,help=self._edgelength_help)
-
-        parser1.add_argument("--output",
-                             type=str,required=False,
-                             default="output.data",help=self._ouput_help)
-
-        # Add the callable object for calculating the local structure factor
-        # fcc order parameter as an the callable attribute  'do_data_analysis'.
-        from lop_sf_fcc_builder import key_lop_sf_fcc_factory
-        import lammps_analysis_tool_builder
-        my_function = (
-            lammps_analysis_tool_builder.analysis_tool_factory.create(key_lop_sf_fcc_factory) )
-        parser1.set_defaults(do_data_analysis=my_function)
-
-# Register the concrete builder _LopSfFccSuparserFactory.
-# Each builder key must unique or the undefined behavoir will occur.
-_lop_sf_fcc_builder_key = '__lop_sf_fcc__'
-_subparser_factory.register_builder(_lop_sf_fcc_builder_key,
-                                    _LopSfFccSuparserFactory)
-
-# Invoke the add_subparser method to add the subparser
-# to the top level parser.
-_subparser_factory.add_subparser(_lop_sf_fcc_builder_key,_subparsers)
-
-# ----------
-# End of section that adds the subparser for the calculating
-# LOP Structure FCC.
-# ----------
-
-# ----------
-# Add all additional subparsers below this line.
-# ----------
 

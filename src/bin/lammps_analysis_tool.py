@@ -12,13 +12,11 @@ J. Chem. Phys. 116(21), 134503 (2002).
 
 """
 
-import lammps_analysis_tool_parser
+from lammps_analysis_tool_parser import process_command_line_arguments
+from lammps_analysis_tool_parser import CLI_ID
 
 def main ():
-    print("Stud print for main.")
-
-    my_args = lammps_analysis_tool_parser.top_level_parser.parse_args()
-
+    my_args: CLI_ID = process_command_line_arguments()
     my_args.do_data_analysis(my_args)
 
 if __name__ == "__main__":
