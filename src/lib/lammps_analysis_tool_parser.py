@@ -63,10 +63,13 @@ _lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name()
 def process_command_line_arguments()->CLI_ID:
     """Processes the command line arguments. """
 
-    my_top_level_parser = argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
-        description="Calculates various physical properties of LAMMPS simulations")
+    my_top_level_parser = (
+        argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
+        description="Calculates various physical properties of LAMMPS simulations"))
 
-    my_subparsers = my_top_level_parser.add_subparsers(dest="subcommand_name",help="subcommand help")
+    my_subparsers = (
+        my_top_level_parser.add_subparsers(dest="subcommand_name",
+                                           help="subcommand help"))
 
     # Instatiate a subparser factory.
     my_subparser_factory = _GeneralSubparserFactory()

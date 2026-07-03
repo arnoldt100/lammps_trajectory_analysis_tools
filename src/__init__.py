@@ -13,6 +13,7 @@ from .analysis import RadialDistributionFunction, MeanSquareDisplacement
 from .plotting import plot_rdf, plot_trajectory
 
 __all__ = [
+    "lib",
     "read_dump",
     "Trajectory",
     "TrajectoryReader",

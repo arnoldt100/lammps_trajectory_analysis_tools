@@ -32,6 +32,7 @@ key_lop_sf_fcc = 'LopSfFcc'
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
     def __init__(self,*args,**kwargs)->None:
+        self.__accumulator = []
         return
 
     def __call__(self, command_line_arguments:CLILopSfFcc,
