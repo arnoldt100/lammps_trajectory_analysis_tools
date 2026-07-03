@@ -18,10 +18,10 @@ from typing import TypeAlias
 # Local library import
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
-from lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
-from lop_sf_fcc_cli_parser import CLILopSfFcc
-from lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
-from lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
+from lop_sf_fcc.lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
+from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
+from lop_sf_fcc.lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
+from lop_sf_fcc.lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
 
 # ----------
 # Public members

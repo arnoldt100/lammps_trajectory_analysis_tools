@@ -34,7 +34,7 @@ class LopSfFcc:
         # Read the dcd file using MDAnalysis
 
         # Loop over every frame in the dcd trajectory, compute
-        # every atoms local order parameter. We acccumulate the lop values 
+        # every atoms local order parameter. We acccumulate the lop values.
 
 
 
