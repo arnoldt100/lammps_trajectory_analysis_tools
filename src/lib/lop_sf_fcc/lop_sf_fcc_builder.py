@@ -8,7 +8,7 @@ The public members provided by this module are:
 """
 
 # Local imports
-import lop_sf_fcc
+from  lop_sf_fcc.lop_sf_fcc import LopSfFcc
 
 # ----------
 # Public members
@@ -26,8 +26,8 @@ class LopSfFccFactory:
     def __init__(self,*args,**kwargs)->None:
         return
 
-    def __call__(self,*kargs,**kwargs)->lop_sf_fcc.LopSfFcc:
-        return lop_sf_fcc.LopSfFcc(*kargs,**kwargs)
+    def __call__(self,*kargs,**kwargs)->LopSfFcc:
+        return LopSfFcc(*kargs,**kwargs)
 
 # ----------
 # Private members
