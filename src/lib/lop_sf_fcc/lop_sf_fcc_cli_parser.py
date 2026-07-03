@@ -8,6 +8,7 @@
 import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Required
 
 # Local Library package imports
 
@@ -26,10 +27,12 @@ def lop_sf_fcc_subcommand_name()->str:
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
     subcommand_name:str
-    dcd_file_name: str
+    trajectory: str
     psf: str
     edge_length: str
     output: str
+    timeunits: str
+    dt: float
     do_data_analysis: Callable[...,None]
 
 class LopSfFccSubparserFactory:
@@ -41,13 +44,17 @@ class LopSfFccSubparserFactory:
     _subcommand_help = ( "The command calculates the local order "
                          "parameter for the fcc structure factor." )
 
-    _dcdfilename_help = "The lammps dcd file."
+    _trajectory_help = "The lammps dcd file."
 
     _edgelength_help = "The length in angstroms of the edge of the fcc lattice."
 
     _ouput_help = "The file to write the results. (default : %(default)s)"
 
     _psf_help = "The protein structure file for the corresponding dcd file."
+
+    _timeunits_help = "The time step units."
+
+    _dt_help = "The time frame interval."
 
     def __init__(self, *args, **kwargs)->None:
         return
@@ -57,14 +64,21 @@ class LopSfFccSubparserFactory:
 
         parser1 = top_level_subparsers.add_parser("lop_sf_fcc",
                                                   help=self._subcommand_help)
-        parser1.add_argument("--dcd-file-name",
-                             type=str,required=True,help=self._dcdfilename_help)
+        parser1.add_argument("--trajectory",
+                             type=str,required=True,help=self._trajectory_help)
 
         parser1.add_argument("--psf",
                              type=str,required=True,help=self._psf_help)
 
         parser1.add_argument("--edge-length",
                              type=float,required=True,help=self._edgelength_help)
+
+        parser1.add_argument("--timeunits",
+                             type=str,required=True,help=self._timeunits_help,
+                             choices=["fs","ps"])
+
+        parser1.add_argument("--dt",
+                             type=float,required=True,help=self._dt_help)
 
         parser1.add_argument("--output",
                              type=str,required=False,

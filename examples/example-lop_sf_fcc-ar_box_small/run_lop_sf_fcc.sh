@@ -40,8 +40,14 @@ psf_file=argon_box_small.psf
 # The edge length in angstroms.
 edge_length=5.196
 
+# The time units is emtoseconds
+timeunits="ps"
+
+# The time frame interval is 1 ps
+dt=1.0
+
 # Reform the original DCD file.
 cat argon_box_small_dcd_* > ${dcd_file}
 
 # Run the example.
-uv run lammps_analysis_tool.py lop_sf_fcc --dcd-file-name ${dcd_file} --psf ${psf_file} --edge-length ${edge_length}
+uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd  --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} 
