@@ -17,7 +17,7 @@ class GeneralLammpsAnalysisToolFactory:
     def register_builder(self, key, builder)->None:
         self._builders[key] = builder
 
-    def create(self,key,*args:Any, **kwargs: Any)->Any:
+    def create_analysis_tool(self,key,*args:Any, **kwargs: Any)->Any:
         builder = self._builders.get(key)
         if not builder:
             raise ValueError(key)

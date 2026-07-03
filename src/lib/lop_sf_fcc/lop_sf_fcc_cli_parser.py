@@ -74,9 +74,9 @@ class LopSfFccSubparserFactory:
         # fcc order parameter as an the callable attribute  'do_data_analysis'.
         from lop_sf_fcc.lop_sf_fcc_builder import key_lop_sf_fcc_factory
         import lammps_analysis_tool_builder
-        my_function = (
-            lammps_analysis_tool_builder.analysis_tool_factory.create(key_lop_sf_fcc_factory) )
-        parser1.set_defaults(do_data_analysis=my_function)
+        my_analysis_tool = (
+            lammps_analysis_tool_builder.analysis_tool_factory.create_analysis_tool(key_lop_sf_fcc_factory) )
+        parser1.set_defaults(do_data_analysis=my_analysis_tool)
 
 def process_lop_sf_fcc_cli_args(my_arg_parser : argparse.ArgumentParser)->CLILopSfFcc:
     my_cliargs = CLILopSfFcc(**vars(my_arg_parser.parse_args()))
