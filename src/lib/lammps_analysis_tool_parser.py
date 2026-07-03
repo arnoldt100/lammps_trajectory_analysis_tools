@@ -58,7 +58,7 @@ class _GeneralSubparserFactory:
 # Register the concrete builder LopSfFccSuparserFactory.
 # Each builder key must unique or the undefined behavoir will occur.
 # The buider must be name of the subcommand name specified on the command line.
-_lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name
+_lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name()
 
 def process_command_line_arguments()->CLI_ID:
     """Processes the command line arguments. """
