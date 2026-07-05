@@ -16,7 +16,6 @@ import MDAnalysis as mda
 # Local imports
 from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
 
-
 # ----------
 # Public members
 # ----------
@@ -53,16 +52,23 @@ class LopSfFcc:
         for ts in universe.trajectory[:]:
             time = universe.trajectory.time
             print(f"--- Frame: {ts.frame:3d}, Time: {time:6.0f} ps ---")
-
+            value = calculate_sf_fcc_order_parameter()
             # Prints a NumPy array of shape (N, 3) containing X, Y, Z coordinates
             print(all_atoms.positions)
             print()
             print()
 
 
+def calculate_sf_fcc_order_parameter()-> float:
+    return 0.000
+
 # ----------
 # Private members
 # ----------
+
+def _create_accumulator():
+    """ Returns a accumulator for storing"""
+    pass
 
 def _main()->None:
     pass
