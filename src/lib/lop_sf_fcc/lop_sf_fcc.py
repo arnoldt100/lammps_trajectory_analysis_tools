@@ -12,9 +12,15 @@ from typing import Any
 
 # Third party library imports
 import MDAnalysis as mda
+import numpy as np
+import numpy.typing as npt
 
 # Local imports
 from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
+from data_types import AtomCoordinates
+from data_types import AtomCoordinates16
+from data_types import AtomCoordinates32
+from data_types import AtomCoordinates64
 
 # ----------
 # Public members
@@ -52,14 +58,13 @@ class LopSfFcc:
         for ts in universe.trajectory[:]:
             time = universe.trajectory.time
             print(f"--- Frame: {ts.frame:3d}, Time: {time:6.0f} ps ---")
-            value = calculate_sf_fcc_order_parameter()
+            value = calculate_sf_fcc_order_parameter(all_atoms)
             # Prints a NumPy array of shape (N, 3) containing X, Y, Z coordinates
             print(all_atoms.positions)
             print()
             print()
 
-
-def calculate_sf_fcc_order_parameter()-> float:
+def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates)-> float:
     return 0.000
 
 # ----------
