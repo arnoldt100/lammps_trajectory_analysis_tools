@@ -36,6 +36,16 @@ key_lop_sf_fcc = 'LopSfFcc'
 
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
+
+    # These are 6 wavevectors in k-space.
+    k_0 = np.array([1.00, 0.00, 0.00],dtype=np.float64)
+    k_1 = np.array([0.00, 1.00, 0.00],dtype=np.float64)
+    k_2 = np.array([0.00, 0.00, 1.00],dtype=np.float64)
+    k_3 = np.array([1.00, 1.00, 0.00],dtype=np.float64)
+    k_4 = np.array([1.00, -1.00, 0.00],dtype=np.float64)
+    k_5 = np.array([0.00, 1.00, 1.00],dtype=np.float64)
+    wave_vectors = (2.00/np.pi)*(np.array([k_0,k_1,k_2,k_3,k_4,k_5] ,dtype=np.float64))
+
     def __init__(self,*args,**kwargs)->None:
         self.__accumulator = []
         return
@@ -60,11 +70,11 @@ class LopSfFcc:
             print(f"--- Frame: {ts.frame:3d}, Time: {time:6.0f} ps ---")
             value = calculate_sf_fcc_order_parameter(all_atoms)
             # Prints a NumPy array of shape (N, 3) containing X, Y, Z coordinates
-            print(all_atoms.positions)
             print()
             print()
 
 def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates)-> float:
+    
     return 0.000
 
 # ----------
