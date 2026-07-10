@@ -9,6 +9,7 @@ import numpy as np
 # Local Library package imports
 from lop_sf_fcc.lop_sf_fcc import calculate_sf_fcc_order_parameter
 from data_types import AtomCoordinates
+from data_types import WaveVectors
 
 
 class TestLopSfFcc(unittest.TestCase):
@@ -42,12 +43,14 @@ class TestLopSfFcc(unittest.TestCase):
         k_3 = np.array([1.00, 1.00, 0.00],dtype=np.float64)
         k_4 = np.array([1.00, -1.00, 0.00],dtype=np.float64)
         k_5 = np.array([0.00, 1.00, 1.00],dtype=np.float64)
-        cls.wave_vectors = (2.00/np.pi)*(1.00/cls.edge_length)*(np.array([k_0,k_1,k_2,k_3,k_4,k_5] ,dtype=np.float64))
+        cls.normalized_wave_vectors: WaveVectors = (
+            (2.00/np.pi)*(1.00/cls.edge_length)*(np.array([k_0,k_1,k_2,k_3,k_4,k_5] ,dtype=np.float64)))
 
     def test_lop_sf_fcc_single_atom(self):
         r_0 : AtomCoordinates = self.atom_coordinates[0,:]
         print (f"r_0: {r_0}")
-        value = calculate_sf_fcc_order_parameter(self.atom_coordinates)
+        value = calculate_sf_fcc_order_parameter(self.atom_coordinates,
+                    self.normalized_wave_vectors)
         self.assertAlmostEqual(value,0.00000,places=3)
 
     @classmethod

@@ -89,7 +89,7 @@ def process_command_line_arguments()->CLI_ID:
     my_args = my_top_level_parser.parse_args()
     my_CLIArgs : CLI_ID = parse_subcommand_args[my_args.subcommand_name](my_top_level_parser)
 
-    return my_CLIArgs 
+    return my_CLIArgs
 
 # ----------
 # End of section that adds the subparser for the calculating
