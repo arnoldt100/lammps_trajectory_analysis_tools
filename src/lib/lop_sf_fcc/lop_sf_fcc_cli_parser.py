@@ -33,6 +33,7 @@ class CLILopSfFcc:
     output: str
     timeunits: str
     dt: float
+    cutoff: float
     do_data_analysis: Callable[...,None]
 
 class LopSfFccSubparserFactory:
@@ -55,6 +56,8 @@ class LopSfFccSubparserFactory:
     _timeunits_help = "The time step units."
 
     _dt_help = "The time frame interval."
+
+    _cutoff_help = "The neighbor search cutoff in angstroms."
 
     def __init__(self, *args, **kwargs)->None:
         return
@@ -79,6 +82,9 @@ class LopSfFccSubparserFactory:
 
         parser1.add_argument("--dt",
                              type=float,required=True,help=self._dt_help)
+
+        parser1.add_argument("--cutoff",
+                             type=float,required=True,help=self._cutoff_help)
 
         parser1.add_argument("--output",
                              type=str,required=False,

@@ -13,7 +13,7 @@ import copy
 
 # Third party library imports
 import MDAnalysis as mda
-from mda.lib.NeighborSearch import AtomNeighborSearch
+from MDAnalysis.lib.nsgrid import FastNS
 
 import numpy as np
 import numpy.typing as npt
@@ -65,30 +65,49 @@ class LopSfFcc:
         trajectory = command_line_arguments.trajectory
         timeunits = command_line_arguments.timeunits
         dt = command_line_arguments.dt
+        cutoff = command_line_arguments.cutoff
+
         universe = (
             mda.Universe(psf_file,trajectory,timeunits=timeunits,dt=dt))
 
+        box = universe.trajectory[0].dimensions
+        print (f"box: {box}")
+
         all_atoms = universe.select_atoms("all")
 
-        ns = AtomNeighborSearch(all_atoms,box=universe.dimensions)
  
         # Loop over every frame in the dcd trajectory, compute
         # for every atom the local order parameter. We acccumulate the lop values.
         for ts in universe.trajectory[:]:
             time = universe.trajectory.time
-            value = calculate_sf_fcc_order_parameter(all_atoms,
-                self._normalized_wave_vectors)
+            print(f"=== timestep {time} ===\n")
+            print(f"Position atom[0] = {all_atoms.positions[0]}\\nn")
+            value = calculate_sf_fcc_order_parameter(all_atoms.positions,
+                                                     self._normalized_wave_vectors,
+                                                     cutoff,
+                                                     box)
+            break
 
 def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
-                                     normalized_wave_vectors: WaveVectors )-> float:
-            print(f"--- Frame: {ts.frame:3d}, Time: {time:6.0f} ps ---")
-            value = calculate_sf_fcc_order_parameter(all_atoms)
-            # Prints a NumPy array of shape (N, 3) containing X, Y, Z coordinates
-            print()
-            print()
+                                     normalized_wave_vectors: WaveVectors,
+                                     cutoff,
+                                     box: np.ndarray[tuple[Literal[6]],np.dtype[np.float32]])-> float:
+    grid = mda.lib.nsgrid.FastNS(cutoff,atom_coordinates,box=box,pbc=False)
+    ns_results = grid.self_search()
+    pairs = ns_results.get_pairs()
+    distances = ns_results.get_pair_distances()
+    print("\n=== Box ===")
+    print(box)
+    print("\n=== Coordinates ===")
+    print(atom_coordinates)
+    print("\n=== Pairs ====")
+    print(pairs)
+    print("\n=== Distances ====")
+    print(distances)
+    print()
+ 
+ 
 
-def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates)-> float:
-    
     return 0.000
 
 # ----------

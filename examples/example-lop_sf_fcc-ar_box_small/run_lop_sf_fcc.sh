@@ -10,10 +10,10 @@
 # In the paper the reparameterized force field for Wh[2] is epsilon is
 # 0.94639 KJ/mol and sigma is 0.33713 nm.
 #
-# For the LAMMPS units real, distance is in angstroms and energy is in Kcal/mol. 
+# For the LAMMPS units real, distance is in angstroms and energy is in Kcal/mol.
 # We need to convert nm to angstroms and KJ/mol to Kcal/mol to use Wh[2]
 # force field in a LAMMPS command file.
-# 
+#
 # The fcc edge length for argon is ~5.196 angstroms for a lj 12-6 potential
 # with sigma of 0.33713 nm.
 #
@@ -28,7 +28,7 @@
 # We reform the original DCD file with the command
 #
 #   cat argon_box_small_dcd_* > ${dcd_file}
-# 
+#
 # ----------------------
 
 # Name of DCD file.
@@ -46,8 +46,13 @@ timeunits="ps"
 # The time frame interval is 1 ps
 dt=1.0
 
+# The cutoff distance in angstroms for the neighbore search.
+cutoff=10.4
+
 # Reform the original DCD file.
-cat argon_box_small_dcd_* > ${dcd_file}
+cat argon_box_small_dcd_* >${dcd_file}
 
 # Run the example.
-uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd  --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} 
+uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd \
+  --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} \
+  --cutoff ${cutoff}
