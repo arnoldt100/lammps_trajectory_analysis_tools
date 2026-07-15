@@ -39,7 +39,7 @@ def load_and_convert_to_dcd(input_file, output_dcd_file="output.dcd", timestep_p
     coords = np.asarray(coords_Nx3, dtype=np.float32)
     N = coords.shape[0]
     frame_coords = coords.reshape(1, N, 3)
-    
+ 
     # 5. Create trajectory in memory and write to disk
     u = mda.Universe.empty(N, trajectory=True)
     u.load_new(frame_coords, format=MemoryReader)
