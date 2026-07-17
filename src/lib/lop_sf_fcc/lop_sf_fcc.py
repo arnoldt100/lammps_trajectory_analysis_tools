@@ -35,12 +35,21 @@ behavior may occur. This key is currently not used but reserved for future use.
 """
 key_lop_sf_fcc = 'LopSfFcc'
 
-def create_primitive_wavevectors1():
-    # We define the primitive lattice vectors for an edge length of 1.0
-    # angstroms.
-    a1 = np.array([0,1,1], dtype=np.float64)
-    b1 = np.array([1,0,1], dtype=np.float64)
-    c1 = np.array([1,1,0], dtype=np.float64)
+def create_primitive_wavevectors1(fcc_edge_length : np.float64):
+    """ Returns a complex numpy array of shape (N,3). 
+
+    Parameters:
+        fcc_edge_length : The length in angstroms of the fcc lattice structure
+        edge.
+
+    Returns: An numpy array of shape (N,3) where each element is a complex
+    number. The [i,:] sliceis the i'th wavevector.
+    """
+    # We define the primitive lattice vectors for an edge length of 
+    # fcc_edge_length angstroms.
+    a1 = fcc_edge_length*np.array([0,1,1], dtype=np.float64)
+    b1 = fcc_edge_length*np.array([1,0,1], dtype=np.float64)
+    c1 = fcc_edge_length*np.array([1,1,0], dtype=np.float64)
 
     # We define the primitive lattice volume for an edge length of 1.0
     # angstroms. We need the primitive lattice volume to later define
@@ -67,7 +76,6 @@ def create_primitive_wavevectors1():
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
 
-    wavevectors1 = create_primitive_wavevectors1()
 
     def __init__(self,*args,**kwargs)->None:
         self.__accumulator = []
@@ -79,8 +87,8 @@ class LopSfFcc:
 
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
-        edge_length = command_line_arguments.edge_length
-
+        edge_length = np.float64(command_line_arguments.edge_length)
+        self.wavevectors1 = create_primitive_wavevectors1(edge_length)
 
         # --
         # Start of code section is to be removed.

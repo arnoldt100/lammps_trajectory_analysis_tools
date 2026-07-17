@@ -29,7 +29,7 @@ class CLILopSfFcc:
     subcommand_name:str
     trajectory: str
     psf: str
-    edge_length: str
+    edge_length: float
     output: str
     timeunits: str
     dt: float
