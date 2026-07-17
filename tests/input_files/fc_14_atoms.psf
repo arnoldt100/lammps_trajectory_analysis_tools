@@ -23,19 +23,19 @@ PSF
        0 !NBOND: bonds
 
 
-       0 !THETA: angles
+       0 !NTHETA: angles
 
 
-       0 !PHI: dihedrals
+       0 !NPHI: dihedrals
 
 
-       0 !IMPHI: impropers
+       0 !NIMPHI: impropers
 
 
-       0 !DONORS: donors
+       0 !NDONORS: donors
 
 
-       0 !ACCEPTORS: acceptors
+       0 !NACCEPTORS: acceptors
 
 
        0 !NNB
@@ -44,7 +44,7 @@ PSF
        0       0 !NGRP NST2
        0       0       0
 
-       0 !MOLNT
+       0 !NMOLNT
 
 
        0 !NUMLP NUMLPH
