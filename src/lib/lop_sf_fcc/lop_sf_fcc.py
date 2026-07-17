@@ -35,43 +35,79 @@ behavior may occur. This key is currently not used but reserved for future use.
 """
 key_lop_sf_fcc = 'LopSfFcc'
 
-def create_primitive_wavevectors1(fcc_edge_length : np.float64):
+def create_primitive_lattice_vectors(fcc_edge_length : np.float64):
+    """ Returns a complex numpy array of shape (3,3). 
+
+    Parameters:
+        fcc_edge_length : The length in angstroms of the fcc lattice structure
+        edge.
+
+    Returns: An numpy array of shape (3,3) where each element is a real
+    number. The [i,:] slice is the i'th primitive lattice vector.
+    """
+    # We define the primitive lattice vectors for an edge length of 
+    # fcc_edge_length angstroms.
+    a = fcc_edge_length*np.array([0,1,1], dtype=np.float64)
+    b = fcc_edge_length*np.array([1,0,1], dtype=np.float64)
+    c = fcc_edge_length*np.array([1,1,0], dtype=np.float64)
+
+    # We define the primitive_lattice_vectors.
+    primitive_lattice_vectors = np.array([a,b,c],dtype=np.float64)
+    return primitive_lattice_vectors
+
+def create_reciprocal_lattice_vectors(fcc_edge_length : np.float64):
+    """ Returns a complex numpy array of shape (3,3). 
+
+    Parameters:
+        fcc_edge_length : The length in angstroms of the fcc lattice structure
+        edge.
+
+    Returns: An numpy array of shape (3,3) where each element is a real
+    number. The [i,:] slice is the i'th reciprocal lattice vector.
+    """
+
+    # Define the primitive lattice vectors.
+    primitive_lattice_vectors = create_primitive_lattice_vectors(fcc_edge_length)
+    a = primitive_lattice_vectors[0,:]
+    b = primitive_lattice_vectors[1,:]
+    c = primitive_lattice_vectors[2,:]
+
+    # We define the primitive lattice volume for an edge length of 1.0
+    # angstroms. We need the primitive lattice volume to later define
+    # the reciprocal lattice vectors.
+    primitive_lattice_volume = np.dot(a,np.cross(b,c))
+
+    # We define the reciprocal lattice vectors for primitive_lattice_vectors1.
+    k_a = np.cross(b,c)
+    k_b = np.cross(c,a)
+    k_c = np.cross(a,b)
+    reciprocal_lattice_vectors = (
+            (2.0*np.pi/primitive_lattice_volume)*np.array([k_a,k_b,k_c],dtype=np.float64))
+    return reciprocal_lattice_vectors
+
+def create_wavevectors(fcc_edge_length : np.float64):
     """ Returns a complex numpy array of shape (N,3). 
 
     Parameters:
         fcc_edge_length : The length in angstroms of the fcc lattice structure
         edge.
 
-    Returns: An numpy array of shape (N,3) where each element is a complex
-    number. The [i,:] sliceis the i'th wavevector.
+    Returns: An numpy array of shape (N,3) where each element is a real
+    number. The [i,:] slice is the i'th wavevector.
     """
-    # We define the primitive lattice vectors for an edge length of 
-    # fcc_edge_length angstroms.
-    a1 = fcc_edge_length*np.array([0,1,1], dtype=np.float64)
-    b1 = fcc_edge_length*np.array([1,0,1], dtype=np.float64)
-    c1 = fcc_edge_length*np.array([1,1,0], dtype=np.float64)
 
-    # We define the primitive lattice volume for an edge length of 1.0
-    # angstroms. We need the primitive lattice volume to later define
-    # the reciprocal lattice vectors.
-    primitive_lattice_volume1 = np.dot(a1,np.cross(b1,c1))
-
-    # We define the reciprocal lattice vectors for primitive_lattice_vectors1.
-    k_a1 = np.cross(b1,c1)
-    k_b1 = np.cross(c1,a1)
-    k_c1 = np.cross(a1,b1)
-    reciprocal_lattice_vectors1 = (
-            (2.0*np.pi/primitive_lattice_volume1)*np.array([k_a1,k_b1,k_c1],dtype=np.float64))
+    # We create the reciprocal lattice vectors.
+    reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(fcc_edge_length )
 
     # We define the wavevectors that correspond to primitive_lattice_vectors1.
-    wv1_0 = reciprocal_lattice_vectors1[1] + reciprocal_lattice_vectors1[2]
-    wv1_1 = reciprocal_lattice_vectors1[0] + reciprocal_lattice_vectors1[2]
-    wv1_2 = reciprocal_lattice_vectors1[0] + reciprocal_lattice_vectors1[1]
-    wv1_3 = wv1_0 + wv1_1
-    wv1_4 = wv1_0 - wv1_1
-    wv1_5 = wv1_1 + wv1_2
-    wavevectors1 = np.array([wv1_0,wv1_1,wv1_2,wv1_3,wv1_4,wv1_5])
-    return wavevectors1
+    wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
+    wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
+    wv_2 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[1]
+    wv_3 = wv_0 + wv_1
+    wv_4 = wv_0 - wv_1
+    wv_5 = wv_1 + wv_2
+    wavevectors = np.array([wv_0,wv_1,wv_2,wv_3,wv_4,wv_5])
+    return wavevectors
 
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
@@ -88,7 +124,7 @@ class LopSfFcc:
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
         edge_length = np.float64(command_line_arguments.edge_length)
-        self.wavevectors1 = create_primitive_wavevectors1(edge_length)
+        self.wavevectors1 = create_wavevectors(edge_length)
 
         # --
         # Start of code section is to be removed.
