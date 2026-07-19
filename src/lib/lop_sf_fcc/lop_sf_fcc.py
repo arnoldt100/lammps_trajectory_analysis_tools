@@ -21,7 +21,7 @@ import numpy.typing as npt
 # Local imports
 from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
 from data_types import AtomCoordinates
-from data_types import WaveVectors
+from data_types import LatticeVectors
 
 # ----------
 # Public members
@@ -36,7 +36,7 @@ behavior may occur. This key is currently not used but reserved for future use.
 key_lop_sf_fcc = 'LopSfFcc'
 
 def create_primitive_lattice_vectors(fcc_edge_length : np.float64):
-    """ Returns a complex numpy array of shape (3,3). 
+    """ Returns a complex numpy array of shape (3,3).
 
     Parameters:
         fcc_edge_length : The length in angstroms of the fcc lattice structure
@@ -45,7 +45,7 @@ def create_primitive_lattice_vectors(fcc_edge_length : np.float64):
     Returns: An numpy array of shape (3,3) where each element is a real
     number. The [i,:] slice is the i'th primitive lattice vector.
     """
-    # We define the primitive lattice vectors for an edge length of 
+    # We define the primitive lattice vectors for an edge length of
     # fcc_edge_length angstroms.
     a = fcc_edge_length*np.array([0,1,1], dtype=np.float64)
     b = fcc_edge_length*np.array([1,0,1], dtype=np.float64)
@@ -99,7 +99,8 @@ def create_wavevectors(fcc_edge_length : np.float64):
     # We create the reciprocal lattice vectors.
     reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(fcc_edge_length )
 
-    # We define the wavevectors that correspond to primitive_lattice_vectors1.
+    # We define the wavevectors that correspond to various combinations of
+    # reciprocal lattice vectors.
     wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
     wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
     wv_2 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[1]
@@ -165,7 +166,7 @@ class LopSfFcc:
         # --
 
 def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
-                                     normalized_wave_vectors: WaveVectors,
+                                     wave_vectors: LatticeVectors,
                                      cutoff,
                                      box: np.ndarray[tuple[Literal[6]],np.dtype[np.float32]])-> float:
     grid = mda.lib.nsgrid.FastNS(cutoff,atom_coordinates,box=box,pbc=False)
