@@ -19,6 +19,7 @@ from data_types import LatticeVectors, AtomCoordinates
 
 
 class TestLopSfFcc(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
 
@@ -42,8 +43,8 @@ class TestLopSfFcc(unittest.TestCase):
 
         # Create box dimensions for a single frame Format: [lx, ly, lz, alpha, beta, gamma]
         cls.box_dimensions = (
-            np.array([[cls.edge_length,cls.edge_length,cls.edge_length,
-                      90.0, 90.0, 90.0]],dtype=np.float64))
+            np.array([cls.edge_length,cls.edge_length,cls.edge_length,
+                      90.0, 90.0, 90.0],dtype=np.float64))
 
         """ The absolute path to the protein """
         cls.psf_filepath: str = os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf") 
@@ -54,8 +55,8 @@ class TestLopSfFcc(unittest.TestCase):
         """ The magnitude of the time step. """
         cls.dt: float = 1.0
 
-        # Create a Ad Analysis universe for a single frame.
-        cls.u = _create_universe(cls.atomic_coordinates, cls.box_dimensions,
+        # Create a MD Analysis universe for a single frame.
+        cls.u = _create_universe_single_frame(cls.atomic_coordinates, cls.box_dimensions,
                                  cls.psf_filepath, cls.timeunits,
                                  cls.dt)
 
@@ -142,14 +143,39 @@ def _message_a4_lop_sf():
     message = "The local order parameter fcc structure factor is wrong."
     return message
 
-def _create_universe(atom_coordinates: AtomCoordinates, box_dimensions, psf_filepath: str,
+def _create_universe_single_frame(atom_coordinates: AtomCoordinates, box_dimensions, psf_filepath: str,
                      timeunits: str, dt: float):
-    single_frame_trajectory = np.expand_dims(atom_coordinates, axis=0)
-    single_box_dimensions = np.expand(box_dimensions,axis=0)
-    universe = mda.Universe(psf_filepath,
-            single_frame_trajectory,
-            format=MemoryReader,
-            dimensions=box_dimensions)
+    """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
+
+    atom_coordinates : An numpy array of floats of shape (nm_atoms,3). 
+
+    box_dimensions : An numpy 1d array floats of len 6. This is the box dimensions of
+    the atomic coordinates in "atom_coordinates" where:
+        box_dimensions[0] = x-axis length in angstroms
+        box_dimensions[1] = y-axis length in angstroms
+        box_dimensions[2] = z-axis length in angstroms
+        box_dimensions[3] = Angle between y and z axis in degrees
+        box_dimensions[4] = Angle between x and z axis in degrees
+        box_dimensions[5] = Angle between x and y axis in degrees
+
+    psf_filepath : A string of the file path to the psf of "atom_coordinates". 
+
+    timesunits : A string of the time units. 
+
+    dt : The magnitude of the time step. 
+
+    """
+    nm_frames = 1
+    (nm_atoms,_) =  atom_coordinates.shape
+    box_array = np.array([box_dimensions for _ in range(nm_frames)])
+    trajectory = np.array([atom_coordinates for _ in range(nm_frames)])
+    universe  = mda.Universe(psf_filepath)
+    universe.load_new(
+       trajectory,
+       format=MemoryReader,
+       dt=dt,
+       dimensions=box_array)
+
     return universe
 
 if __name__ == "__main__":
