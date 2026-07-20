@@ -56,7 +56,7 @@ def create_primitive_lattice_vectors(fcc_edge_length : np.float64):
     return primitive_lattice_vectors
 
 def create_reciprocal_lattice_vectors(fcc_edge_length : np.float64):
-    """ Returns a complex numpy array of shape (3,3). 
+    """ Returns a complex numpy array of shape (3,3).
 
     Parameters:
         fcc_edge_length : The length in angstroms of the fcc lattice structure
@@ -125,45 +125,7 @@ class LopSfFcc:
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
         edge_length = np.float64(command_line_arguments.edge_length)
-        self.wavevectors1 = create_wavevectors(edge_length)
-
-        # --
-        # Start of code section is to be removed.
-        # --
-        # # Set the normalized reciprocal lattice wave vectors.
-        # self._normalized_wave_vectors : WaveVectors = (
-        #     (2.00/np.pi)*(1.00/command_line_arguments.edge_length)*copy.deepcopy(self.non_normalized_wave_vectors))
-
-        # # Read the DCD trajectory.
-        # psf_file = command_line_arguments.psf
-        # trajectory = command_line_arguments.trajectory
-        # timeunits = command_line_arguments.timeunits
-        # dt = command_line_arguments.dt
-        # cutoff = command_line_arguments.cutoff
-
-        # universe = (
-        #     mda.Universe(psf_file,trajectory,timeunits=timeunits,dt=dt))
-
-        # box = universe.trajectory[0].dimensions
-        # print (f"box: {box}")
-
-        # all_atoms = universe.select_atoms("all")
-
- 
-        # # Loop over every frame in the dcd trajectory, compute
-        # # for every atom the local order parameter. We acccumulate the lop values.
-        # for ts in universe.trajectory[:]:
-        #     time = universe.trajectory.time
-        #     print(f"=== timestep {time} ===\n")
-        #     print(f"Position atom[0] = {all_atoms.positions[0]}\\nn")
-        #     value = calculate_sf_fcc_order_parameter(all_atoms.positions,
-        #                                              self._normalized_wave_vectors,
-        #                                              cutoff,
-        #                                              box)
-        #     break
-        # --
-        # End of code section is to be removed.
-        # --
+        self.wavevectors = create_wavevectors(edge_length)
 
 def calculate_sf_fcc_order_parameter[T] (atom_coordinates: [T],
                                      wave_vectors: LatticeVectors,

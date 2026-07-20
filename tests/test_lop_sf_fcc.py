@@ -22,6 +22,15 @@ class TestLopSfFcc(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """ Creates an MDAnalysis universe of 4 Ar atoms.
+
+        Given an FCC lattice with edge length "edge_length", a FCC structure of
+        4 atoms is created. The atoms are then placed in a cubic box where each
+        side is length 10*edge_length. The PSF file is read from disk. The
+        number of atoms must be 4 atoms to match the PSF file. The atomic coordinates,
+        box dimensions, and PSF are then used to create a single frame MDAnalysis universe
+        for testing purposes.
+        """
 
         """ A FCC structure of 4 atoms with an edge length equal to 1.00 angstroms"""
         cls.fcc_coordinates : AtomCoordinates = np.array([
@@ -33,18 +42,31 @@ class TestLopSfFcc(unittest.TestCase):
         # We define the edge length of the FCC lattice structure.
         cls.edge_length = np.float64(5.19) # Edge length in angstroms.
 
-
         """ The atoms atomic coordinates. """
         cls.atomic_coordinates : AtomCoordinates = cls.edge_length*cls.fcc_coordinates
 
+        """ The lattice vectors of the FCC structure. """
         cls.primitive_lattice_vectors : LatticeVectors = create_primitive_lattice_vectors(cls.edge_length)
+
+        """ The reciprocal lattice vectors of the FCC structure. """
         cls.reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(cls.edge_length)
+
+        """ The wave vectors of the FCC lattice. """
         cls.wave_vectors = create_wavevectors(cls.edge_length)
 
-        # Create box dimensions for a single frame Format: [lx, ly, lz, alpha, beta, gamma]
-        cls.box_dimensions = (
-            np.array([cls.edge_length,cls.edge_length,cls.edge_length,
-                      90.0, 90.0, 90.0],dtype=np.float64))
+        """ The box dimensions of all trajectories.
+
+        Create box dimensions for a single frame Format: [lx, ly, lz, alpha,
+        beta, gamma] We create a cubic box with edge length
+        "cls.edge_length*10". If the box is too small, then the
+        mda.lib.nsgrid.FastNS has issues finding neighboring pairs.
+        """
+        edge_scaling_factor = 10.0
+        (lx,ly,lz) = (cls.edge_length*edge_scaling_factor,
+                      cls.edge_length*edge_scaling_factor,
+                      cls.edge_length*edge_scaling_factor)
+        (alpha,beta,gamma) = (90.0,90.0,90.0)
+        cls.box_dimensions = (np.array([lx,ly,lz,alpha,beta,gamma],dtype=np.float64))
 
         """ The absolute path to the protein """
         cls.psf_filepath: str = os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf") 
@@ -55,10 +77,17 @@ class TestLopSfFcc(unittest.TestCase):
         """ The magnitude of the time step. """
         cls.dt: float = 1.0
 
+        """  The cutoff for the searching for neighboring atoms. The cutoff
+             must be less that half the box length.
+        """
+        cls.cutoff = 2.0*cls.edge_length
+
         # Create a MD Analysis universe for a single frame.
-        cls.u = _create_universe_single_frame(cls.atomic_coordinates, cls.box_dimensions,
-                                 cls.psf_filepath, cls.timeunits,
-                                 cls.dt)
+        cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
+                                                     cls.box_dimensions,
+                                                     cls.psf_filepath,
+                                                     cls.timeunits,
+                                                     cls.dt)
 
     def test_rlv_plv_orthogonal(self):
         """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
@@ -74,7 +103,7 @@ class TestLopSfFcc(unittest.TestCase):
         places = 15
 
         # Indices 0, 1, and 2 respectively correspond to axis x,y and z.
-        # Therefore reciprocal lattice 
+        # The reciprocal lattice vectors are as follows:
         #   k_a = (1/(2*pi*vol))bxc --> reciprocal lattice vector with index 0 is perpendicular
         #   to principal lattice vectors with indices 1 and 2.
         #   k_b = (1/(2*pi*vol))cxa --> reciprocal lattice vector with index 1 is perpendicular
@@ -106,6 +135,18 @@ class TestLopSfFcc(unittest.TestCase):
         places = 15
         message = _message_a4_lop_sf()
         value = 0.01
+        cutoff = self.cutoff
+
+        ar_atoms = self.universe.select_atoms("all")
+        box_dimensions =  self.universe.dimensions
+        for ts in self.universe.trajectory:
+            ar_atom_positions = ar_atoms.positions 
+            # print(f"box dimensions=\n{ar_atoms.dimensions}")
+            # print(f"ar_atom_positions=\n{ar_atom_positions}")
+            calculate_sf_fcc_order_parameter(ar_atom_positions,
+                                             self.wave_vectors,cutoff,
+                                             box_dimensions)
+
         self.assertAlmostEqual(value,0.00,places,message)
 
     @classmethod
@@ -169,11 +210,7 @@ def _create_universe_single_frame(atom_coordinates: AtomCoordinates, box_dimensi
     (nm_atoms,_) =  atom_coordinates.shape
     box_array = np.array([box_dimensions for _ in range(nm_frames)])
     trajectory = np.array([atom_coordinates for _ in range(nm_frames)])
-    universe  = mda.Universe(psf_filepath)
-    universe.load_new(
-       trajectory,
-       format=MemoryReader,
-       dt=dt,
+    universe  = mda.Universe(psf_filepath,trajectory,format=MemoryReader,dt=dt,
        dimensions=box_array)
 
     return universe
