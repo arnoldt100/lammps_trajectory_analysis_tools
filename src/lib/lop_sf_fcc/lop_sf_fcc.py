@@ -165,7 +165,7 @@ class LopSfFcc:
         # End of code section is to be removed.
         # --
 
-def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
+def calculate_sf_fcc_order_parameter[T] (atom_coordinates: [T],
                                      wave_vectors: LatticeVectors,
                                      cutoff,
                                      box: np.ndarray[tuple[Literal[6]],np.dtype[np.float32]])-> float:
@@ -182,6 +182,7 @@ def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
     print("\n=== Distances ====")
     print(distances)
     print()
+    return 0.01
  
  
 
