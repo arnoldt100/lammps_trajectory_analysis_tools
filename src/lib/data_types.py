@@ -8,7 +8,10 @@ import numpy as np
 type AtomCoordinates16 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float16]]
 type AtomCoordinates32 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float32]]
 type AtomCoordinates64 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float64]]
-AtomCoordinates = TypeVar('AtomCoordinates', AtomCoordinates16, AtomCoordinates32, AtomCoordinates64)
+AtomCoordinates = TypeVar('AtomCoordinates',
+                          AtomCoordinates16,
+                          AtomCoordinates32,
+                          AtomCoordinates64)
 
 # A C-contiguous N x 3 array of float types for reciprocal lattice vectors.
 type LatticeVectors16 = np.ndarray[tuple[int,Literal[3]],np.dtype[np.float16]]
@@ -18,3 +21,21 @@ LatticeVectors = TypeVar('LatticeVectors',
                           LatticeVectors16,
                           LatticeVectors32,
                           LatticeVectors64)
+
+# An integer array of Nx2 atom pairs
+type AtomPairs16 = np.ndarray[tuple[int,Literal[2]],np.dtype[np.int16]]
+type AtomPairs32 = np.ndarray[tuple[int,Literal[2]],np.dtype[np.int32]]
+type AtomPairs64 = np.ndarray[tuple[int,Literal[2]],np.dtype[np.int64]]
+AtomPairs = TypeVar("AtomPairs",
+                    AtomPairs16,
+                    AtomPairs32,
+                    AtomPairs64)
+
+# The type for the box dimensions.
+type Box16 =  np.ndarray[tuple[Literal[6]],np.dtype[np.float16]]
+type Box32 =  np.ndarray[tuple[Literal[6]],np.dtype[np.float32]]
+type Box64 =  np.ndarray[tuple[Literal[6]],np.dtype[np.float64]]
+Box = TypeVar("Box",
+               Box16,
+               Box32,
+               Box64)

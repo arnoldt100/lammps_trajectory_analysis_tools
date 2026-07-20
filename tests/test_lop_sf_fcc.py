@@ -33,11 +33,17 @@ class TestLopSfFcc(unittest.TestCase):
         """
 
         """ A FCC structure of 4 atoms with an edge length equal to 1.00 angstroms"""
+        # cls.fcc_coordinates : AtomCoordinates = np.array([
+        #     [0.00,0.00,0.00],
+        #     [0.50,0.50,0.00],
+        #     [0.50,0.00,0.50],
+        #     [0.00,0.50,0.50]])
+
         cls.fcc_coordinates : AtomCoordinates = np.array([
             [0.00,0.00,0.00],
             [0.50,0.50,0.00],
             [0.50,0.00,0.50],
-            [0.00,0.50,0.50]])
+            [0.00,0.00,9.99]])
 
         # We define the edge length of the FCC lattice structure.
         cls.edge_length = np.float64(5.19) # Edge length in angstroms.
@@ -80,7 +86,8 @@ class TestLopSfFcc(unittest.TestCase):
         """  The cutoff for the searching for neighboring atoms. The cutoff
              must be less that half the box length.
         """
-        cls.cutoff = 2.0*cls.edge_length
+        # cls.cutoff = 1.0*cls.edge_length
+        cls.cutoff = 0.5*cls.edge_length
 
         # Create a MD Analysis universe for a single frame.
         cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
@@ -140,9 +147,7 @@ class TestLopSfFcc(unittest.TestCase):
         ar_atoms = self.universe.select_atoms("all")
         box_dimensions =  self.universe.dimensions
         for ts in self.universe.trajectory:
-            ar_atom_positions = ar_atoms.positions 
-            # print(f"box dimensions=\n{ar_atoms.dimensions}")
-            # print(f"ar_atom_positions=\n{ar_atom_positions}")
+            ar_atom_positions = ar_atoms.positions
             calculate_sf_fcc_order_parameter(ar_atom_positions,
                                              self.wave_vectors,cutoff,
                                              box_dimensions)

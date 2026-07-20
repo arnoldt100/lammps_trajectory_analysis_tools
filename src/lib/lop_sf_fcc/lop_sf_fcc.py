@@ -8,13 +8,14 @@ The public members provided by this module are:
 """
 
 # Python standard library imports
-from typing import Any
-import copy
+from typing import Literal, Any
 
 # Third party library imports
 import MDAnalysis as mda
 from MDAnalysis.lib.nsgrid import FastNS
-
+from MDAnalysis.lib.pkdtree import PeriodicKDTree
+from MDAnalysis.lib.distances import distance_array
+from MDAnalysis.lib.distances import calc_bonds
 import numpy as np
 import numpy.typing as npt
 
@@ -22,6 +23,8 @@ import numpy.typing as npt
 from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
 from data_types import AtomCoordinates
 from data_types import LatticeVectors
+from data_types import AtomPairs
+from data_types import Box
 
 # ----------
 # Public members
@@ -110,6 +113,137 @@ def create_wavevectors(fcc_edge_length : np.float64):
     wavevectors = np.array([wv_0,wv_1,wv_2,wv_3,wv_4,wv_5])
     return wavevectors
 
+def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
+                         cutoff : float,
+                         box: Box)->AtomPairs:
+    """ Calculates the atom pairs that are within distance 'cutoff'
+
+    The algorithm assumes that we have periodic boundary conditions of a cubic box.
+    Otherwise one may get indeterminate results.
+
+    Parameters:
+
+        atom_coordinates: The atoms x,y,z atomic coordinates.
+
+        cutoff: The cutoff to search for neighboring atoms.
+
+        box : An numpy 1d array floats of len 6. This is the box dimensions of
+        the atomic coordinates in "atom_coordinates" where:
+            box_dimensions[0] = x-axis length in angstroms
+            box_dimensions[1] = y-axis length in angstroms
+            box_dimensions[2] = z-axis length in angstroms
+            box_dimensions[3] = Angle between y and z axis in degrees
+            box_dimensions[4] = Angle between x and z axis in degrees
+            box_dimensions[5] = Angle between x and y axis in degrees
+
+    Returns:
+        An numpy array of integers of shape (N,2). 
+
+        If the variable 'pairs' is returned, then the k'th pair elements
+        pairs[k,0] and pairs[k,1] are the atomic indices of the pair of atoms.
+        Let i = pairs[k,0], then atom_coordinates[i,:] is coordinates of atom
+        corresponding to pairs[k,0]. Similarly, Let j = pairs[k,1], then
+        atom_coordinates[j,:] is coordinates of atom corresponding to
+        pairs[k,1].
+    """
+
+    kdtree = PeriodicKDTree(box=box)
+    kdtree.set_coords(atom_coordinates,cutoff)
+    pairs = kdtree.search_pairs(cutoff)
+    return pairs
+
+def calculate_atom_pairs_vectors(atom_coordinates: AtomCoordinates,
+                         cutoff: float,
+                         pairs: AtomPairs,
+                         box: Box):
+    """ Calculates the atom displacement vector between the atoms.
+
+    For each atom pair (i,j), we calculate the vector r_j - r_i.
+    The algorithm assumes that we have periodic boundary conditions of a cubic box.
+    Otherwise one may get indeterminate results.
+
+    Parameters:
+
+        atom_coordinates: The atoms x,y,z atomic coordinates.
+
+        cutoff: The cutoff to search for neighboring atoms.
+
+        pairs: The k'th pair, pairs[k,0] and pairs[k,1] are the atomic indices
+        of the pair of atoms. Let i = pairs[k,0], then atom_coordinates[i,:] is
+        coordinates of atom corresponding to pairs[k,0]. Similarly, Let j =
+        pairs[k,1], then atom_coordinates[j,:] is coordinates of atom
+        corresponding to pairs[k,1].
+
+        box : An numpy 1d array floats of len 6. This is the box dimensions of
+
+        the atomic coordinates in "atom_coordinates" where:
+            box_dimensions[0] = x-axis length in angstroms
+            box_dimensions[1] = y-axis length in angstroms
+            box_dimensions[2] = z-axis length in angstroms
+            box_dimensions[3] = Angle between y and z axis in degrees
+            box_dimensions[4] = Angle between x and z axis in degrees
+            box_dimensions[5] = Angle between x and y axis in degrees
+
+    Returns:
+        An numpy array of floats of shape (N,3).
+    """
+    # -- To be implemented. Throw warning for now.
+    raise NotImplementedError
+
+def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
+                                     wave_vectors: LatticeVectors,
+                                     cutoff : float,
+                                     box: Box)-> float:
+    """ Calculates the FCC local order parameter for a set of atom coordinates.
+
+    Parameters:
+        atom_coordinates: The atoms x,y,z atomic coordinates.
+
+        wave_vectors: An numpy array of floats with array shape (N,3) where N
+        is the number of wave vectors. The The [i,:] slice is the i'th
+        wavevector.
+
+        cutoff: The cutoff to search for neighboring atoms.
+
+        box : An numpy 1d array floats of length 6. This is the box dimensions of
+        the atomic coordinates in "atom_coordinates" where:
+            box_dimensions[0] = x-axis length in angstroms
+            box_dimensions[1] = y-axis length in angstroms
+            box_dimensions[2] = z-axis length in angstroms
+            box_dimensions[3] = Angle between y and z axis in degrees
+            box_dimensions[4] = Angle between x and z axis in degrees
+            box_dimensions[5] = Angle between x and y axis in degrees
+    """
+
+    # Test for nsgrid.FastSearch
+    # grid = mda.lib.nsgrid.FastNS(cutoff,atom_coordinates,box=box,pbc=False)
+    # ns_results = grid.self_search()
+    # pairs = ns_results.get_pairs()
+    # distances = ns_results.get_pair_distances()
+    # print("\n --- NSGRID FastNS --- \n")
+    # print("\n=== Box ===")
+    # print(box)
+    # print("\n=== Cutoff ===")
+    # print(cutoff)
+    # print("\n=== Coordinates ===")
+    # print(atom_coordinates)
+    # print("\n=== Pairs ====")
+    # print(pairs)
+    # print("\n=== Distances ====")
+    # print(distances)
+
+    print("\n\n --- PeriodicKDTree --- \n")
+    pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
+    print("\n=== Pairs ====")
+    print(pairs)
+    coords1 = atom_coordinates[pairs[:, 0]]
+    coords2 = atom_coordinates[pairs[:, 1]]
+    distances = calc_bonds(coords1, coords2, box=box)
+    print("\n=== Distances ====")
+    print(distances)
+
+    return 0.01
+
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
 
@@ -126,29 +260,6 @@ class LopSfFcc:
         # reciprocal lattice vectors for this edge length.
         edge_length = np.float64(command_line_arguments.edge_length)
         self.wavevectors = create_wavevectors(edge_length)
-
-def calculate_sf_fcc_order_parameter[T] (atom_coordinates: [T],
-                                     wave_vectors: LatticeVectors,
-                                     cutoff,
-                                     box: np.ndarray[tuple[Literal[6]],np.dtype[np.float32]])-> float:
-    grid = mda.lib.nsgrid.FastNS(cutoff,atom_coordinates,box=box,pbc=False)
-    ns_results = grid.self_search()
-    pairs = ns_results.get_pairs()
-    distances = ns_results.get_pair_distances()
-    print("\n=== Box ===")
-    print(box)
-    print("\n=== Coordinates ===")
-    print(atom_coordinates)
-    print("\n=== Pairs ====")
-    print(pairs)
-    print("\n=== Distances ====")
-    print(distances)
-    print()
-    return 0.01
- 
- 
-
-    return 0.000
 
 # ----------
 # Private members
