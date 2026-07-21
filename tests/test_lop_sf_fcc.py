@@ -17,7 +17,6 @@ from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
 from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
 from data_types import LatticeVectors, AtomCoordinates
 
-
 class TestLopSfFcc(unittest.TestCase):
 
     @classmethod
@@ -32,13 +31,14 @@ class TestLopSfFcc(unittest.TestCase):
         for testing purposes.
         """
 
-        """ A FCC structure of 4 atoms with an edge length equal to 1.00 angstroms"""
+        # """ A FCC structure of 4 atoms with an edge length equal to 1.00 angstroms"""
         # cls.fcc_coordinates : AtomCoordinates = np.array([
         #     [0.00,0.00,0.00],
         #     [0.50,0.50,0.00],
         #     [0.50,0.00,0.50],
         #     [0.00,0.50,0.50]])
 
+        """ A atomic system of 4 atoms with an edge length equal to 1.00 angstroms"""
         cls.fcc_coordinates : AtomCoordinates = np.array([
             [0.00,0.00,0.00],
             [9.99,0.00,0.00],
@@ -75,7 +75,7 @@ class TestLopSfFcc(unittest.TestCase):
         cls.box_dimensions = (np.array([lx,ly,lz,alpha,beta,gamma],dtype=np.float64))
 
         """ The absolute path to the protein """
-        cls.psf_filepath: str = os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf") 
+        cls.psf_filepath: str = os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf")
 
         """ The units of the time step"""
         cls.timeunits: str = "ps"
@@ -88,6 +88,9 @@ class TestLopSfFcc(unittest.TestCase):
         """
         # cls.cutoff = 1.0*cls.edge_length
         cls.cutoff = 0.5*cls.edge_length
+
+        """ The correct atom pairs for cutoff and set of atoms."""
+        cls.correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
 
         # Create a MD Analysis universe for a single frame.
         cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
@@ -136,6 +139,9 @@ class TestLopSfFcc(unittest.TestCase):
                         self.primitive_lattice_vectors[plv_index,:])
             self.assertAlmostEqual(dp,0.00,places,message)
 
+
+    def test_calculate_atom_pairs(self):
+        correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
 
     def test_fcc_ar4(self):
         # The number of decimal places to compare the local FCC order parameter.

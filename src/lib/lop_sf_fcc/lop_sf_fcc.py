@@ -171,8 +171,9 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
         pairs[k,1], then atom_coordinates[j,:] is coordinates of atom
         corresponding to pairs[k,1].
 
-    Returns:
-        An numpy array of floats of shape (N,3). The [k,:] slice is the displacement
+ Returns:
+        calculate_atom_pairs_vectors
+        
         vector from pairs[k,0] to pairs[k,1].
     """
     print("In function calculate_atom_pairs_vectors")
