@@ -41,7 +41,7 @@ class TestLopSfFcc(unittest.TestCase):
 
         cls.fcc_coordinates : AtomCoordinates = np.array([
             [0.00,0.00,0.00],
-            [0.50,0.50,0.00],
+            [9.99,0.00,0.00],
             [0.50,0.00,0.50],
             [0.00,0.00,9.99]])
 
@@ -141,16 +141,13 @@ class TestLopSfFcc(unittest.TestCase):
         # The number of decimal places to compare the local FCC order parameter.
         places = 15
         message = _message_a4_lop_sf()
-        value = 0.01
         cutoff = self.cutoff
 
-        ar_atoms = self.universe.select_atoms("all")
         box_dimensions =  self.universe.dimensions
         for ts in self.universe.trajectory:
-            ar_atom_positions = ar_atoms.positions
-            calculate_sf_fcc_order_parameter(ar_atom_positions,
-                                             self.wave_vectors,cutoff,
-                                             box_dimensions)
+            value = calculate_sf_fcc_order_parameter(self.universe,
+                                             self.wave_vectors,
+                                             cutoff)
 
         self.assertAlmostEqual(value,0.00,places,message)
 

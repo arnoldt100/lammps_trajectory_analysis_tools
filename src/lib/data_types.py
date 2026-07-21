@@ -4,6 +4,11 @@
 from typing import Literal, TypeVar
 import numpy as np
 
+import MDAnalysis as mda
+
+# The type for an MDAnalysis Universe.
+type MDA_Universe = mda.core.universe.Universe
+
 # A C-contiguous N x 3 array of float types for atomic positions
 type AtomCoordinates16 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float16]]
 type AtomCoordinates32 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float32]]

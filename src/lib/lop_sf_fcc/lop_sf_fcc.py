@@ -25,6 +25,7 @@ from data_types import AtomCoordinates
 from data_types import LatticeVectors
 from data_types import AtomPairs
 from data_types import Box
+from data_types import MDA_Universe
 
 # ----------
 # Public members
@@ -152,10 +153,8 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
     pairs = kdtree.search_pairs(cutoff)
     return pairs
 
-def calculate_atom_pairs_vectors(atom_coordinates: AtomCoordinates,
-                         cutoff: float,
-                         pairs: AtomPairs,
-                         box: Box):
+def calculate_atom_pairs_vectors(universe : MDA_Universe,
+                         pairs: AtomPairs):
     """ Calculates the atom displacement vector between the atoms.
 
     For each atom pair (i,j), we calculate the vector r_j - r_i.
@@ -164,9 +163,7 @@ def calculate_atom_pairs_vectors(atom_coordinates: AtomCoordinates,
 
     Parameters:
 
-        atom_coordinates: The atoms x,y,z atomic coordinates.
-
-        cutoff: The cutoff to search for neighboring atoms.
+        univers: The MDAnalysis universe that contains all the atoms.
 
         pairs: The k'th pair, pairs[k,0] and pairs[k,1] are the atomic indices
         of the pair of atoms. Let i = pairs[k,0], then atom_coordinates[i,:] is
@@ -174,75 +171,67 @@ def calculate_atom_pairs_vectors(atom_coordinates: AtomCoordinates,
         pairs[k,1], then atom_coordinates[j,:] is coordinates of atom
         corresponding to pairs[k,1].
 
-        box : An numpy 1d array floats of len 6. This is the box dimensions of
-
-        the atomic coordinates in "atom_coordinates" where:
-            box_dimensions[0] = x-axis length in angstroms
-            box_dimensions[1] = y-axis length in angstroms
-            box_dimensions[2] = z-axis length in angstroms
-            box_dimensions[3] = Angle between y and z axis in degrees
-            box_dimensions[4] = Angle between x and z axis in degrees
-            box_dimensions[5] = Angle between x and y axis in degrees
-
     Returns:
-        An numpy array of floats of shape (N,3).
+        An numpy array of floats of shape (N,3). The [k,:] slice is the displacement
+        vector from pairs[k,0] to pairs[k,1].
     """
-    # -- To be implemented. Throw warning for now.
-    raise NotImplementedError
+    print("In function calculate_atom_pairs_vectors")
+    [nm_rows,nm_cols] = pairs.shape
+    print(f"nm_rows={nm_rows}")
+    print(f"nm_cols={nm_cols}")
 
-def calculate_sf_fcc_order_parameter(atom_coordinates: AtomCoordinates,
+    box_lengths = universe.dimensions[0:3]
+    print(f"box_lenghts={box_lengths}")
+
+    initial_atoms_indices_data = pairs[:,0:1]
+    initial_atoms_indices = initial_atoms_indices_data.flatten()
+    initial_atoms_group = universe.atoms[initial_atoms_indices]
+    initial_atoms_positions = initial_atoms_group.positions
+
+    final_atoms_indices_data = pairs[:,1:2]
+    final_atoms_indices = final_atoms_indices_data.flatten()
+    final_atoms_group = universe.atoms[final_atoms_indices]
+    final_atoms_positions = final_atoms_group.positions
+
+    print(f"initial atom indices={initial_atoms_indices}")
+    print(f"initial atom positions={initial_atoms_positions}")
+    print(f"final atom indices={final_atoms_indices}")
+    print(f"final atom positions={final_atoms_positions}")
+    disp_vectors = final_atoms_positions - initial_atoms_positions 
+    atom_pair_vectors = disp_vectors - box_lengths * np.round(disp_vectors / box_lengths)
+
+    print("Leaving function calculate_atom_pairs_vectors")
+    return atom_pair_vectors
+
+def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
-                                     cutoff : float,
-                                     box: Box)-> float:
+                                     cutoff : float)->float:
     """ Calculates the FCC local order parameter for a set of atom coordinates.
 
     Parameters:
-        atom_coordinates: The atoms x,y,z atomic coordinates.
+        univers: The MDAnalysis universe that contains all the atoms.
 
         wave_vectors: An numpy array of floats with array shape (N,3) where N
         is the number of wave vectors. The The [i,:] slice is the i'th
         wavevector.
 
         cutoff: The cutoff to search for neighboring atoms.
-
-        box : An numpy 1d array floats of length 6. This is the box dimensions of
-        the atomic coordinates in "atom_coordinates" where:
-            box_dimensions[0] = x-axis length in angstroms
-            box_dimensions[1] = y-axis length in angstroms
-            box_dimensions[2] = z-axis length in angstroms
-            box_dimensions[3] = Angle between y and z axis in degrees
-            box_dimensions[4] = Angle between x and z axis in degrees
-            box_dimensions[5] = Angle between x and y axis in degrees
     """
 
-    # Test for nsgrid.FastSearch
-    # grid = mda.lib.nsgrid.FastNS(cutoff,atom_coordinates,box=box,pbc=False)
-    # ns_results = grid.self_search()
-    # pairs = ns_results.get_pairs()
-    # distances = ns_results.get_pair_distances()
-    # print("\n --- NSGRID FastNS --- \n")
-    # print("\n=== Box ===")
-    # print(box)
-    # print("\n=== Cutoff ===")
-    # print(cutoff)
-    # print("\n=== Coordinates ===")
-    # print(atom_coordinates)
-    # print("\n=== Pairs ====")
-    # print(pairs)
-    # print("\n=== Distances ====")
-    # print(distances)
-
+    ar_atoms = universe.select_atoms("all")
+    atom_coordinates = ar_atoms.positions
+    box = universe.dimensions
     print("\n\n --- PeriodicKDTree --- \n")
     pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
     print("\n=== Pairs ====")
     print(pairs)
     coords1 = atom_coordinates[pairs[:, 0]]
     coords2 = atom_coordinates[pairs[:, 1]]
-    distances = calc_bonds(coords1, coords2, box=box)
-    print("\n=== Distances ====")
-    print(distances)
+    atom_pairs_vectors = calculate_atom_pairs_vectors(universe,pairs)
+    print("\n=== Atom Pairs Vectors ====")
+    print(atom_pairs_vectors)
 
-    return 0.01
+    return 0.02
 
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
