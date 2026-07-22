@@ -44,3 +44,15 @@ Box = TypeVar("Box",
                Box16,
                Box32,
                Box64)
+
+# The type for the magnitude of time step.
+type TimeStep16 = np.float16
+type TimeStep32 = np.float32
+type TimeStep64 = np.float64
+TimeStep = TypeVar("TimeStep",
+                   TimeStep16,
+                   TimeStep32,
+                   TimeStep64)
+
+# The type for the units of time step.
+type TimeUnits = str

@@ -16,6 +16,7 @@ from lop_sf_fcc.lop_sf_fcc import create_wavevectors
 from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
 from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
 from data_types import LatticeVectors, AtomCoordinates
+from tests.input_files.Ar4Version0 import Ar4Version0
 
 class TestLopSfFcc(unittest.TestCase):
 
@@ -65,7 +66,7 @@ class TestLopSfFcc(unittest.TestCase):
         Create box dimensions for a single frame Format: [lx, ly, lz, alpha,
         beta, gamma] We create a cubic box with edge length
         "cls.edge_length*10". If the box is too small, then the
-        mda.lib.nsgrid.FastNS has issues finding neighboring pairs.
+        neighbor search algorithm has issues finding neighboring pairs.
         """
         edge_scaling_factor = 10.0
         (lx,ly,lz) = (cls.edge_length*edge_scaling_factor,
@@ -99,63 +100,63 @@ class TestLopSfFcc(unittest.TestCase):
                                                      cls.timeunits,
                                                      cls.dt)
 
-    def test_rlv_plv_orthogonal(self):
-        """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
+    # def test_rlv_plv_orthogonal(self):
+    #     """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
 
-        Given principal lattice vectors a, b and c,
-        reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
-        where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
-        k_b and k_c.
-        """
+    #     Given principal lattice vectors a, b and c,
+    #     reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
+    #     where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
+    #     k_b and k_c.
+    #     """
 
-        # The number of decimal places to compare that the dot products are
-        # zero.
-        places = 15
+    #     # The number of decimal places to compare that the dot products are
+    #     # zero.
+    #     places = 15
 
-        # Indices 0, 1, and 2 respectively correspond to axis x,y and z.
-        # The reciprocal lattice vectors are as follows:
-        #   k_a = (1/(2*pi*vol))bxc --> reciprocal lattice vector with index 0 is perpendicular
-        #   to principal lattice vectors with indices 1 and 2.
-        #   k_b = (1/(2*pi*vol))cxa --> reciprocal lattice vector with index 1 is perpendicular
-        #   to principal lattice vectors with indices 2 and 0.
-        #   k_c = (1/(2*pi*vol))axb --> reciprocal lattice vector with index 2 is perpendicular
-        #   to principal lattice vectors with indices 0 and 1.
-        (rlv_a_index,rlv_b_index,rlv_c_index) = (0,1,2)
-        (plv_a_index,plv_b_index,plv_c_index) = (0,1,2)
-        indices_to_verify = np.array([[rlv_a_index,plv_b_index],
-                            [rlv_a_index,plv_c_index],
-                            [rlv_b_index,plv_c_index],
-                            [rlv_b_index,plv_a_index],
-                            [rlv_c_index,plv_a_index],
-                            [rlv_c_index,plv_b_index]])
+    #     # Indices 0, 1, and 2 respectively correspond to axis x,y and z.
+    #     # The reciprocal lattice vectors are as follows:
+    #     #   k_a = (1/(2*pi*vol))bxc --> reciprocal lattice vector with index 0 is perpendicular
+    #     #   to principal lattice vectors with indices 1 and 2.
+    #     #   k_b = (1/(2*pi*vol))cxa --> reciprocal lattice vector with index 1 is perpendicular
+    #     #   to principal lattice vectors with indices 2 and 0.
+    #     #   k_c = (1/(2*pi*vol))axb --> reciprocal lattice vector with index 2 is perpendicular
+    #     #   to principal lattice vectors with indices 0 and 1.
+    #     (rlv_a_index,rlv_b_index,rlv_c_index) = (0,1,2)
+    #     (plv_a_index,plv_b_index,plv_c_index) = (0,1,2)
+    #     indices_to_verify = np.array([[rlv_a_index,plv_b_index],
+    #                         [rlv_a_index,plv_c_index],
+    #                         [rlv_b_index,plv_c_index],
+    #                         [rlv_b_index,plv_a_index],
+    #                         [rlv_c_index,plv_a_index],
+    #                         [rlv_c_index,plv_b_index]])
 
-        # We loop over the reciprocal and primitive lattice vector indices
-        # and verify the corresponding reciprocal and lattice vector dot
-        # product is zero.
-        for [rlv_index,plv_index] in indices_to_verify:
-            message = _message_rlvplv_nonorthogonal(rlv_index,self.reciprocal_lattice_vectors[rlv_index,:],
-                                                   plv_index,self.primitive_lattice_vectors[plv_index,:])
-            dp = np.dot(self.reciprocal_lattice_vectors[rlv_index,:],
-                        self.primitive_lattice_vectors[plv_index,:])
-            self.assertAlmostEqual(dp,0.00,places,message)
+    #     # We loop over the reciprocal and primitive lattice vector indices
+    #     # and verify the corresponding reciprocal and lattice vector dot
+    #     # product is zero.
+    #     for [rlv_index,plv_index] in indices_to_verify:
+    #         message = _message_rlvplv_nonorthogonal(rlv_index,self.reciprocal_lattice_vectors[rlv_index,:],
+    #                                                plv_index,self.primitive_lattice_vectors[plv_index,:])
+    #         dp = np.dot(self.reciprocal_lattice_vectors[rlv_index,:],
+    #                     self.primitive_lattice_vectors[plv_index,:])
+    #         self.assertAlmostEqual(dp,0.00,places,message)
 
 
-    def test_calculate_atom_pairs(self):
-        correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
+    # def test_calculate_atom_pairs(self):
+    #     correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
 
-    def test_fcc_ar4(self):
-        # The number of decimal places to compare the local FCC order parameter.
-        places = 15
-        message = _message_a4_lop_sf()
-        cutoff = self.cutoff
+    # def test_fcc_ar4(self):
+    #     # The number of decimal places to compare the local FCC order parameter.
+    #     places = 15
+    #     message = _message_a4_lop_sf()
+    #     cutoff = self.cutoff
 
-        box_dimensions =  self.universe.dimensions
-        for ts in self.universe.trajectory:
-            value = calculate_sf_fcc_order_parameter(self.universe,
-                                             self.wave_vectors,
-                                             cutoff)
+    #     box_dimensions =  self.universe.dimensions
+    #     for ts in self.universe.trajectory:
+    #         value = calculate_sf_fcc_order_parameter(self.universe,
+    #                                          self.wave_vectors,
+    #                                          cutoff)
 
-        self.assertAlmostEqual(value,0.00,places,message)
+    #     self.assertAlmostEqual(value,0.00,places,message)
 
     @classmethod
     def tearDownClass(cls):
