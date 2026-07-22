@@ -32,83 +32,34 @@ class TestLopSfFcc(unittest.TestCase):
         for testing purposes.
         """
 
-        # """ A FCC structure of 4 atoms with an edge length equal to 1.00 angstroms"""
-        # cls.fcc_coordinates : AtomCoordinates = np.array([
-        #     [0.00,0.00,0.00],
-        #     [0.50,0.50,0.00],
-        #     [0.50,0.00,0.50],
-        #     [0.00,0.50,0.50]])
+        cls.test_cases = [Ar4Version0()]
 
-        """ A atomic system of 4 atoms with an edge length equal to 1.00 angstroms"""
-        cls.fcc_coordinates : AtomCoordinates = np.array([
-            [0.00,0.00,0.00],
-            [9.99,0.00,0.00],
-            [0.50,0.00,0.50],
-            [0.00,0.00,9.99]])
+        cls.universes = []
+        for test_item in cls.test_cases:
+            cls.universes.append(test_item.create_md_analysis_universe())
 
-        # We define the edge length of the FCC lattice structure.
-        cls.edge_length = np.float64(5.19) # Edge length in angstroms.
+        # """ The correct atom pairs for cutoff and set of atoms."""
+        # cls.correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
 
-        """ The atoms atomic coordinates. """
-        cls.atomic_coordinates : AtomCoordinates = cls.edge_length*cls.fcc_coordinates
+        # # Create a MD Analysis universe for a single frame.
+        # cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
+        #                                              cls.box_dimensions,
+        #                                              cls.psf_filepath,
+        #                                              cls.timeunits,
+        #                                              cls.dt)
 
-        """ The lattice vectors of the FCC structure. """
-        cls.primitive_lattice_vectors : LatticeVectors = create_primitive_lattice_vectors(cls.edge_length)
-
-        """ The reciprocal lattice vectors of the FCC structure. """
-        cls.reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(cls.edge_length)
-
-        """ The wave vectors of the FCC lattice. """
-        cls.wave_vectors = create_wavevectors(cls.edge_length)
-
-        """ The box dimensions of all trajectories.
-
-        Create box dimensions for a single frame Format: [lx, ly, lz, alpha,
-        beta, gamma] We create a cubic box with edge length
-        "cls.edge_length*10". If the box is too small, then the
-        neighbor search algorithm has issues finding neighboring pairs.
+    def test_rlv_plv_ortogonal(self):
+        """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
+ 
+        Given principal lattice vectors a, b and c,
+        reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
+        where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
+        k_b and k_c.
         """
-        edge_scaling_factor = 10.0
-        (lx,ly,lz) = (cls.edge_length*edge_scaling_factor,
-                      cls.edge_length*edge_scaling_factor,
-                      cls.edge_length*edge_scaling_factor)
-        (alpha,beta,gamma) = (90.0,90.0,90.0)
-        cls.box_dimensions = (np.array([lx,ly,lz,alpha,beta,gamma],dtype=np.float64))
-
-        """ The absolute path to the protein """
-        cls.psf_filepath: str = os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf")
-
-        """ The units of the time step"""
-        cls.timeunits: str = "ps"
-
-        """ The magnitude of the time step. """
-        cls.dt: float = 1.0
-
-        """  The cutoff for the searching for neighboring atoms. The cutoff
-             must be less that half the box length.
-        """
-        # cls.cutoff = 1.0*cls.edge_length
-        cls.cutoff = 0.5*cls.edge_length
-
-        """ The correct atom pairs for cutoff and set of atoms."""
-        cls.correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
-
-        # Create a MD Analysis universe for a single frame.
-        cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
-                                                     cls.box_dimensions,
-                                                     cls.psf_filepath,
-                                                     cls.timeunits,
-                                                     cls.dt)
+        for test_structure in self.test_cases:
+            pass
 
     # def test_rlv_plv_orthogonal(self):
-    #     """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
-
-    #     Given principal lattice vectors a, b and c,
-    #     reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
-    #     where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
-    #     k_b and k_c.
-    #     """
-
     #     # The number of decimal places to compare that the dot products are
     #     # zero.
     #     places = 15
@@ -212,7 +163,7 @@ def _create_universe_single_frame(atom_coordinates: AtomCoordinates, box_dimensi
 
     timesunits : A string of the time units. 
 
-    dt : The magnitude of the time step. 
+    dt : The magnitude of the time step.
 
     """
     nm_frames = 1
