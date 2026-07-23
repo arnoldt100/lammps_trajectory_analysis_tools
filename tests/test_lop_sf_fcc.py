@@ -122,8 +122,13 @@ class TestLopSfFcc(unittest.TestCase):
         """ Test if the reciprocal lattice vectors are correct."""
         for (test_structure,test_universe) in self.test_cases:
             test_structure_identification = test_structure.structure_identification
+            edge_length = test_structure.lattice_edge_length
+            exp_reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(edge_length )
+            correct_reciprocal_lattice_vectors = test_structure.reciprocal_lattice_vectors
 
-            _correct_reciprocal_lattice_vectors = test_structure.reciprocal_lattice_vectors
+            # The number of decimal places to compare the local FCC order parameter.
+            tolerance = 1e-8
+            close_enough = np.allclose(exp_reciprocal_lattice_vectors,correct_reciprocal_lattice_vectors,atol=tolerance)
 
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.

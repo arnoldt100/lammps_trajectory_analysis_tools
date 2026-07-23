@@ -157,6 +157,10 @@ class Ar4Version0:
     @property
     def primitive_lattice_vectors(self)->LatticeVectors:
         return self._primitive_lattice_vectors
+    
+    @property
+    def lattice_edge_length(self)->np.float64:
+        return self._edge_length
 
     @property
     def correct_atom_pairs(self)->AtomPairs:

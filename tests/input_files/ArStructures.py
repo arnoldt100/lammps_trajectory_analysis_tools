@@ -50,6 +50,10 @@ class ArLOPFCCTestStructure(Protocol):
         raise NotImplementedError
 
     @property
+    def lattice_edge_length(self)->np.float64:
+        raise NotImplementedError
+
+    @property
     def reciprocal_lattice_vectors(self)->LatticeVectors:
         raise NotImplementedError
 
