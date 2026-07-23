@@ -147,6 +147,15 @@ class Ar4Version0:
     def cutoff(self)->np.float64:
         return self._cutoff
 
+    @property
+    def reciprocal_lattice_vectors(self)->LatticeVectors:
+        return self._reciprocal_lattice_vectors
+
+    @property
+    def primitive_lattice_vectors(self)->LatticeVectors:
+        return self._primitive_lattice_vectors
+
+
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.
 

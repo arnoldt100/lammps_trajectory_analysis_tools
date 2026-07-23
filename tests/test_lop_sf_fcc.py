@@ -38,59 +38,45 @@ class TestLopSfFcc(unittest.TestCase):
         for test_item in cls.test_cases:
             cls.universes.append(test_item.create_md_analysis_universe())
 
-        # """ The correct atom pairs for cutoff and set of atoms."""
-        # cls.correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
+def verify_rlv_plv_ortogonal(test_item):
+    """ Verifies the orthogonality of the principal and reciprocal lattice vectors.
 
-        # # Create a MD Analysis universe for a single frame.
-        # cls.universe = _create_universe_single_frame(cls.atomic_coordinates,
-        #                                              cls.box_dimensions,
-        #                                              cls.psf_filepath,
-        #                                              cls.timeunits,
-        #                                              cls.dt)
+    Given principal lattice vectors a, b and c,
+    reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
+    where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
+    k_b and k_c.
+    """
 
-    def test_rlv_plv_ortogonal(self):
-        """ This test verifies the orthogonality of the principal and reciprocal lattice vectors.
- 
-        Given principal lattice vectors a, b and c,
-        reciprocal lattice vector k_a is formed by k_a = (1/(2*pi*vol))bxc
-        where vol = (axb)*c. This means k_a*b and k_a*c must equal 0. Similarly for
-        k_b and k_c.
-        """
-        for test_structure in self.test_cases:
-            pass
+    # The number of decimal places to compare that the dot products are
+    # zero.
+    places = 15
 
-    # def test_rlv_plv_orthogonal(self):
-    #     # The number of decimal places to compare that the dot products are
-    #     # zero.
-    #     places = 15
+    # Indices 0, 1, and 2 respectively correspond to axis x,y and z.
+    # The reciprocal lattice vectors are as follows:
+    #   k_a = (1/(2*pi*vol))bxc --> reciprocal lattice vector with index 0 is perpendicular
+    #   to principal lattice vectors with indices 1 and 2.
+    #   k_b = (1/(2*pi*vol))cxa --> reciprocal lattice vector with index 1 is perpendicular
+    #   to principal lattice vectors with indices 2 and 0.
+    #   k_c = (1/(2*pi*vol))axb --> reciprocal lattice vector with index 2 is perpendicular
+    #   to principal lattice vectors with indices 0 and 1.
+    (rlv_a_index,rlv_b_index,rlv_c_index) = (0,1,2)
+    (plv_a_index,plv_b_index,plv_c_index) = (0,1,2)
+    indices_to_verify = np.array([[rlv_a_index,plv_b_index],
+                        [rlv_a_index,plv_c_index],
+                        [rlv_b_index,plv_c_index],
+                        [rlv_b_index,plv_a_index],
+                        [rlv_c_index,plv_a_index],
+                        [rlv_c_index,plv_b_index]])
 
-    #     # Indices 0, 1, and 2 respectively correspond to axis x,y and z.
-    #     # The reciprocal lattice vectors are as follows:
-    #     #   k_a = (1/(2*pi*vol))bxc --> reciprocal lattice vector with index 0 is perpendicular
-    #     #   to principal lattice vectors with indices 1 and 2.
-    #     #   k_b = (1/(2*pi*vol))cxa --> reciprocal lattice vector with index 1 is perpendicular
-    #     #   to principal lattice vectors with indices 2 and 0.
-    #     #   k_c = (1/(2*pi*vol))axb --> reciprocal lattice vector with index 2 is perpendicular
-    #     #   to principal lattice vectors with indices 0 and 1.
-    #     (rlv_a_index,rlv_b_index,rlv_c_index) = (0,1,2)
-    #     (plv_a_index,plv_b_index,plv_c_index) = (0,1,2)
-    #     indices_to_verify = np.array([[rlv_a_index,plv_b_index],
-    #                         [rlv_a_index,plv_c_index],
-    #                         [rlv_b_index,plv_c_index],
-    #                         [rlv_b_index,plv_a_index],
-    #                         [rlv_c_index,plv_a_index],
-    #                         [rlv_c_index,plv_b_index]])
-
-    #     # We loop over the reciprocal and primitive lattice vector indices
-    #     # and verify the corresponding reciprocal and lattice vector dot
-    #     # product is zero.
-    #     for [rlv_index,plv_index] in indices_to_verify:
-    #         message = _message_rlvplv_nonorthogonal(rlv_index,self.reciprocal_lattice_vectors[rlv_index,:],
-    #                                                plv_index,self.primitive_lattice_vectors[plv_index,:])
-    #         dp = np.dot(self.reciprocal_lattice_vectors[rlv_index,:],
-    #                     self.primitive_lattice_vectors[plv_index,:])
-    #         self.assertAlmostEqual(dp,0.00,places,message)
-
+    # We loop over the reciprocal and primitive lattice vector indices
+    # and verify the corresponding reciprocal and lattice vector dot
+    # product is zero.
+    for [rlv_index,plv_index] in indices_to_verify:
+        message = _message_rlvplv_nonorthogonal(rlv_index,self.reciprocal_lattice_vectors[rlv_index,:],
+                                               plv_index,self.primitive_lattice_vectors[plv_index,:])
+        dp = np.dot(self.reciprocal_lattice_vectors[rlv_index,:],
+                    self.primitive_lattice_vectors[plv_index,:])
+        self.assertAlmostEqual(dp,0.00,places,message)
 
     # def test_calculate_atom_pairs(self):
     #     correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])

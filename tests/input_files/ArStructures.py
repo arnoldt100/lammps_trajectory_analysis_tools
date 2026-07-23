@@ -11,7 +11,7 @@ import numpy as np
 
 # Local Library package imports
 from data_types import MDA_Universe
-from data_types import AtomCoordinates
+from data_types import AtomCoordinates, LatticeVectors
 from data_types import TimeStep,TimeUnits
 from data_types import Box
 
@@ -42,4 +42,12 @@ class ArLOPFCCTestStructure(Protocol):
 
     @property
     def cutoff(self)->np.float64:
+        raise NotImplementedError
+
+    @property
+    def reciprocal_lattice_vectors(self)->LatticeVectors:
+        raise NotImplementedError
+
+    @property
+    def primitive_lattice_vectors(self)->LatticeVectors:
         raise NotImplementedError
