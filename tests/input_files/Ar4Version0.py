@@ -124,6 +124,10 @@ class Ar4Version0:
         return universe
 
     @property
+    def structure_identification(self):
+        return "Ar4Version0"
+
+    @property
     def coordinates(self)->AtomCoordinates:
         return self._coordinates
 

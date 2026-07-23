@@ -21,6 +21,10 @@ class ArLOPFCCTestStructure(Protocol):
         raise NotImplementedError
 
     @property
+    def structure_identification(self):
+        raise NotImplementedError
+
+    @property
     def coordinates(self)->AtomCoordinates:
         raise NotImplementedError
 
