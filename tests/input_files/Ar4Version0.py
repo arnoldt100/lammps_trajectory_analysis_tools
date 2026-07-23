@@ -20,6 +20,7 @@ from data_types import AtomCoordinates,LatticeVectors
 from data_types import AtomPairs
 from data_types import TimeStep, TimeUnits
 from data_types import Box
+from data_types import AtomPairs
 
 class Ar4Version0:
     def __init__(self):
@@ -63,8 +64,6 @@ class Ar4Version0:
         """ The reciprocal lattice vectors of the FCC structure. """
         self._reciprocal_lattice_vectors: LatticeVectors = (
             create_reciprocal_lattice_vectors(self._edge_length))
-
-        print(f"reciprocal lattice vectors={self._reciprocal_lattice_vectors}")
 
         """ The lattice vectors of the FCC structure. """
         self._primitive_lattice_vectors: LatticeVectors = (
@@ -159,6 +158,9 @@ class Ar4Version0:
     def primitive_lattice_vectors(self)->LatticeVectors:
         return self._primitive_lattice_vectors
 
+    @property
+    def correct_atom_pairs(self)->AtomPairs:
+        return self._correct_atom_pairs
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.

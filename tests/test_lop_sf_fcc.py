@@ -15,6 +15,7 @@ from lop_sf_fcc.lop_sf_fcc import calculate_sf_fcc_order_parameter
 from lop_sf_fcc.lop_sf_fcc import create_wavevectors
 from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
 from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
+from lop_sf_fcc.lop_sf_fcc import calculate_atom_pairs
 from data_types import LatticeVectors, AtomCoordinates
 from tests.input_files.Ar4Version0 import Ar4Version0
 
@@ -85,10 +86,44 @@ class TestLopSfFcc(unittest.TestCase):
                             test_structure.primitive_lattice_vectors[plv_index,:])
                 self.assertAlmostEqual(dp,0.00,places,message)
 
-    def test_calculate_atom_pairs(self):
+    def test_neighbor_atom_pairs(self):
         """ Verifies the correct atom neighbor pairs are formed for each test case
         """
-        correct_atom_pairs = np.array([[0,1],[0,3],[1,3]])
+        for (test_structure,test_universe) in self.test_cases:
+            test_structure_identification = test_structure.structure_identification
+
+            # Get the correct atom pairs for the test structure.
+            correct_atom_pairs = test_structure.correct_atom_pairs
+
+            # Compute the atom pairs for the MDAnalysis universe as done in the
+            # "lop_sf_fcc.py" module.
+            all_atoms = test_universe.select_atoms("all")
+            atom_coordinates = all_atoms.positions
+            box = test_universe.dimensions
+            cutoff = test_structure.cutoff
+            exp_atom_pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
+
+            # The exp_atom_pairs must have unique pairs.
+            exp_atom_pairs_unique,exp_counts = (
+                np.unique(exp_atom_pairs,axis=0,return_counts=True))
+            message = _message_non_unique_pairs(test_structure_identification,
+                                                exp_atom_pairs_unique,
+                                                exp_counts)
+            self.assertEqual(exp_counts.all() == 1,True,message)
+
+            # The exp_atom_pairs_unique must equal the correct_atom_pairs.
+            correct_atom_pairs_unique = np.unique(correct_atom_pairs,axis=0)
+            message = _message_incorrect_atom_pairs(test_structure_identification,
+                                                    exp_atom_pairs_unique,
+                                                    correct_atom_pairs)
+            self.assertEqual(np.array_equal(exp_atom_pairs_unique,correct_atom_pairs_unique),True,message)
+
+    def test_reciprocal_lattice_vectors(self):
+        """ Test if the reciprocal lattice vectors are correct."""
+        for (test_structure,test_universe) in self.test_cases:
+            test_structure_identification = test_structure.structure_identification
+
+            _correct_reciprocal_lattice_vectors = test_structure.reciprocal_lattice_vectors
 
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.
@@ -126,50 +161,29 @@ def _message_rlvplv_nonorthogonal(test_structure_identification,
     plv : A principal lattice vector.
 
     """
-    # The 1 index primitive lattice vector should be orthogonal to
-    # the 2 and 0 index reciprocal lattice vectors.
-    plv_index = 1
-    rlv_index = 2
     message = f"\nThe {test_structure_identification} index {rlv_index} reciprocal lattice vector isn't orthogonal\n"
     message += f"to the {plv_index} index primitive lattice vector.\n"
     message += f"reciprocal_lattice_vector[{rlv_index}]={rlv}\n"
     message += f"primitive_lattice_vector[{plv_index}]={plv}\n"
     return message
 
+def _message_non_unique_pairs(test_structure_identification,
+                              atoms_pairs,atom_pairs_counts )->str:
+    message = f"\nThe {test_structure_identification} has some nonunique atom pairs.\n"
+    message += f"The atom pairs found are:\n{atoms_pairs}\n"
+    message += f"The atom pairs counts are:\n{atom_pairs_counts}\n"
+    return message
+
+def _message_incorrect_atom_pairs(test_structure_identification,
+                                  exp_atom_pairs,correct_atom_pairs)->str:
+    message = f"\nThe {test_structure_identification} has some incorect atom pairs.\n"
+    message += f"The experimental atom pairs found are:\n{exp_atom_pairs}\n"
+    message += f"The correct atom pairs are:\n{correct_atom_pairs}\n"
+    return message
+
 def _message_a4_lop_sf():
     message = "The local order parameter fcc structure factor is wrong."
     return message
-
-def _create_universe_single_frame(atom_coordinates: AtomCoordinates, box_dimensions, psf_filepath: str,
-                     timeunits: str, dt: float):
-    """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
-
-    atom_coordinates : An numpy array of floats of shape (nm_atoms,3). 
-
-    box_dimensions : An numpy 1d array floats of len 6. This is the box dimensions of
-    the atomic coordinates in "atom_coordinates" where:
-        box_dimensions[0] = x-axis length in angstroms
-        box_dimensions[1] = y-axis length in angstroms
-        box_dimensions[2] = z-axis length in angstroms
-        box_dimensions[3] = Angle between y and z axis in degrees
-        box_dimensions[4] = Angle between x and z axis in degrees
-        box_dimensions[5] = Angle between x and y axis in degrees
-
-    psf_filepath : A string of the file path to the psf of "atom_coordinates". 
-
-    timesunits : A string of the time units. 
-
-    dt : The magnitude of the time step.
-
-    """
-    nm_frames = 1
-    (nm_atoms,_) =  atom_coordinates.shape
-    box_array = np.array([box_dimensions for _ in range(nm_frames)])
-    trajectory = np.array([atom_coordinates for _ in range(nm_frames)])
-    universe  = mda.Universe(psf_filepath,trajectory,format=MemoryReader,dt=dt,
-       dimensions=box_array)
-
-    return universe
 
 if __name__ == "__main__":
     unittest.main()

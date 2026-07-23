@@ -117,7 +117,7 @@ def create_wavevectors(fcc_edge_length : np.float64):
 def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
                          cutoff : float,
                          box: Box)->AtomPairs:
-    """ Calculates the atom pairs that are within distance 'cutoff'
+    """ Calculates the atom unique pairs that are within distance 'cutoff'
 
     The algorithm assumes that we have periodic boundary conditions of a cubic box.
     Otherwise one may get indeterminate results.

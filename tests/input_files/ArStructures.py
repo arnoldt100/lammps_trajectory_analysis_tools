@@ -14,6 +14,7 @@ from data_types import MDA_Universe
 from data_types import AtomCoordinates, LatticeVectors
 from data_types import TimeStep,TimeUnits
 from data_types import Box
+from data_types import AtomPairs
 
 class ArLOPFCCTestStructure(Protocol):
 
@@ -55,3 +56,8 @@ class ArLOPFCCTestStructure(Protocol):
     @property
     def primitive_lattice_vectors(self)->LatticeVectors:
         raise NotImplementedError
+
+    @property
+    def correct_atom_pairs(self)->AtomPairs:
+        raise NotImplementedError
+
