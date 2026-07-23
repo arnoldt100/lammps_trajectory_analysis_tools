@@ -63,11 +63,12 @@ def create_reciprocal_lattice_vectors(fcc_edge_length : np.float64):
     """ Returns a complex numpy array of shape (3,3).
 
     Parameters:
-        fcc_edge_length : The length in angstroms of the fcc lattice structure
-        edge.
+        fcc_edge_length : The length in angstroms of the fcc lattice structure 
+                          edge.
 
-    Returns: An numpy array of shape (3,3) where each element is a real
-    number. The [i,:] slice is the i'th reciprocal lattice vector.
+    Return:
+        An numpy array of shape (3,3) where each element is a real
+        number. The [i,:] slice is the i'th reciprocal lattice vector.
     """
 
     # Define the primitive lattice vectors.
@@ -122,7 +123,7 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
     The algorithm assumes that we have periodic boundary conditions of a cubic box.
     Otherwise one may get indeterminate results.
 
-    Parameters:
+    Args:
 
         atom_coordinates: The atoms x,y,z atomic coordinates.
 
@@ -138,7 +139,7 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
             box_dimensions[5] = Angle between x and y axis in degrees
 
     Returns:
-        An numpy array of integers of shape (N,2). 
+        AtomPairs: An numpy array of integers of shape (N,2). 
 
         If the variable 'pairs' is returned, then the k'th pair elements
         pairs[k,0] and pairs[k,1] are the atomic indices of the pair of atoms.

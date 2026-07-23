@@ -123,12 +123,28 @@ class TestLopSfFcc(unittest.TestCase):
         for (test_structure,test_universe) in self.test_cases:
             test_structure_identification = test_structure.structure_identification
             edge_length = test_structure.lattice_edge_length
-            exp_reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(edge_length )
+            exp_reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(edge_length)
             correct_reciprocal_lattice_vectors = test_structure.reciprocal_lattice_vectors
 
             # The number of decimal places to compare the local FCC order parameter.
             tolerance = 1e-8
             close_enough = np.allclose(exp_reciprocal_lattice_vectors,correct_reciprocal_lattice_vectors,atol=tolerance)
+
+    def test_wave_vectors(self):
+        """ Test if the wave vectors are correct."""
+        for (test_structure,test_universe) in self.test_cases:
+            test_structure_identification = test_structure.structure_identification
+            edge_length = test_structure.lattice_edge_length
+            exp_wave_vectors = create_wavevectors(edge_length)
+            correct_wave_vectors = test_structure.wave_vectors
+
+            # The number of decimal places to compare the local FCC order parameter.
+            tolerance = 1e-8
+            close_enough = np.allclose(exp_wave_vectors,correct_wave_vectors,atol=tolerance)
+            message = _message_incorrect_wave_vectors(test_structure_identification,
+                                                      exp_wave_vectors,
+                                                      correct_wave_vectors)
+            self.assertEqual(close_enough,True,message)
 
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.
@@ -186,6 +202,11 @@ def _message_incorrect_atom_pairs(test_structure_identification,
     message += f"The correct atom pairs are:\n{correct_atom_pairs}\n"
     return message
 
+def _message_incorrect_wave_vectors(test_structure_identification,
+                                    exp_wave_vectors,correct_wave_vectors)->str:
+    message = f"\nThe {test_structure_identification} has some incorect wave vectors.\n"
+    message += f"The experimental wave vectors found are:\n{exp_wave_vectors}\n"
+    message += f"The correct wave vectors are:\n{correct_wave_vectors}\n"
 def _message_a4_lop_sf():
     message = "The local order parameter fcc structure factor is wrong."
     return message
