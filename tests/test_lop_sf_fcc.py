@@ -1,22 +1,27 @@
 #! /usr/bin/env python3
 
 # Python standard library imports
-import unittest
 import os
+import unittest
+
 
 # Third party library imports
+import MDAnalysis as mda
 import numpy as np
 import numpy.typing as npt
-import MDAnalysis as mda
-from MDAnalysis.coordinates.memory import MemoryReader
+
 
 # Local Library package imports
-from lop_sf_fcc.lop_sf_fcc import calculate_sf_fcc_order_parameter
-from lop_sf_fcc.lop_sf_fcc import create_wavevectors
-from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
-from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
-from lop_sf_fcc.lop_sf_fcc import calculate_atom_pairs
-from data_types import LatticeVectors, AtomCoordinates
+from data_types import AtomCoordinates, LatticeVectors
+from lop_sf_fcc.lop_sf_fcc import (
+    calculate_atom_pairs,
+    calculate_sf_fcc_order_parameter,
+    create_primitive_lattice_vectors,
+    create_reciprocal_lattice_vectors,
+    create_wavevectors,
+)
+from MDAnalysis.coordinates.memory import MemoryReader
+
 from tests.input_files.Ar4Version0 import Ar4Version0
 
 all_test_structures = [Ar4Version0]
@@ -30,9 +35,9 @@ class TestLopSfFcc(unittest.TestCase):
         Given an FCC lattice with edge length "edge_length", a FCC structure of
         4 atoms is created. The atoms are then placed in a cubic box where each
         side is length 10*edge_length. The PSF file is read from disk. The
-        number of atoms must be 4 atoms to match the PSF file. The atomic coordinates,
-        box dimensions, and PSF are then used to create a single frame MDAnalysis universe
-        for testing purposes.
+        number of atoms must be 4 atoms to match the PSF file. The atomic 
+        coordinates, box dimensions, and PSF are then used to create a single 
+        frame MDAnalysis universe for testing purposes.
         """
 
         cls.test_cases = [Ar4Version0()]
