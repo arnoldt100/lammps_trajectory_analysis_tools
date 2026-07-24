@@ -62,6 +62,10 @@ class ArLOPFCCTestStructure(Protocol):
         raise NotImplementedError
 
     @property
-    def correct_atom_pairs(self)->AtomPairs:
+    def wave_vectors(self)->LatticeVectors:
+        raise NotImplementedError 
+
+    @property
+    def atom_pairs(self)->AtomPairs:
         raise NotImplementedError
 

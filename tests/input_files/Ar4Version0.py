@@ -83,13 +83,21 @@ class Ar4Version0:
         self._cutoff = 0.5*self._edge_length
 
         """ The correct atom pairs for cutoff and set of atoms. """
-        self._correct_atom_pairs: AtomPairs = (
+        self._atom_pairs: AtomPairs = (
             np.array([[0,1],[0,3],[1,3]],dtype=np.int32))
 
         self._correct_reciprocal_lattice_vectors: LatticeVectors = np.array(
             [[-0.6053165, 0.6053165, 0.6053165],
              [ 0.6053165, -0.6053165, 0.6053165],
              [ 0.6053165,  0.6053165, -0.6053165]],dtype=np.float64)
+
+        self._wave_vectors: LatticeVectors = np.array(
+            [[ 1.21063301,  0.00, 0.00],
+             [ 0.00, 1.21063301,  0.00],
+             [ 0.00, 0.00, 1.21063301],
+             [ 1.21063301,  1.21063301, 0.00],
+             [ 1.21063301, -1.21063301, 0.00],
+             [ 0.00, 1.21063301, 1.21063301]],dtype=np.float64)
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
@@ -157,14 +165,18 @@ class Ar4Version0:
     @property
     def primitive_lattice_vectors(self)->LatticeVectors:
         return self._primitive_lattice_vectors
-    
+
+    @property
+    def wave_vectors(self)->LatticeVectors:
+        return self._wave_vectors
+
     @property
     def lattice_edge_length(self)->np.float64:
         return self._edge_length
 
     @property
-    def correct_atom_pairs(self)->AtomPairs:
-        return self._correct_atom_pairs
+    def atom_pairs(self)->AtomPairs:
+        return self._atom_pairs
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.

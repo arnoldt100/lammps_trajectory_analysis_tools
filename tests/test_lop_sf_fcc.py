@@ -84,9 +84,10 @@ class TestLopSfFcc(unittest.TestCase):
             # and verify the corresponding reciprocal and lattice vector dot
             # product is zero.
             for [rlv_index,plv_index] in indices_to_verify:
-                message = _message_rlvplv_nonorthogonal(test_structure_identification,
-                                                        rlv_index,test_structure.reciprocal_lattice_vectors[rlv_index,:],
-                                                        plv_index,test_structure.primitive_lattice_vectors[plv_index,:])
+                message = _message_rlvplv_nonorthogonal(
+                    test_structure_identification,
+                    rlv_index,test_structure.reciprocal_lattice_vectors[rlv_index,:],
+                    plv_index,test_structure.primitive_lattice_vectors[plv_index,:])
                 dp = np.dot(test_structure.reciprocal_lattice_vectors[rlv_index,:],
                             test_structure.primitive_lattice_vectors[plv_index,:])
                 self.assertAlmostEqual(dp,0.00,places,message)
@@ -98,7 +99,7 @@ class TestLopSfFcc(unittest.TestCase):
             test_structure_identification = test_structure.structure_identification
 
             # Get the correct atom pairs for the test structure.
-            correct_atom_pairs = test_structure.correct_atom_pairs
+            correct_atom_pairs = test_structure.atom_pairs
 
             # Compute the atom pairs for the MDAnalysis universe as done in the
             # "lop_sf_fcc.py" module.
@@ -133,7 +134,14 @@ class TestLopSfFcc(unittest.TestCase):
 
             # The number of decimal places to compare the local FCC order parameter.
             tolerance = 1e-8
-            close_enough = np.allclose(exp_reciprocal_lattice_vectors,correct_reciprocal_lattice_vectors,atol=tolerance)
+            close_enough = np.allclose(exp_reciprocal_lattice_vectors,
+                                       correct_reciprocal_lattice_vectors,
+                                       atol=tolerance)
+            message = _message_incorrect_reciprocal_lattice_vectors(
+                test_structure_identification,
+                exp_reciprocal_lattice_vectors,
+                correct_reciprocal_lattice_vectors)
+            self.assertEqual(close_enough,True,message)
 
     def test_wave_vectors(self):
         """ Test if the wave vectors are correct."""
@@ -141,6 +149,7 @@ class TestLopSfFcc(unittest.TestCase):
             test_structure_identification = test_structure.structure_identification
             edge_length = test_structure.lattice_edge_length
             exp_wave_vectors = create_wavevectors(edge_length)
+            print(f"Experimental wave vectors for {test_structure_identification}:\n{exp_wave_vectors}")
             correct_wave_vectors = test_structure.wave_vectors
 
             # The number of decimal places to compare the local FCC order parameter.
@@ -212,6 +221,16 @@ def _message_incorrect_wave_vectors(test_structure_identification,
     message = f"\nThe {test_structure_identification} has some incorect wave vectors.\n"
     message += f"The experimental wave vectors found are:\n{exp_wave_vectors}\n"
     message += f"The correct wave vectors are:\n{correct_wave_vectors}\n"
+    return message
+
+def _message_incorrect_reciprocal_lattice_vectors(test_structure_identification,
+                                                  exp_reciprocal_lattice_vectors,
+                                                  correct_reciprocal_lattice_vectors)->str:
+    message = f"\nThe {test_structure_identification} has some incorect reciprocal lattice vectors.\n"
+    message += f"The experimental reciprocal lattice vectors found are:\n{exp_reciprocal_lattice_vectors}\n"
+    message += f"The correct reciprocal lattice vectors are:\n{correct_reciprocal_lattice_vectors}\n"
+    return message
+
 def _message_a4_lop_sf():
     message = "The local order parameter fcc structure factor is wrong."
     return message
