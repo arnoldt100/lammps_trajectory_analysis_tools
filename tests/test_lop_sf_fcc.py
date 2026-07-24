@@ -12,7 +12,12 @@ import numpy.typing as npt
 
 
 # Local Library package imports
-from data_types import AtomCoordinates, LatticeVectors
+from data_types import (
+    AtomCoordinates,
+    AtomPairs,
+    LatticeVectors,
+    MDA_Universe)
+
 from lop_sf_fcc.lop_sf_fcc import (
     calculate_atom_pairs,
     calculate_sf_fcc_order_parameter,
@@ -99,15 +104,12 @@ class TestLopSfFcc(unittest.TestCase):
             test_structure_identification = test_structure.structure_identification
 
             # Get the correct atom pairs for the test structure.
-            correct_atom_pairs = test_structure.atom_pairs
+            reference_atom_pairs = test_structure.atom_pairs
 
             # Compute the atom pairs for the MDAnalysis universe as done in the
             # "lop_sf_fcc.py" module.
-            all_atoms = test_universe.select_atoms("all")
-            atom_coordinates = all_atoms.positions
-            box = test_universe.dimensions
             cutoff = test_structure.cutoff
-            exp_atom_pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
+            exp_atom_pairs = _get_programmatical_atom_pairs_from_universe(test_universe,cutoff)
 
             # The exp_atom_pairs must have unique pairs.
             exp_atom_pairs_unique,exp_counts = (
@@ -117,23 +119,24 @@ class TestLopSfFcc(unittest.TestCase):
                                                 exp_counts)
             self.assertEqual(exp_counts.all() == 1,True,message)
 
-            # The exp_atom_pairs_unique must equal the correct_atom_pairs.
-            correct_atom_pairs_unique = np.unique(correct_atom_pairs,axis=0)
+            # The exp_atom_pairs_unique must equal the reference_atom_pairs.
+            correct_atom_pairs_unique = np.unique(reference_atom_pairs,axis=0)
             message = _message_incorrect_atom_pairs(test_structure_identification,
                                                     exp_atom_pairs_unique,
-                                                    correct_atom_pairs)
+                                                    reference_atom_pairs)
             self.assertEqual(np.array_equal(exp_atom_pairs_unique,correct_atom_pairs_unique),True,message)
 
     def test_reciprocal_lattice_vectors(self):
         """ Test if the reciprocal lattice vectors are correct."""
+        # The number of decimal places to compare the local FCC order parameter.
+        tolerance = 1e-8
+
         for (test_structure,test_universe) in self.test_cases:
             test_structure_identification = test_structure.structure_identification
             edge_length = test_structure.lattice_edge_length
             exp_reciprocal_lattice_vectors = create_reciprocal_lattice_vectors(edge_length)
             correct_reciprocal_lattice_vectors = test_structure.reciprocal_lattice_vectors
 
-            # The number of decimal places to compare the local FCC order parameter.
-            tolerance = 1e-8
             close_enough = np.allclose(exp_reciprocal_lattice_vectors,
                                        correct_reciprocal_lattice_vectors,
                                        atol=tolerance)
@@ -144,22 +147,72 @@ class TestLopSfFcc(unittest.TestCase):
             self.assertEqual(close_enough,True,message)
 
     def test_wave_vectors(self):
-        """ Test if the wave vectors are correct."""
+        """
+        Verify that the generated experimental wave vectors match the expected reference values.
+
+        Compares the programmatically generated 'exp_wave_vectors' against the
+        definitive 'reference_wave_vectors'. The test passes if the difference
+        between the two sets falls within the specified numerical tolerance.
+        """
+        # The tolerance for comparing the "exp_wave_vectors"
+        # and "reference_wave_vectors".
+        tolerance = 1e-8
+
         for (test_structure,test_universe) in self.test_cases:
+            # Define the identification of this test.
             test_structure_identification = test_structure.structure_identification
+
+            # Create the experimental and correct wavevectors.
             edge_length = test_structure.lattice_edge_length
             exp_wave_vectors = create_wavevectors(edge_length)
-            print(f"Experimental wave vectors for {test_structure_identification}:\n{exp_wave_vectors}")
-            correct_wave_vectors = test_structure.wave_vectors
+            reference_wave_vectors = test_structure.wave_vectors
 
-            # The number of decimal places to compare the local FCC order parameter.
-            tolerance = 1e-8
-            close_enough = np.allclose(exp_wave_vectors,correct_wave_vectors,atol=tolerance)
+            # Define the message for test failure.
             message = _message_incorrect_wave_vectors(test_structure_identification,
                                                       exp_wave_vectors,
-                                                      correct_wave_vectors)
+                                                      reference_wave_vectors)
+
+            # Check if exp_wave_vectors are within tolerance of the correct wavevectors.
+            close_enough = np.allclose(exp_wave_vectors,reference_wave_vectors,atol=tolerance)
             self.assertEqual(close_enough,True,message)
 
+    def test_atom_pairs_vectors(self):
+        """
+        Verify that the generated atom pair vectors match the expected reference values.
+
+        Compares the programmatically generated 'atom_pair__vectors' against the
+        definitive 'reference_atom_pair_vectors'. The test passes if the difference
+        between the two sets falls within the specified numerical tolerance.
+        """
+
+        # The tolerance for comparing the "exp_atom_pairs_vectors"
+        # and "reference_atom_pair_vectors".
+        tolerance = 1e-8
+
+        for (test_structure,test_universe) in self.test_cases:
+            # The cutoff distance for chosing the atom pairs.
+            cutoff = test_structure.cutoff
+
+            # Define the identification of this test.
+            test_structure_identification = test_structure.structure_identification
+
+            # Get the exp atom pairs vectors.
+            exp_atom_pair_vectors = (
+                _get_programmatical_atom_pairs_vectors_from_universe(test_universe,cutoff))
+
+            # Get the reference atom pairs vectors.
+            reference_atom_pair_vectors = test_structure.atom_pairs_vectors
+ 
+            # Define the message for test failure.
+            message = _message_incorrect_atom_pairs_vectors(test_structure_identification,
+                                                            exp_atom_pair_vectors,
+                                                            reference_atom_pair_vectors)
+
+            # Check if the exp_atom_pairs_vectors are within tolerance of
+            # reference_atom_pair_vectors.
+            close_enough = np.allclose(exp_atom_pair_vectors,
+                                       reference_atom_pair_vectors,
+                                       atol=tolerance)
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.
     #     places = 15
@@ -182,7 +235,41 @@ class TestLopSfFcc(unittest.TestCase):
 # Private members
 # ----------
 
-def _message_rlvplv_nonorthogonal(test_structure_identification,
+def _get_programmatical_atom_pairs_from_universe(universe: MDA_Universe,
+        cutoff: np.float64 )->AtomPairs:
+    """ Get the programtic atom pairs of from the universe.
+
+    Given a MDAnalysis universe that is periodic with right rectangular prism
+    bounding box, we calculate all atom pairs that are within "cutoff" distance
+    of each other.
+
+    Args:
+        universe: The MDAnalysis universe.
+
+        cutoff: The cutoff to search for neighboring atoms.
+
+    """
+    all_atoms = universe.select_atoms("all")
+    atom_coordinates = all_atoms.positions
+    box = universe.dimensions
+    cutoff = cutoff
+    exp_atom_pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
+    return exp_atom_pairs
+
+def _get_programmatical_atom_pairs_vectors_from_universe(universe: MDA_Universe,
+        cutoff: np.float64 )->AtomCoordinates:
+    """Get the programatic atom pairs vectors from the universe.
+
+    Args:
+        universe: The MDAnalysis universe.
+
+        cutoff: The cutoff to search for neighboring atoms pairs to form the
+        atom pair vectors.
+
+    """
+    return
+
+def _message_rlvplv_nonorthogonal(test_structure_identification: str,
                                   rlv_index: int, rlv: LatticeVectors,
                                   plv_index: int, plv: LatticeVectors)->str:
     """ Returns a string warning message that RLV and PLV vectors aren't orthogonal.
@@ -229,6 +316,14 @@ def _message_incorrect_reciprocal_lattice_vectors(test_structure_identification,
     message = f"\nThe {test_structure_identification} has some incorect reciprocal lattice vectors.\n"
     message += f"The experimental reciprocal lattice vectors found are:\n{exp_reciprocal_lattice_vectors}\n"
     message += f"The correct reciprocal lattice vectors are:\n{correct_reciprocal_lattice_vectors}\n"
+    return message
+
+def _message_incorrect_atom_pairs_vectors(test_structure_identification,
+                                  exp_atom_pairs,
+                                  reference_atom_pairs_vectors)->str:
+    message = f"\nThe {test_structure_identification} has some incorect atom pairs vectors.\n"
+    message += f"The experimental atom pairs vectors found are:\n{exp_atom_pairs}\n"
+    message += f"The reference atom pairs vectors are:\n{reference_atom_pairs_vectors}\n"
     return message
 
 def _message_a4_lop_sf():

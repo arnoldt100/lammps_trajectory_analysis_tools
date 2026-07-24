@@ -120,7 +120,7 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
                          box: Box)->AtomPairs:
     """ Calculates the atom unique pairs that are within distance 'cutoff'
 
-    The algorithm assumes that we have periodic boundary conditions of a cubic box.
+    The algorithm assumes that we have periodic boundary conditions of a rectangular box.
     Otherwise one may get indeterminate results.
 
     Args:
@@ -164,7 +164,7 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
 
     Parameters:
 
-        univers: The MDAnalysis universe that contains all the atoms.
+        universe: The MDAnalysis universe that contains all the atoms.
 
         pairs: The k'th pair, pairs[k,0] and pairs[k,1] are the atomic indices
         of the pair of atoms. Let i = pairs[k,0], then atom_coordinates[i,:] is
@@ -174,7 +174,7 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
 
  Returns:
         calculate_atom_pairs_vectors
-        
+
         vector from pairs[k,0] to pairs[k,1].
     """
     print("In function calculate_atom_pairs_vectors")
