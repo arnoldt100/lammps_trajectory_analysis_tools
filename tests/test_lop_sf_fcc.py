@@ -208,11 +208,14 @@ class TestLopSfFcc(unittest.TestCase):
                                                             exp_atom_pair_vectors,
                                                             reference_atom_pair_vectors)
 
+            print(f"exp_atom_pairs_vectors=\n{exp_atom_pair_vectors}")
+            print(f"reference_atom_pairs_vectors=\n{reference_atom_pair_vectors}")
+
             # Check if the exp_atom_pairs_vectors are within tolerance of
             # reference_atom_pair_vectors.
-            close_enough = np.allclose(exp_atom_pair_vectors,
-                                       reference_atom_pair_vectors,
-                                       atol=tolerance)
+            # close_enough = np.allclose(exp_atom_pair_vectors,
+            #                            reference_atom_pair_vectors,
+            #                            atol=tolerance)
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.
     #     places = 15
@@ -267,7 +270,7 @@ def _get_programmatical_atom_pairs_vectors_from_universe(universe: MDA_Universe,
         atom pair vectors.
 
     """
-    return
+    raise NotImplementedError
 
 def _message_rlvplv_nonorthogonal(test_structure_identification: str,
                                   rlv_index: int, rlv: LatticeVectors,
