@@ -100,9 +100,9 @@ class Ar4Version0:
              [ 0.00, 1.21063301, 1.21063301]],dtype=np.float64)
 
         self._atom_pairs_vectors: LatticeVectors = np.array(
-            [[1.00, 0.00, 0.00],
-            [1.00, 0.00, 0.00],
-            [1.00, 0.00, 0.00]], dtype=np.float64)
+            [[0.5189972, 0.00, 0.00 ],
+             [0.00, 0.00, 0.5189972],
+            [-0.5189972, 0.00, 0.5189972]], dtype=np.float64)
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.

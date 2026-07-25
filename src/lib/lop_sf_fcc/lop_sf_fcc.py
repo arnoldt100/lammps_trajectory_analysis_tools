@@ -200,7 +200,8 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
     print(f"final atom indices={final_atoms_indices}")
     print(f"final atom positions={final_atoms_positions}")
     disp_vectors = final_atoms_positions - initial_atoms_positions 
-    atom_pair_vectors = disp_vectors - box_lengths * np.round(disp_vectors / box_lengths)
+    print(f"disp_vectors = {disp_vectors}")
+    atom_pair_vectors = disp_vectors - box_lengths*np.round(disp_vectors / box_lengths)
 
     print("Leaving function calculate_atom_pairs_vectors")
     return atom_pair_vectors

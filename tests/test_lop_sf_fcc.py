@@ -24,7 +24,8 @@ from lop_sf_fcc.lop_sf_fcc import (
     create_primitive_lattice_vectors,
     create_reciprocal_lattice_vectors,
     create_wavevectors,
-)
+    calculate_atom_pairs_vectors)
+
 from MDAnalysis.coordinates.memory import MemoryReader
 
 from tests.input_files.Ar4Version0 import Ar4Version0
@@ -213,9 +214,11 @@ class TestLopSfFcc(unittest.TestCase):
 
             # Check if the exp_atom_pairs_vectors are within tolerance of
             # reference_atom_pair_vectors.
-            # close_enough = np.allclose(exp_atom_pair_vectors,
-            #                            reference_atom_pair_vectors,
-            #                            atol=tolerance)
+            close_enough = np.allclose(exp_atom_pair_vectors,
+                                       reference_atom_pair_vectors,
+                                       atol=tolerance)
+            self.assertEqual(close_enough,True,message)
+
     # def test_fcc_ar4(self):
     #     # The number of decimal places to compare the local FCC order parameter.
     #     places = 15
@@ -242,7 +245,7 @@ def _get_programmatical_atom_pairs_from_universe(universe: MDA_Universe,
         cutoff: np.float64 )->AtomPairs:
     """ Get the programtic atom pairs of from the universe.
 
-    Given a MDAnalysis universe that is periodic with right rectangular prism
+    Given a MDAnalysis universe that is periodic with a right rectangular prism
     bounding box, we calculate all atom pairs that are within "cutoff" distance
     of each other.
 
@@ -255,7 +258,6 @@ def _get_programmatical_atom_pairs_from_universe(universe: MDA_Universe,
     all_atoms = universe.select_atoms("all")
     atom_coordinates = all_atoms.positions
     box = universe.dimensions
-    cutoff = cutoff
     exp_atom_pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
     return exp_atom_pairs
 
@@ -270,7 +272,9 @@ def _get_programmatical_atom_pairs_vectors_from_universe(universe: MDA_Universe,
         atom pair vectors.
 
     """
-    raise NotImplementedError
+    atom_pairs = _get_programmatical_atom_pairs_from_universe(universe,cutoff)
+    atom_pairs_vectors = calculate_atom_pairs_vectors(universe,atom_pairs)
+    return atom_pairs_vectors
 
 def _message_rlvplv_nonorthogonal(test_structure_identification: str,
                                   rlv_index: int, rlv: LatticeVectors,
