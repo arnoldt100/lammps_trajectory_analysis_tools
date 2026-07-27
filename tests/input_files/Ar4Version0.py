@@ -213,9 +213,6 @@ def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
         for col_index in range(nm_cols):
             scaled_coordinates[row_index,col_index] = (
                 atom_coordinates[row_index,col_index]*box[col_index] )
-            print(f"atom_coordinates{[row_index,col_index]}={atom_coordinates[row_index,col_index]}")
-            print(f"scaled_coordinates{[row_index,col_index]}={scaled_coordinates[row_index,col_index]}")
-            print()
 
     return scaled_coordinates
 

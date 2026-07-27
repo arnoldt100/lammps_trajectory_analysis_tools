@@ -177,14 +177,7 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
 
         vector from pairs[k,0] to pairs[k,1].
     """
-    np.set_printoptions(precision=10, suppress=True)
-    print("In function calculate_atom_pairs_vectors")
-    [nm_rows,nm_cols] = pairs.shape
-    print(f"nm_rows={nm_rows}")
-    print(f"nm_cols={nm_cols}")
-
     box_lengths = universe.dimensions[0:3]
-    print(f"box_lenghts={box_lengths}")
 
     initial_atoms_indices_data = pairs[:,0:1]
     initial_atoms_indices = initial_atoms_indices_data.flatten()
@@ -196,24 +189,10 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
     final_atoms_group = universe.atoms[final_atoms_indices]
     final_atoms_positions = final_atoms_group.positions
 
-    print(f"initial atom indices={initial_atoms_indices}")
-    print(f"initial atom positions={initial_atoms_positions}")
-    print(f"final atom indices={final_atoms_indices}")
-    print(f"final atom positions={final_atoms_positions}")
     disp_vectors = final_atoms_positions - initial_atoms_positions 
-    print(f"disp_vectors before image adj. = \n{disp_vectors}\n")
     pbc_delta = box_lengths*np.round(disp_vectors/box_lengths)
-    print(f"pbc_delta = \n{pbc_delta}\n")
     atom_pair_vectors = disp_vectors - pbc_delta
 
-    print(f"initial atom position[0]={initial_atoms_positions[0,0]}")
-    print(f"final atom position[0]={final_atoms_positions[0,0]}")
-    print(f"disp_vectors[0,0] = {disp_vectors[0,0]}")
-    print(f"pbc_delta[0,0] = {pbc_delta[0,0]}")
-    print(f"atom_pairs[0,0] = {atom_pair_vectors[0,0]}")
-    print(f"atom_pairs_vectors = {atom_pair_vectors}")
-
-    print("Leaving function calculate_atom_pairs_vectors")
     return atom_pair_vectors
 
 def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
@@ -234,15 +213,8 @@ def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
     ar_atoms = universe.select_atoms("all")
     atom_coordinates = ar_atoms.positions
     box = universe.dimensions
-    print("\n\n --- PeriodicKDTree --- \n")
     pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
-    print("\n=== Pairs ====")
-    print(pairs)
-    coords1 = atom_coordinates[pairs[:, 0]]
-    coords2 = atom_coordinates[pairs[:, 1]]
     atom_pairs_vectors = calculate_atom_pairs_vectors(universe,pairs)
-    print("\n=== Atom Pairs Vectors ====")
-    print(atom_pairs_vectors)
 
     return 0.02
 

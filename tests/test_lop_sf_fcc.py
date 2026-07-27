@@ -21,7 +21,6 @@ from data_types import (
 from lop_sf_fcc.lop_sf_fcc import (
     calculate_atom_pairs,
     calculate_sf_fcc_order_parameter,
-    create_primitive_lattice_vectors,
     create_reciprocal_lattice_vectors,
     create_wavevectors,
     calculate_atom_pairs_vectors)
@@ -208,31 +207,23 @@ class TestLopSfFcc(unittest.TestCase):
                                                             exp_atom_pair_vectors,
                                                             reference_atom_pair_vectors)
 
-            print(f"exp_atom_pairs_vectors=\n{exp_atom_pair_vectors}")
-            print(f"reference_atom_pairs_vectors=\n{reference_atom_pair_vectors}")
-
             # Check if the exp_atom_pairs_vectors are within tolerance of
             # reference_atom_pair_vectors.
             close_enough = np.allclose(exp_atom_pair_vectors,
                                        reference_atom_pair_vectors,
                                        atol=atolerance,
                                        rtol=rtolerance)
-            print(f"close_enough={close_enough}")
             self.assertEqual(close_enough,True,message)
 
-    # def test_fcc_ar4(self):
-    #     # The number of decimal places to compare the local FCC order parameter.
-    #     places = 15
-    #     message = _message_a4_lop_sf()
-    #     cutoff = self.cutoff
-
-    #     box_dimensions =  self.universe.dimensions
-    #     for ts in self.universe.trajectory:
-    #         value = calculate_sf_fcc_order_parameter(self.universe,
-    #                                          self.wave_vectors,
-    #                                          cutoff)
-
-    #     self.assertAlmostEqual(value,0.00,places,message)
+    def test_fcc_ar4(self):
+        # The number of decimal places to compare the local FCC order parameter.
+        places = 15
+        message = _message_a4_lop_sf()
+        for (test_structure,test_universe) in self.test_cases:
+            value = calculate_sf_fcc_order_parameter(test_universe,
+                                             test_structure.wave_vectors,
+                                             test_structure.cutoff)
+            self.assertAlmostEqual(value,0.00,places,message)
 
     @classmethod
     def tearDownClass(cls):
