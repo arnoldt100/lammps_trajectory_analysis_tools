@@ -6,6 +6,7 @@ This structure has 4 argon atoms at fcc lattice coordinates.
 
 # Python standard library imports
 import os
+import re
 
 # Third party library imports
 import numpy as np
@@ -89,34 +90,21 @@ class Ar4Version0:
         self._atom_pairs_vectors[2] = atom position 3 - atom position 1
         """
         self._atom_pairs_vectors: LatticeVectors = np.array(
-            [[0.519, 0.00, 0.00 ],
+            [[0.519, 0.00, 0.00],
              [0.00, 0.00, 0.519],
             [-0.519, 0.00, 0.519]], dtype=np.float64)
 
-        """ The correct reciprocal lattice vectors of the unit FCC lattice. """
+        """ The correct reciprocal lattice vectors of the unit FCC lattice.
+    
+        If this array is modified, one breaks this test.
+        """
         self._correct_reciprocal_lattice_vectors: LatticeVectors = np.array(
             [[-0.6053165, 0.6053165, 0.6053165],
              [ 0.6053165, -0.6053165, 0.6053165],
              [ 0.6053165,  0.6053165, -0.6053165]],dtype=np.float64)
 
-        """ The correct wave vectors of the unit FCC lattice.
-
-        We define the wavevectors that correspond to various combinations of
-        reciprocal lattice vectors.
-        wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
-        wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
-        wv_2 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[1]
-        wv_3 = wv_0 + wv_1
-        wv_4 = wv_0 - wv_1
-        wv_5 = wv_1 + wv_2
-        """
-        self._wave_vectors: LatticeVectors = np.array(
-            [[ 1.21063301,  0.00, 0.00],
-             [ 0.00, 1.21063301,  0.00],
-             [ 0.00, 0.00, 1.21063301],
-             [ 1.21063301,  1.21063301, 0.00],
-             [ 1.21063301, -1.21063301, 0.00],
-             [ 0.00, 1.21063301, 1.21063301]],dtype=np.float64)
+        """ The correct wave vectors of the unit FCC lattice. """
+        self._wave_vectors = _create_wavevectors()
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
@@ -250,6 +238,28 @@ def _create_right_rectangular_box(edge_scaling_factor: np.float64,
                          lattice_angles, lattice_angles, lattice_angles],
                          np.float64)
     return box
+
+def _create_wavevectors()->LatticeVectors:
+    """ The wave vectors are a linear combination of the reciprocal lattice vectors.
+
+    wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
+    wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
+    wv_2 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[1]
+    wv_3 = wv_0 + wv_1
+    wv_4 = wv_0 - wv_1
+    wv_5 = wv_1 + wv_2
+
+    If this function returns a different array, one breaks this test.
+    """
+    wavevectors = np.array([[ 1.210633, 0.00, 0.0 ],
+                            [ 0.00, 1.210633, 0.00],
+                            [ 0.00, 0.00, 1.210633],
+                            [ 1.210633, 1.210633, 0.00],
+                            [ 1.210633, -1.210633,  0.00],
+                            [ 0.00, 1.210633, 1.210633]],dtype=np.float64)
+    return wavevectors
+
+
 
 def _main():
     return
