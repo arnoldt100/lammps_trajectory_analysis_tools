@@ -46,8 +46,6 @@ class TestLopSfFcc(unittest.TestCase):
         frame MDAnalysis universe for testing purposes.
         """
 
-        cls.test_cases = [Ar4Version0()]
-
         cls.test_cases = []
         for test_item in all_test_structures:
            test_configuration = test_item()
@@ -186,9 +184,10 @@ class TestLopSfFcc(unittest.TestCase):
         between the two sets falls within the specified numerical tolerance.
         """
 
-        # The tolerance for comparing the "exp_atom_pairs_vectors"
+        # The tolerances for comparing the "exp_atom_pairs_vectors"
         # and "reference_atom_pair_vectors".
-        tolerance = 1e-8
+        rtolerance = 1e-5
+        atolerance = 1e-8
 
         for (test_structure,test_universe) in self.test_cases:
             # The cutoff distance for chosing the atom pairs.
@@ -216,7 +215,9 @@ class TestLopSfFcc(unittest.TestCase):
             # reference_atom_pair_vectors.
             close_enough = np.allclose(exp_atom_pair_vectors,
                                        reference_atom_pair_vectors,
-                                       atol=tolerance)
+                                       atol=atolerance,
+                                       rtol=rtolerance)
+            print(f"close_enough={close_enough}")
             self.assertEqual(close_enough,True,message)
 
     # def test_fcc_ar4(self):

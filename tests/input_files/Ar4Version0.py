@@ -6,7 +6,6 @@ This structure has 4 argon atoms at fcc lattice coordinates.
 
 # Python standard library imports
 import os
-import copy
 
 # Third party library imports
 import numpy as np
@@ -25,7 +24,7 @@ from data_types import AtomPairs
 class Ar4Version0:
     def __init__(self):
         # We define the edge length in angstroms of the FCC lattice structure.
-        self._edge_length: np.float64 = 5.19
+        self._edge_length: np.float64 = np.float64(5.19)
 
         """ The box dimensions of all trajectories.
 
@@ -43,19 +42,16 @@ class Ar4Version0:
         "cls.edge_length*10". If the box is too small, then the
         neighbor search algorithm has issues finding neighboring pairs.
         """
-        self._edge_scaling_factor: np.float64 = 10.0
-        box_edge_length = self._edge_length*self._edge_scaling_factor
-        (lx,ly,lz) = (box_edge_length,box_edge_length,box_edge_length)
-        lattice_angles: np.float64 = 90.00
-        (alpha,beta,gamma) = (lattice_angles,lattice_angles,lattice_angles)
-        self._box: Box = (np.array([lx,ly,lz,alpha,beta,gamma],dtype=np.float64))
+        self._edge_scaling_factor: np.float64 = np.float64(10.0)
+        self._box: Box = _create_right_rectangular_box(self._edge_scaling_factor,
+            self._edge_length)
 
         """ A atomic system of 4 atoms with an edge length equal to 1.00 angstroms"""
         self._coordinates1: AtomCoordinates = np.array([
-            [0.00,0.00,0.00],
-            [1.01,0.00,0.00],
-            [0.50,0.00,0.50],
-            [0.00,0.00,1.01]],dtype=np.float64)
+            [0.00, 0.00, 0.00],
+            [1.01, 0.00, 0.00],
+            [0.50, 0.00, 0.50],
+            [0.00, 0.00, 1.01]],dtype=np.float64)
 
         """ The atoms atomic coordinates. """
         self._coordinates: AtomCoordinates = (
@@ -77,7 +73,7 @@ class Ar4Version0:
         self._timeunits: TimeUnits = "ps"
 
         """ The magnitude of the time step. """
-        self._dt: TimeStep = 1.0
+        self._dt: TimeStep = np.float64(1.0)
 
         # cls.cutoff = 1.0*cls.edge_length
         self._cutoff = 0.5*self._edge_length
@@ -86,11 +82,34 @@ class Ar4Version0:
         self._atom_pairs: AtomPairs = (
             np.array([[0,1],[0,3],[1,3]],dtype=np.int32))
 
+        """ The correct atom pairs vectors adjusted for pbc conditions.
+
+        self._atom_pairs_vectors[0] = atom position 1 - atom position 0
+        self._atom_pairs_vectors[1] = atom position 3 - atom position 0
+        self._atom_pairs_vectors[2] = atom position 3 - atom position 1
+        """
+        self._atom_pairs_vectors: LatticeVectors = np.array(
+            [[0.519, 0.00, 0.00 ],
+             [0.00, 0.00, 0.519],
+            [-0.519, 0.00, 0.519]], dtype=np.float64)
+
+        """ The correct reciprocal lattice vectors of the unit FCC lattice. """
         self._correct_reciprocal_lattice_vectors: LatticeVectors = np.array(
             [[-0.6053165, 0.6053165, 0.6053165],
              [ 0.6053165, -0.6053165, 0.6053165],
              [ 0.6053165,  0.6053165, -0.6053165]],dtype=np.float64)
 
+        """ The correct wave vectors of the unit FCC lattice.
+
+        We define the wavevectors that correspond to various combinations of
+        reciprocal lattice vectors.
+        wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
+        wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
+        wv_2 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[1]
+        wv_3 = wv_0 + wv_1
+        wv_4 = wv_0 - wv_1
+        wv_5 = wv_1 + wv_2
+        """
         self._wave_vectors: LatticeVectors = np.array(
             [[ 1.21063301,  0.00, 0.00],
              [ 0.00, 1.21063301,  0.00],
@@ -98,11 +117,6 @@ class Ar4Version0:
              [ 1.21063301,  1.21063301, 0.00],
              [ 1.21063301, -1.21063301, 0.00],
              [ 0.00, 1.21063301, 1.21063301]],dtype=np.float64)
-
-        self._atom_pairs_vectors: LatticeVectors = np.array(
-            [[0.5189972, 0.00, 0.00 ],
-             [0.00, 0.00, 0.5189972],
-            [-0.5189972, 0.00, 0.5189972]], dtype=np.float64)
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
@@ -205,11 +219,37 @@ def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
               box_dimensions[4] = Angle between x and z axis in degrees
               box_dimensions[5] = Angle between x and y axis in degrees
     """
-    scaled_coordinates = copy.deepcopy(atom_coordinates)
-    (nm_rows,_) = scaled_coordinates .shape
+    (nm_rows,nm_cols) = atom_coordinates.shape
+    scaled_coordinates = np.zeros((nm_rows,nm_cols),np.float64)
     for row_index in range(nm_rows):
-        scaled_coordinates [row_index,:]*=box[0:3]
+        for col_index in range(nm_cols):
+            scaled_coordinates[row_index,col_index] = (
+                atom_coordinates[row_index,col_index]*box[col_index] )
+            print(f"atom_coordinates{[row_index,col_index]}={atom_coordinates[row_index,col_index]}")
+            print(f"scaled_coordinates{[row_index,col_index]}={scaled_coordinates[row_index,col_index]}")
+            print()
+
     return scaled_coordinates
+
+def _create_right_rectangular_box(edge_scaling_factor: np.float64,
+                                  edge_length: np.float64)->Box:
+    """ Creates a MDAnalysis containing box for the atomic system.
+
+    The containing box is a right rectangular box.
+
+    Args:
+        edge_scaling_factor: The multiplicative factor to scale the containing box
+            edge.
+
+        edge_length: The unscaled box edge length.
+
+    """
+    lattice_angles: np.float64 = np.float64(90.00)
+    box_edge_length: np.float64 = edge_length*edge_scaling_factor
+    box: Box = np.array([box_edge_length, box_edge_length, box_edge_length,
+                         lattice_angles, lattice_angles, lattice_angles],
+                         np.float64)
+    return box
 
 def _main():
     return

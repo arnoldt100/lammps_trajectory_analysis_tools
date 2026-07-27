@@ -177,6 +177,7 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
 
         vector from pairs[k,0] to pairs[k,1].
     """
+    np.set_printoptions(precision=10, suppress=True)
     print("In function calculate_atom_pairs_vectors")
     [nm_rows,nm_cols] = pairs.shape
     print(f"nm_rows={nm_rows}")
@@ -200,8 +201,17 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
     print(f"final atom indices={final_atoms_indices}")
     print(f"final atom positions={final_atoms_positions}")
     disp_vectors = final_atoms_positions - initial_atoms_positions 
-    print(f"disp_vectors = {disp_vectors}")
-    atom_pair_vectors = disp_vectors - box_lengths*np.round(disp_vectors / box_lengths)
+    print(f"disp_vectors before image adj. = \n{disp_vectors}\n")
+    pbc_delta = box_lengths*np.round(disp_vectors/box_lengths)
+    print(f"pbc_delta = \n{pbc_delta}\n")
+    atom_pair_vectors = disp_vectors - pbc_delta
+
+    print(f"initial atom position[0]={initial_atoms_positions[0,0]}")
+    print(f"final atom position[0]={final_atoms_positions[0,0]}")
+    print(f"disp_vectors[0,0] = {disp_vectors[0,0]}")
+    print(f"pbc_delta[0,0] = {pbc_delta[0,0]}")
+    print(f"atom_pairs[0,0] = {atom_pair_vectors[0,0]}")
+    print(f"atom_pairs_vectors = {atom_pair_vectors}")
 
     print("Leaving function calculate_atom_pairs_vectors")
     return atom_pair_vectors
