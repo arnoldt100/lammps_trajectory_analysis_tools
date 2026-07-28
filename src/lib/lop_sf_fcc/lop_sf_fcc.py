@@ -216,6 +216,20 @@ def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
     pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
     atom_pairs_vectors = calculate_atom_pairs_vectors(universe,pairs)
 
+    # Create an accumulator over for each atom. For each atom we acummulate 
+    # the number of neighbors and the exp(q*r) terms.
+    nm_atoms = universe.atoms.n_atoms
+    accum_lop_terms = np.zeros(nm_atoms,dtype=np.float64)
+    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
+  
+    (nm_pairs,_) = pairs.shape
+    for counter in range(nm_pairs):
+        print(f"Atoms pairs: {pairs[counter,0]} -- {pairs[counter,1]}; r = {atom_pairs_vectors[counter]}")
+        print(f"Wavevectors: {wave_vectors}") 
+        for wv in wave_vectors:
+            x = 1j*np.dot(wv,atom_pairs_vectors[counter])
+            print(f"q={wv}, r={atom_pairs_vectors[counter]}, iq*r={x}, np.exp(iq*r)={np.exp(x)}")
+
     return 0.02
 
 class LopSfFcc:
