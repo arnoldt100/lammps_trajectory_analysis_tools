@@ -219,16 +219,39 @@ def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
     # Create an accumulator over for each atom. For each atom we acummulate 
     # the number of neighbors and the exp(q*r) terms.
     nm_atoms = universe.atoms.n_atoms
-    accum_lop_terms = np.zeros(nm_atoms,dtype=np.float64)
+    (nm_wavevectors,_) = wave_vectors.shape
+    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
     accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
-  
+ 
     (nm_pairs,_) = pairs.shape
     for counter in range(nm_pairs):
-        print(f"Atoms pairs: {pairs[counter,0]} -- {pairs[counter,1]}; r = {atom_pairs_vectors[counter]}")
-        print(f"Wavevectors: {wave_vectors}") 
+        atom_index1 = pairs[counter,0]
+        atom_index2 = pairs[counter,1]
+        dr = atom_pairs_vectors[counter]
+        print(f"Atoms pairs: {atom_index1} -- {atom_index2}; dr = {dr}")
+        print(f"Wavevectors: {wave_vectors}")
+        accum_lop_nm_neighbors[atom_index1] += 1
+        accum_lop_nm_neighbors[atom_index2] += 1
+        accum1 = np.complex64(0.00)
         for wv in wave_vectors:
-            x = 1j*np.dot(wv,atom_pairs_vectors[counter])
-            print(f"q={wv}, r={atom_pairs_vectors[counter]}, iq*r={x}, np.exp(iq*r)={np.exp(x)}")
+            x = 1j*np.dot(wv,dr)
+            print(f"q={wv}, dr={dr}, iq*dr={x}, np.exp(iq*dr)={np.exp(x)}")
+            accum1 += np.exp(x)
+        accum_lop_terms[atom_index1] += accum1
+        accum_lop_terms[atom_index2] += accum1
+        print("\n\n")
+
+    for atom_index in range(nm_atoms):
+        x = np.complex64(0.00)
+        if accum_lop_nm_neighbors[atom_index] > 0:
+            x = accum_lop_terms[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
+            x = np.abs(x)**2
+            accum_lop[atom_index] = x/((nm_wavevectors*accum_lop_nm_neighbors[atom_index])**2)
+
+    print(f"Atoms number of neighbors = \n{accum_lop_nm_neighbors}")
+    print(f"Atoms LOP terms = \n{accum_lop_terms}")
+    print(f"Atoms LOP = \n{accum_lop}")
 
     return 0.02
 

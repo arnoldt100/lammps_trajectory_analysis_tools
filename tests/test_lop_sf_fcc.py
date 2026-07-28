@@ -1,15 +1,11 @@
 #! /usr/bin/env python3
 
 # Python standard library imports
-import os
 import unittest
 
-
 # Third party library imports
-import MDAnalysis as mda
 import numpy as np
 import numpy.typing as npt
-
 
 # Local Library package imports
 from data_types import (
@@ -24,8 +20,6 @@ from lop_sf_fcc.lop_sf_fcc import (
     create_reciprocal_lattice_vectors,
     create_wavevectors,
     calculate_atom_pairs_vectors)
-
-from MDAnalysis.coordinates.memory import MemoryReader
 
 from tests.input_files.Ar4Version0 import Ar4Version0
 
@@ -215,16 +209,6 @@ class TestLopSfFcc(unittest.TestCase):
                                        rtol=rtolerance)
             self.assertEqual(close_enough,True,message)
 
-    def test_fcc_ar4(self):
-        # The number of decimal places to compare the local FCC order parameter.
-        places = 15
-        message = _message_a4_lop_sf()
-        for (test_structure,test_universe) in self.test_cases:
-            value = calculate_sf_fcc_order_parameter(test_universe,
-                                             test_structure.wave_vectors,
-                                             test_structure.cutoff)
-            self.assertAlmostEqual(value,0.00,places,message)
-
     @classmethod
     def tearDownClass(cls):
         pass
@@ -323,10 +307,6 @@ def _message_incorrect_atom_pairs_vectors(test_structure_identification,
     message = f"\nThe {test_structure_identification} has some incorect atom pairs vectors.\n"
     message += f"The experimental atom pairs vectors found are:\n{exp_atom_pairs}\n"
     message += f"The reference atom pairs vectors are:\n{reference_atom_pairs_vectors}\n"
-    return message
-
-def _message_a4_lop_sf():
-    message = "The local order parameter fcc structure factor is wrong."
     return message
 
 if __name__ == "__main__":

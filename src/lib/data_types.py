@@ -45,6 +45,10 @@ Box = TypeVar("Box",
                Box32,
                Box64)
 
+
+# The type for the atom_pair_terms
+type AtomPairsTerms = dict[str,np.ndarray[tuple[int],np.dtype[np.complex64]]]
+
 # The type for the magnitude of time step.
 type TimeStep16 = np.float16
 type TimeStep32 = np.float32

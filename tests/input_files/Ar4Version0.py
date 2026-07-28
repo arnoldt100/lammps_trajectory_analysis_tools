@@ -18,9 +18,9 @@ from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
 from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
 from data_types import AtomCoordinates,LatticeVectors
 from data_types import AtomPairs
+from data_types import AtomPairsTerms
 from data_types import TimeStep, TimeUnits
 from data_types import Box
-from data_types import AtomPairs
 
 class Ar4Version0:
     def __init__(self):
@@ -95,7 +95,7 @@ class Ar4Version0:
             [-0.519, 0.00, 0.519]], dtype=np.float64)
 
         """ The correct reciprocal lattice vectors of the unit FCC lattice.
-    
+
         If this array is modified, one breaks this test.
         """
         self._correct_reciprocal_lattice_vectors: LatticeVectors = np.array(
@@ -105,6 +105,12 @@ class Ar4Version0:
 
         """ The correct wave vectors of the unit FCC lattice. """
         self._wave_vectors = _create_wavevectors()
+
+        """ The exp(iq*r) terms for the atom pair terms.
+
+
+        """
+        self._atom_pairs_terms: AtomPairsTerms = _create_atom_pairs_terms()
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
@@ -189,6 +195,10 @@ class Ar4Version0:
     def atom_pairs_vectors(self)->LatticeVectors:
         return self._atom_pairs_vectors
 
+    @property
+    def atom_pair_terms(self)->AtomPairsTerms:
+        return self._atom_pairs_terms
+
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.
 
@@ -257,6 +267,30 @@ def _create_wavevectors()->LatticeVectors:
     return wavevectors
 
 
+def _create_atom_pairs_terms()->AtomPairsTerms:
+    """ If this array is modified, one breaks this test. """
+    atom_pairs_terms = {}
+    atom_pairs_terms["0-1"] = np.array([0.8090189944341818+0.5877824994372538j,
+                                        1.00 + 0j,
+                                        1.00 + 0j,
+                                        0.8090189944341818+0.5877824994372538j,
+                                        0.8090189944341818+0.5877824994372538j,
+                                        1.00 + 0j],dtype=np.complex64)
+
+    atom_pairs_terms["0-3"] = np.array([1.00 + 0j,
+                                        1.00 + 0j,
+                                        0.8090189944341818+0.5877824994372538,
+                                        1.00 + 0j,
+                                        1.00 + 0j,
+                                        0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
+
+    atom_pairs_terms["1-3"] = np.array([0.8090189944341818-0.5877824994372538j,
+                                        1.00 + 0j,
+                                        0.8090189944341818+0.5877824994372538,
+                                        0.8090189944341818-0.5877824994372538j,
+                                        0.8090189944341818-0.5877824994372538j,
+                                        0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
+    return atom_pairs_terms
 
 def _main():
     return
