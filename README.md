@@ -3,46 +3,17 @@
 Analysis and visualization toolkit for LAMMPS molecular dynamics simulations.
 
 ## Quick Start
-
-```bash
-pip install -r requirements.txt
+Setting up virtual environment for python >= 3.14
 ```
-
-```python
-from src import read_dump, RadialDistributionFunction, plot_rdf
-
-# Load trajectory
-traj = read_dump("trajectory.dump")
-
-# Compute RDF
-rdf = RadialDistributionFunction(traj, cutoff=10.0)
-r, g_r = rdf.compute()
-
-# Visualize
-plot_rdf((r, g_r), filename="rdf.png")
+rm -rf ./.venv # Remove the old virtual environment
+uv python install 3.14t # Install the free threaded python version
+uv python pin 3.14t # Lock the python version.
+uv run python -c "import sys; print('GIL Enabled:', sys._is_gil_enabled())" # Ensure the GIL is disabled.
 ```
 
 ## Documentation
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Module structure and design
-- **[docs/](docs/)** — Detailed documentation (coming soon)
-- **[examples/](examples/)** — Example scripts
-
-## Features
-
-- 📊 Radial distribution function (RDF)
-- 📈 Mean square displacement (MSD)
-- 🌊 Structure factor S(q)
-- 🎨 Trajectory visualization
-- 💾 Multiple export formats (CSV, JSON, HDF5)
-
 ## Requirements
 
-- Python 3.8+
-- numpy
-- scipy
-- matplotlib (optional, for plotting)
+- Python 3.14t+
 
-## License
-
-See [LICENSE](LICENSE)
