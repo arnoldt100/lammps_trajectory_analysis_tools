@@ -12,7 +12,6 @@ from typing import Literal, Any
 
 # Third party library imports
 import MDAnalysis as mda
-from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.lib.pkdtree import PeriodicKDTree
 from MDAnalysis.lib.distances import distance_array
 from MDAnalysis.lib.distances import calc_bonds
@@ -21,11 +20,9 @@ import numpy.typing as npt
 
 # Local imports
 from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
-from data_types import AtomCoordinates
-from data_types import LatticeVectors
-from data_types import AtomPairs
-from data_types import Box
-from data_types import MDA_Universe
+from data_types import (AtomCoordinates, AtomDisplacement,
+    LatticeVectors, AtomPairs, AtomPairsTerms, Box,
+    MDA_Universe)
 
 # ----------
 # Public members
@@ -129,7 +126,7 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
 
         cutoff: The cutoff to search for neighboring atoms.
 
-        box : An numpy 1d array floats of len 6. This is the box dimensions of
+        box : An numpy 1d array floats of length 6. This is the box dimensions of
         the atomic coordinates in "atom_coordinates" where:
             box_dimensions[0] = x-axis length in angstroms
             box_dimensions[1] = y-axis length in angstroms
@@ -195,9 +192,62 @@ def calculate_atom_pairs_vectors(universe : MDA_Universe,
 
     return atom_pair_vectors
 
+def calculate_lop_fcc_exp_terms(atom_pairs_indices,
+                                atoms_pairs_vector,
+                                wavevectors: LatticeVectors,
+                                n_atoms: int32):
+
+    """ Calculates the exp(iq*dr) for all wavevectors for a dr.
+
+    Args:
+        atoms_pairs_vector: The displacement vector dr from atom 1 to atom 2.
+
+        atom_pairs_indices: The index of the initial atom, atom 1.
+
+        wavevectors: The wave_vectors to form the dot product with dr. A numpy
+        array of shape (N,3) where wavevectors[i,:] is the i'th wave vector.
+
+        n_atoms : The total number of atoms in the MDAnalysis universe
+
+    Returns:
+        TBD
+    """
+    print("\nIn function calculate_lop_fcc_exp_terms")
+    print(f"The number of atoms: {n_atoms}")
+    print(f"atom_pairs_indices={atom_pairs_indices}")
+    (nm_pairs,_) = atom_pairs_indices.shape
+    (nm_wavevectors,_) = wavevectors.shape
+    accum_lop_nm_neighbors = np.zeros(n_atoms,dtype=np.int32)
+    accum_lop_exp_terms = np.zeros(n_atoms,dtype=np.complex64)
+    lop_exp_terms = np.zeros(nm_wavevectors,dtype=np.complex64)
+    for counter1 in range(nm_pairs):
+        [atom_index1,atom_index2] = atom_pairs_indices[counter1]
+        lop_exp_terms[:] = 0.00 + 0.00j
+        accum_lop_nm_neighbors[atom_index1] += 1
+        accum_lop_nm_neighbors[atom_index2] += 1
+        dr = atoms_pairs_vector[counter1]
+        print(f"Atom pairs: {create_atom_pair_key(atom_index1,atom_index2)}")
+        print(f"dr={dr}")
+        exp_iqr_term = np.complex64(0.00)
+        accum_exp_iqr_term = np.complex64(0.00)
+        counter2 = -1
+        for wv in wavevectors:
+            counter2 += 1
+            exp_iqr_term = np.exp(1j*np.dot(wv,dr))
+            print(f"iq*dr={1j*np.dot(wv,dr)}, exp(iq*dr)={exp_iqr_term}")
+            lop_exp_terms[counter2] = exp_iqr_term 
+            accum_exp_iqr_term += exp_iqr_term 
+        print()
+        accum_lop_exp_terms[atom_index1] += accum_exp_iqr_term 
+        accum_lop_exp_terms[atom_index2] += accum_exp_iqr_term 
+    print("accum_lop_exp_terms:")
+    print(*accum_lop_exp_terms,sep="\n")
+    print("Leaving function calculate_lop_fcc_exp_terms\n")
+    return (accum_lop_nm_neighbors,accum_lop_exp_terms)
+
 def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
-                                     cutoff : float)->float:
+                                     cutoff: float)->float:
     """ Calculates the FCC local order parameter for a set of atom coordinates.
 
     Parameters:
@@ -254,6 +304,14 @@ def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
     print(f"Atoms LOP = \n{accum_lop}")
 
     return 0.02
+
+def create_atom_pair_key(atom1: np.int32,
+                         atom2: np.int32):
+    if atom1 <= atom2:
+        key = f"{atom1}-{atom2}"
+    else:
+        key = f"{atom2}-{atom1}"
+    return key
 
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """

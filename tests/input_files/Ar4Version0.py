@@ -14,13 +14,12 @@ import MDAnalysis as mda
 from MDAnalysis.coordinates.memory import MemoryReader
 
 # Local Library package imports
-from lop_sf_fcc.lop_sf_fcc import create_reciprocal_lattice_vectors
-from lop_sf_fcc.lop_sf_fcc import create_primitive_lattice_vectors
-from data_types import AtomCoordinates,LatticeVectors
-from data_types import AtomPairs
-from data_types import AtomPairsTerms
-from data_types import TimeStep, TimeUnits
-from data_types import Box
+from lop_sf_fcc.lop_sf_fcc import (create_reciprocal_lattice_vectors,
+ create_primitive_lattice_vectors)
+
+from data_types import ( AtomCoordinates,LatticeVectors,
+    AtomPairs, AtomPairsTerms, TimeStep,
+    TimeUnits, Box, AtomExpAccumTerm)
 
 class Ar4Version0:
     def __init__(self):
@@ -108,9 +107,17 @@ class Ar4Version0:
 
         """ The exp(iq*r) terms for the atom pair terms.
 
-
+        The exp(iq*r) for each wavevector q.
         """
-        self._atom_pairs_terms: AtomPairsTerms = _create_atom_pairs_terms()
+        self._atom_pairs_exp_terms: AtomPairsTerms = (
+            _create_atom_pairs_exp_terms())
+
+        """ The accumulated exp(iq*r) terms for each atom."""
+        (nm_atoms,_) = self._coordinates.shape
+        self._accum_atom_exp_terms: AtomExpAccumTerm = (
+            _create_accum_atom_exp_terms(self._atom_pairs_exp_terms,
+                                         np.int32(nm_atoms)))
+
 
     def create_md_analysis_universe(self):
         """ Creates a MDAnalysis universe for a single trajectory from a single set of atomic coordinates.
@@ -196,8 +203,12 @@ class Ar4Version0:
         return self._atom_pairs_vectors
 
     @property
-    def atom_pair_terms(self)->AtomPairsTerms:
-        return self._atom_pairs_terms
+    def atom_pairs_exp_terms(self)->AtomPairsTerms:
+        return self._atom_pairs_exp_terms
+
+    @property
+    def atom_accum_exp_terms(self)->AtomExpAccumTerm:
+        return self._accum_atom_exp_terms
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.
@@ -267,7 +278,7 @@ def _create_wavevectors()->LatticeVectors:
     return wavevectors
 
 
-def _create_atom_pairs_terms()->AtomPairsTerms:
+def _create_atom_pairs_exp_terms()->AtomPairsTerms:
     """ If this array is modified, one breaks this test. """
     atom_pairs_terms = {}
     atom_pairs_terms["0-1"] = np.array([0.8090189944341818+0.5877824994372538j,
@@ -291,6 +302,18 @@ def _create_atom_pairs_terms()->AtomPairsTerms:
                                         0.8090189944341818-0.5877824994372538j,
                                         0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
     return atom_pairs_terms
+
+def _create_accum_atom_exp_terms(atom_pairs_exp_terms: AtomPairsTerms,
+                                 nm_atoms: np.int32)->AtomExpAccumTerm:
+
+    accum_exp_terms: AtomExpAccumTerm = (
+            np.zeros(nm_atoms,dtype=np.complex64))
+    for key,value in atom_pairs_exp_terms.items():
+        sum1 = np.sum(value)
+        (atom_index1,atom_index2) = key.split('-')
+        accum_exp_terms[int(atom_index1)] += sum1
+        accum_exp_terms[int(atom_index2)] += sum1
+    return accum_exp_terms
 
 def _main():
     return

@@ -36,6 +36,15 @@ AtomPairs = TypeVar("AtomPairs",
                     AtomPairs32,
                     AtomPairs64)
 
+# The type for the displacement vectors between a set of atom pairs.
+type AtomDisplacement16 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float16]]
+type AtomDisplacement32 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float32]]
+type AtomDisplacement64 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float64]]
+AtomDisplacement = TypeVar('AtomDisplacement',
+                          AtomDisplacement16,
+                          AtomDisplacement32,
+                          AtomDisplacement64)
+
 # The type for the box dimensions.
 type Box16 =  np.ndarray[tuple[Literal[6]],np.dtype[np.float16]]
 type Box32 =  np.ndarray[tuple[Literal[6]],np.dtype[np.float32]]
@@ -45,9 +54,11 @@ Box = TypeVar("Box",
                Box32,
                Box64)
 
-
 # The type for the atom_pair_terms
 type AtomPairsTerms = dict[str,np.ndarray[tuple[int],np.dtype[np.complex64]]]
+
+# The type for the atom_pair_terms
+type AtomExpAccumTerm = np.ndarray[tuple[int],np.dtype[np.complex64]]
 
 # The type for the magnitude of time step.
 type TimeStep16 = np.float16

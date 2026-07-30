@@ -11,7 +11,8 @@ from data_types import (
     LatticeVectors,
     MDA_Universe)
 
-from lop_sf_fcc.lop_sf_fcc import calculate_sf_fcc_order_parameter
+from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_order_parameter,
+    calculate_lop_fcc_exp_terms, create_atom_pair_key)
 
 @pytest.fixture
 def ar4_version0():
@@ -26,3 +27,26 @@ def test_lop_fcc_accumulators(ar4_version0):
                                              my_test_configuration.wave_vectors,
                                              my_test_configuration.cutoff)
     assert value == 0.01
+
+def test_lop_fcc_exp_terms(ar4_version0):
+    [my_test_configuration,my_test_configuration_universe] = ar4_version0
+
+    atom_pairs_indices = my_test_configuration.atom_pairs
+    atom_pairs_vectors = my_test_configuration.atom_pairs_vectors
+    reference_atom_pairs_exp_terms = my_test_configuration.atom_pairs_exp_terms
+    reference_atom_accum_exp_terms = my_test_configuration.atom_accum_exp_terms
+
+    wave_vectors = my_test_configuration.wave_vectors
+    n_atoms = my_test_configuration_universe.atoms.n_atoms
+
+    print(f"reference atom pairs exp terms={reference_atom_pairs_exp_terms}")
+    print(f"reference atom accum exp terms={reference_atom_accum_exp_terms}")
+    for counter in range(len(atom_pairs_indices)):
+        (lop_nm_neighbors,exp_terms) = calculate_lop_fcc_exp_terms(
+            atom_pairs_indices[counter:counter+1,:],
+            atom_pairs_vectors[counter:counter+1,:],
+            wave_vectors,n_atoms)
+
+        print(f"lop_nm_neighbors: {lop_nm_neighbors}")
+        print(f"exp_terms experimental : {exp_terms}")
+        print()

@@ -1,3 +1,3 @@
 #! /usr/bin/env bash
 
-uv run pytest tests
+PYTHON_GIL=0 uv run pytest -rA tests
