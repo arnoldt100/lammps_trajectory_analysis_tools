@@ -23,6 +23,7 @@ from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
 from data_types import (AtomCoordinates, AtomDisplacement,
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
     MDA_Universe)
+from accumulator.array_accumulator import ArrayAccumulator
 
 # ----------
 # Public members
@@ -217,14 +218,20 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
     print(f"atom_pairs_indices={atom_pairs_indices}")
     (nm_pairs,_) = atom_pairs_indices.shape
     (nm_wavevectors,_) = wavevectors.shape
-    accum_lop_nm_neighbors = np.zeros(n_atoms,dtype=np.int32)
-    accum_lop_exp_terms = np.zeros(n_atoms,dtype=np.complex64)
+    accumulator_atom_exp_terms = (
+        ArrayAccumulator(dtype=np.complex64,capacity=n_atoms,
+                         initial_value=np.complex64(0.00),
+                         name="atom_exp_accumulator"))
+    accumulator_atom_nm_neighbors = (
+        ArrayAccumulator(dtype=np.int32,capacity=n_atoms,
+                         initial_value=np.int32(0),
+                         name="atom_neighbor_accumulator"))
     lop_exp_terms = np.zeros(nm_wavevectors,dtype=np.complex64)
     for counter1 in range(nm_pairs):
         [atom_index1,atom_index2] = atom_pairs_indices[counter1]
         lop_exp_terms[:] = 0.00 + 0.00j
-        accum_lop_nm_neighbors[atom_index1] += 1
-        accum_lop_nm_neighbors[atom_index2] += 1
+        accumulator_atom_nm_neighbors.accumulate(atom_index1,1)
+        accumulator_atom_nm_neighbors.accumulate(atom_index2,1)
         dr = atoms_pairs_vector[counter1]
         print(f"Atom pairs: {create_atom_pair_key(atom_index1,atom_index2)}")
         print(f"dr={dr}")
@@ -237,13 +244,12 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
             print(f"iq*dr={1j*np.dot(wv,dr)}, exp(iq*dr)={exp_iqr_term}")
             lop_exp_terms[counter2] = exp_iqr_term 
             accum_exp_iqr_term += exp_iqr_term 
-        print()
-        accum_lop_exp_terms[atom_index1] += accum_exp_iqr_term 
-        accum_lop_exp_terms[atom_index2] += accum_exp_iqr_term 
-    print("accum_lop_exp_terms:")
-    print(*accum_lop_exp_terms,sep="\n")
+        accumulator_atom_exp_terms.accumulate(atom_index1,accum_exp_iqr_term)
+        accumulator_atom_exp_terms.accumulate(atom_index2,accum_exp_iqr_term)
+    print(accumulator_atom_exp_terms)
+    print(accumulator_atom_nm_neighbors)
     print("Leaving function calculate_lop_fcc_exp_terms\n")
-    return (accum_lop_nm_neighbors,accum_lop_exp_terms)
+    return (accumulator_atom_nm_neighbors,accumulator_atom_exp_terms)
 
 def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,

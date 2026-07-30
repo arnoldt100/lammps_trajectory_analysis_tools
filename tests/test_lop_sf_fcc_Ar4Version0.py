@@ -14,6 +14,8 @@ from data_types import (
 from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_order_parameter,
     calculate_lop_fcc_exp_terms, create_atom_pair_key)
 
+from accumulator.array_accumulator import ArrayAccumulator
+
 @pytest.fixture
 def ar4_version0():
     test_configuration = Ar4Version0()
@@ -52,4 +54,3 @@ def test_lop_fcc_exp_terms(ar4_version0):
         print(f"experimental lop_nm_neighbors: {lop_nm_neighbors}")
         print(f"experimental exp_terms: {exp_terms}")
         print(f"reference exp_terms: {reference_atom_accum_exp_terms}")
-        print()
