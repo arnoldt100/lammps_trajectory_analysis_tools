@@ -42,11 +42,14 @@ def test_lop_fcc_exp_terms(ar4_version0):
     print(f"reference atom pairs exp terms={reference_atom_pairs_exp_terms}")
     print(f"reference atom accum exp terms={reference_atom_accum_exp_terms}")
     for counter in range(len(atom_pairs_indices)):
+        key = create_atom_pair_key(*atom_pairs_indices[counter,:])
         (lop_nm_neighbors,exp_terms) = calculate_lop_fcc_exp_terms(
             atom_pairs_indices[counter:counter+1,:],
             atom_pairs_vectors[counter:counter+1,:],
             wave_vectors,n_atoms)
 
-        print(f"lop_nm_neighbors: {lop_nm_neighbors}")
-        print(f"exp_terms experimental : {exp_terms}")
+        print(f"Atom pair key: {key}")
+        print(f"experimental lop_nm_neighbors: {lop_nm_neighbors}")
+        print(f"experimental exp_terms: {exp_terms}")
+        print(f"reference exp_terms: {reference_atom_accum_exp_terms}")
         print()

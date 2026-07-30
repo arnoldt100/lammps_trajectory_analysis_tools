@@ -9,6 +9,22 @@ import MDAnalysis as mda
 # The type for an MDAnalysis Universe.
 type MDA_Universe = mda.core.universe.Universe
 
+type number16 = np.float16
+type number32 = np.float32
+type number64 = np.float64
+Number = TypeVar('Number',
+                 number16,
+                 number32,
+                 number64)
+
+type integer16 = np.int16
+type integer32 = np.int32
+type integer64 = np.int64
+Integer = TypeVar('Integer',
+                 integer16,
+                 integer32,
+                 integer64)
+
 # A C-contiguous N x 3 array of float types for atomic positions
 type AtomCoordinates16 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float16]]
 type AtomCoordinates32 = np.ndarray[tuple[int, Literal[3]], np.dtype[np.float32]]

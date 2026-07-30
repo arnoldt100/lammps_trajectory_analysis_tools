@@ -136,10 +136,10 @@ def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
             box_dimensions[5] = Angle between x and y axis in degrees
 
     Returns:
-        AtomPairs: An numpy array of integers of shape (N,2). 
+        AtomPairs: An numpy array of integers of shape (N,2).
 
         If the variable 'pairs' is returned, then the k'th pair elements
-        pairs[k,0] and pairs[k,1] are the atomic indices of the pair of atoms.
+        pairs[k,0] and pairs[k,;] are the atomic indices of the pair of atoms.
         Let i = pairs[k,0], then atom_coordinates[i,:] is coordinates of atom
         corresponding to pairs[k,0]. Similarly, Let j = pairs[k,1], then
         atom_coordinates[j,:] is coordinates of atom corresponding to
