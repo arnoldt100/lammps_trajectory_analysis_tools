@@ -15,6 +15,7 @@ from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_order_parameter,
     calculate_lop_fcc_exp_terms, create_atom_pair_key)
 
 from accumulator.array_accumulator import ArrayAccumulator
+from accumulator.merge_accumulators import merge_array_accumulators
 
 @pytest.fixture
 def ar4_version0():
@@ -41,6 +42,10 @@ def test_lop_fcc_exp_terms(ar4_version0):
     wave_vectors = my_test_configuration.wave_vectors
     n_atoms = my_test_configuration_universe.atoms.n_atoms
 
+    final_accum_exp_terms = ArrayAccumulator(dtype=np.complex64, 
+                                capacity=n_atoms,
+                                initial_value=0.00,
+                                name="Final Accumulated Exp Terms")
     print(f"reference atom pairs exp terms={reference_atom_pairs_exp_terms}")
     print(f"reference atom accum exp terms={reference_atom_accum_exp_terms}")
     for counter in range(len(atom_pairs_indices)):
@@ -50,7 +55,11 @@ def test_lop_fcc_exp_terms(ar4_version0):
             atom_pairs_vectors[counter:counter+1,:],
             wave_vectors,n_atoms)
 
+
         print(f"Atom pair key: {key}")
         print(f"experimental lop_nm_neighbors: {lop_nm_neighbors}")
         print(f"experimental exp_terms: {exp_terms}")
         print(f"reference exp_terms: {reference_atom_accum_exp_terms}")
+        final_accum_exp_terms = merge_array_accumulators(final_accum_exp_terms,
+                                                         exp_terms,name="Final Accumulated Exp Terms")
+    print(f"Final accumulated exp terms: {final_accum_exp_terms}")

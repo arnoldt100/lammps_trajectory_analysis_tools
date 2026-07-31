@@ -31,7 +31,7 @@ class ArrayAccumulator(Generic[T]):
             name: A descriptive name for the accumulator.
         """
         self._dtype: np.dtype = self._coerce_dtype(dtype)
-        self._capacity: int = self._validate_capacity(capacity)
+        self._capacity: np.int32 = self._validate_capacity(capacity)
         self._name = name
         self._size: int = 0
 
@@ -45,9 +45,9 @@ class ArrayAccumulator(Generic[T]):
         return np.dtype(dtype)
 
     @staticmethod
-    def _validate_capacity(capacity: Integer) -> int:
+    def _validate_capacity(capacity: Integer) -> np.int32:
         """Validate and normalize storage capacity."""
-        normalized_capacity = int(capacity)
+        normalized_capacity = np.int32(capacity)
         if normalized_capacity <= 0:
             raise ValueError("capacity must be a positive integer")
         return normalized_capacity
@@ -56,9 +56,9 @@ class ArrayAccumulator(Generic[T]):
         """Coerce values to the configured dtype."""
         return self._dtype.type(value)
 
-    def _validate_index(self, index: Integer) -> int:
+    def _validate_index(self, index: Integer) -> np.int32:
         """Validate and normalize an index into the backing array."""
-        normalized_index = int(index)
+        normalized_index = np.int32(index)
         if normalized_index < 0:
             raise IndexError("index must be non-negative")
         if normalized_index >= self._capacity:

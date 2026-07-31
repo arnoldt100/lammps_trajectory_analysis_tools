@@ -7,7 +7,7 @@ from typing import TypeVar
 # Local Library package imports
 import numpy as np
 
-from array_accumulator import ArrayAccumulator
+from accumulator.array_accumulator import ArrayAccumulator
 
 T = TypeVar("T", np.float64, np.int32, np.complex64)
 
@@ -40,8 +40,8 @@ def merge_array_accumulators(
             f"{lhs.dtype} vs {rhs.dtype}"
         )
 
-    merged_capacity: int = max(lhs.capacity, rhs.capacity)
-    merged_size: int = max(lhs.size, rhs.size)
+    merged_capacity: np.int32 = max(lhs.capacity, rhs.capacity)
+    merged_size: np.int32 = max(lhs.size, rhs.size)
     dtype: np.dtype = lhs.dtype
 
     lhs_padded: np.ndarray = np.zeros(merged_size, dtype=dtype)
