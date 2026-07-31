@@ -1,0 +1,60 @@
+#! /usr/bin/env python3
+"""Provides helper functions for merging ArrayAccumulator instances."""
+
+# Python standard library imports
+from typing import TypeVar
+
+# Local Library package imports
+import numpy as np
+
+from array_accumulator import ArrayAccumulator
+
+T = TypeVar("T", np.float64, np.int32, np.complex64)
+
+
+def merge_array_accumulators(
+    lhs: ArrayAccumulator[T],
+    rhs: ArrayAccumulator[T],
+    name: str = "Merged Accumulator",
+) -> ArrayAccumulator[T]:
+    """Merge two ArrayAccumulator instances by element-wise summation.
+
+    When the two accumulators have different capacities, the smaller one is
+    treated as if it were padded with zeros up to the larger capacity.
+
+    Args:
+        lhs: The left-hand accumulator.
+        rhs: The right-hand accumulator.
+        name: Optional descriptive name for the resulting accumulator.
+
+    Returns:
+        A new ArrayAccumulator whose buffer is the element-wise sum of lhs
+        and rhs, with capacity equal to the larger of the two inputs.
+
+    Raises:
+        TypeError: If the two accumulators have incompatible dtypes.
+    """
+    if lhs.dtype != rhs.dtype:
+        raise TypeError(
+            f"Cannot merge accumulators with different dtypes: "
+            f"{lhs.dtype} vs {rhs.dtype}"
+        )
+
+    merged_capacity: int = max(lhs.capacity, rhs.capacity)
+    merged_size: int = max(lhs.size, rhs.size)
+    dtype: np.dtype = lhs.dtype
+
+    lhs_padded: np.ndarray = np.zeros(merged_size, dtype=dtype)
+    rhs_padded: np.ndarray = np.zeros(merged_size, dtype=dtype)
+    lhs_padded[: lhs.size] = lhs.finalize()
+    rhs_padded[: rhs.size] = rhs.finalize()
+
+    combined: np.ndarray = lhs_padded + rhs_padded
+
+    merged: ArrayAccumulator[T] = ArrayAccumulator(
+        dtype=dtype, capacity=merged_capacity, name=name
+    )
+    for i in range(merged_size):
+        merged.accumulate(i, combined[i])
+
+    return merged

@@ -14,6 +14,7 @@ T = TypeVar("T", np.float64, np.int32, np.complex64)
 
 
 class ArrayAccumulator(Generic[T]):
+    """ A bounded accumulator for a fixed sequence of elements. """
     def __init__(
         self,
         dtype: np.dtype | type,
@@ -21,6 +22,14 @@ class ArrayAccumulator(Generic[T]):
         initial_value=0.00,
         name="Generic Accumulator",
     ) -> None:
+        """ Initialize the accumulator with a specified data type, capacity, and initial value.
+        
+        Args:
+            dtype: The data type of the accumulator elements.
+            capacity: The maximum number of elements the accumulator can hold.
+            initial_value: The initial value for all elements in the accumulator.
+            name: A descriptive name for the accumulator.
+        """
         self._dtype: np.dtype = self._coerce_dtype(dtype)
         self._capacity: int = self._validate_capacity(capacity)
         self._name = name
@@ -67,13 +76,43 @@ class ArrayAccumulator(Generic[T]):
         return message
 
     def accumulate(self, index: Integer, value: T) -> None:
-        """Adds a single value of type T to the accumulator."""
+        """Adds a single value of type T to the accumulator.
+        
+        Args:
+            index: The index at which to accumulate the value.
+            value: The value to accumulate at the specified index.
+        """
         validated_index = self._validate_index(index)
         self._buffer[validated_index] += self._coerce_value(value)
 
         self._size = max(self._size, validated_index + 1)
 
+    @property
+    def dtype(self) -> np.dtype:
+        """The NumPy dtype of the accumulator elements."""
+        return self._dtype
+
+    @property
+    def capacity(self) -> int:
+        """The maximum number of elements the accumulator can hold."""
+        return self._capacity
+
+    @property
+    def size(self) -> int:
+        """The number of populated elements in the accumulator."""
+        return self._size
+
+    @property
+    def name(self) -> str:
+        """The descriptive name of the accumulator."""
+        return self._name
+
     def finalize(self) -> np.ndarray:
-        """Returns a typed view of the actual collected data."""
+        """Returns a typed view of the actual collected data.
+        
+        Returns:
+            A NumPy array view of the accumulated data, limited to the populated
+            region.
+        """
         return self._active_view()
     

@@ -211,7 +211,11 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
         n_atoms : The total number of atoms in the MDAnalysis universe
 
     Returns:
-        TBD
+        accumulator_atom_nm_neighbors: An ArrayAccumulator that contains the
+        number of neighbors for each atom.
+
+        accumulator_atom_exp_terms: An ArrayAccumulator that contains the
+        accumulated exp(iq*dr) terms for each atom.
     """
     print("\nIn function calculate_lop_fcc_exp_terms")
     print(f"The number of atoms: {n_atoms}")
