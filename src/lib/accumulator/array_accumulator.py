@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
-""" Defines a bounded accumulator designed for a fixed sequence of elements.
-
-"""
+"""Defines a bounded accumulator designed for a fixed sequence of elements."""
 
 # Python standard library imports
 from typing import TypeVar, Generic
@@ -12,12 +10,17 @@ import numpy as np
 from data_types import Integer
 
 # Define a TypeVar restricted to supported NumPy types
-T = TypeVar('T', np.float64, np.int32, np.complex64)
+T = TypeVar("T", np.float64, np.int32, np.complex64)
+
 
 class ArrayAccumulator(Generic[T]):
-    def __init__(self, dtype: np.dtype | type, capacity: np.int32 = 100,
-                 initial_value=0.00,
-                 name="Generic Accumulator") -> None:
+    def __init__(
+        self,
+        dtype: np.dtype | type,
+        capacity: np.int32 = 100,
+        initial_value=0.00,
+        name="Generic Accumulator",
+    ) -> None:
         self._dtype: np.dtype = self._coerce_dtype(dtype)
         self._capacity: int = self._validate_capacity(capacity)
         self._name = name
@@ -55,9 +58,9 @@ class ArrayAccumulator(Generic[T]):
 
     def _active_view(self) -> np.ndarray:
         """Return only the populated logical region of the buffer."""
-        return self._buffer[:self._size]
+        return self._buffer[: self._size]
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         message = f"\n{self._name}\n"
         for counter in range(self._size):
             message += f"{self._name}[{counter}] = {self._buffer[counter]}\n"
@@ -68,10 +71,9 @@ class ArrayAccumulator(Generic[T]):
         validated_index = self._validate_index(index)
         self._buffer[validated_index] += self._coerce_value(value)
 
-        if validated_index + 1 > self._size:
-            self._size = validated_index + 1
+        self._size = max(self._size, validated_index + 1)
 
     def finalize(self) -> np.ndarray:
         """Returns a typed view of the actual collected data."""
         return self._active_view()
-
+    
