@@ -4,12 +4,12 @@
 """
 
 # Python standard library imports
-from typing import TypeVar, Generic, Union, Sequence
+from typing import TypeVar, Generic
 
 # Local Library package imports
 import numpy as np
 
-from data_types import Number, Integer
+from data_types import Integer
 
 # Define a TypeVar restricted to supported NumPy types
 T = TypeVar('T', np.float64, np.int32, np.complex64)
@@ -18,25 +18,60 @@ class ArrayAccumulator(Generic[T]):
     def __init__(self, dtype: np.dtype | type, capacity: np.int32 = 100,
                  initial_value=0.00,
                  name="Generic Accumulator") -> None:
-        self.dtype: np.dtype = np.dtype(dtype)
-        self.capacity: int = capacity
+        self._dtype: np.dtype = self._coerce_dtype(dtype)
+        self._capacity: int = self._validate_capacity(capacity)
         self._name = name
+        self._size: int = 0
 
         # Pre-allocate memory block
-        self.buffer: np.ndarray = np.empty(self.capacity, dtype=self.dtype)
-        self.buffer[:] = initial_value
+        self._buffer: np.ndarray = np.empty(self._capacity, dtype=self._dtype)
+        self._buffer[:] = self._coerce_value(initial_value)
+
+    @staticmethod
+    def _coerce_dtype(dtype: np.dtype | type) -> np.dtype:
+        """Normalize incoming dtype to a NumPy dtype instance."""
+        return np.dtype(dtype)
+
+    @staticmethod
+    def _validate_capacity(capacity: Integer) -> int:
+        """Validate and normalize storage capacity."""
+        normalized_capacity = int(capacity)
+        if normalized_capacity <= 0:
+            raise ValueError("capacity must be a positive integer")
+        return normalized_capacity
+
+    def _coerce_value(self, value: T) -> T:
+        """Coerce values to the configured dtype."""
+        return self._dtype.type(value)
+
+    def _validate_index(self, index: Integer) -> int:
+        """Validate and normalize an index into the backing array."""
+        normalized_index = int(index)
+        if normalized_index < 0:
+            raise IndexError("index must be non-negative")
+        if normalized_index >= self._capacity:
+            raise IndexError("index exceeds accumulator capacity")
+        return normalized_index
+
+    def _active_view(self) -> np.ndarray:
+        """Return only the populated logical region of the buffer."""
+        return self._buffer[:self._size]
 
     def __str__(self)->str:
-        message = f"{self._name}\n"
-        for counter in range(self.capacity):
-            message += f"{self._name}[{counter}] = {self.buffer[counter]}\n"
+        message = f"\n{self._name}\n"
+        for counter in range(self._size):
+            message += f"{self._name}[{counter}] = {self._buffer[counter]}\n"
         return message
 
     def accumulate(self, index: Integer, value: T) -> None:
         """Adds a single value of type T to the accumulator."""
-        self.buffer[index] += value
+        validated_index = self._validate_index(index)
+        self._buffer[validated_index] += self._coerce_value(value)
+
+        if validated_index + 1 > self._size:
+            self._size = validated_index + 1
 
     def finalize(self) -> np.ndarray:
         """Returns a typed view of the actual collected data."""
-        return self.buffer[:self.capacity]
+        return self._active_view()
 
