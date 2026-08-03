@@ -12,7 +12,9 @@ from data_types import (
     LatticeVectors,
     MDA_Universe)
 
-from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_atom_order_parameter_no_ceoffs,
+from lop_sf_fcc.lop_sf_fcc import ( 
+    calculate_sf_fcc_atom_order_parameter_no_ceoffs,
+    calculate_sf_fcc_atom_order_parameter_with_ceoffs,
     calculate_lop_fcc_exp_terms, 
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)

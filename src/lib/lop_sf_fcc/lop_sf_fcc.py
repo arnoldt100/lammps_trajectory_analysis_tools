@@ -271,6 +271,9 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
         accumulator_atom_exp_terms.accumulate(atom_index2,accum_exp_iqr_term)
     return (accumulator_atom_nm_neighbors,accumulator_atom_exp_terms)
 
+def calculate_sf_fcc_atom_order_parameter_with_ceoffs()->np.ndarray:
+    raise NotImplementedError
+
 def calculate_sf_fcc_atom_order_parameter_no_ceoffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
                                      cutoff: float)->np.ndarray:
