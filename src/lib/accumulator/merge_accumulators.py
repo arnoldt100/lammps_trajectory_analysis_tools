@@ -41,20 +41,19 @@ def merge_array_accumulators(
         )
 
     merged_capacity: np.int32 = max(lhs.capacity, rhs.capacity)
-    merged_size: np.int32 = max(lhs.size, rhs.size)
     dtype: np.dtype = lhs.dtype
 
-    lhs_padded: np.ndarray = np.zeros(merged_size, dtype=dtype)
-    rhs_padded: np.ndarray = np.zeros(merged_size, dtype=dtype)
-    lhs_padded[: lhs.size] = lhs.finalize()
-    rhs_padded[: rhs.size] = rhs.finalize()
+    lhs_padded: np.ndarray = np.zeros(merged_capacity, dtype=dtype)
+    rhs_padded: np.ndarray = np.zeros(merged_capacity, dtype=dtype)
+    lhs_padded[: lhs.capacity] = lhs.finalize()
+    rhs_padded[: rhs.capacity] = rhs.finalize()
 
     combined: np.ndarray = lhs_padded + rhs_padded
 
     merged: ArrayAccumulator[T] = ArrayAccumulator(
         dtype=dtype, capacity=merged_capacity, name=name
     )
-    for i in range(merged_size):
+    for i in range(merged_capacity):
         merged.accumulate(i, combined[i])
 
     return merged

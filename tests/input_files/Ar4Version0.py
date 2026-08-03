@@ -17,6 +17,8 @@ from MDAnalysis.coordinates.memory import MemoryReader
 from lop_sf_fcc.lop_sf_fcc import (create_reciprocal_lattice_vectors,
  create_primitive_lattice_vectors)
 
+from accumulator.array_accumulator import ArrayAccumulator
+
 from data_types import ( AtomCoordinates,LatticeVectors,
     AtomPairs, AtomPairsTerms, TimeStep,
     TimeUnits, Box, AtomExpAccumTerm)
@@ -114,7 +116,7 @@ class Ar4Version0:
 
         """ The accumulated exp(iq*r) terms for each atom."""
         (nm_atoms,_) = self._coordinates.shape
-        self._accum_atom_exp_terms: AtomExpAccumTerm = (
+        self._accum_atom_exp_terms: ArrayAccumulator = (
             _create_accum_atom_exp_terms(self._atom_pairs_exp_terms,
                                          np.int32(nm_atoms)))
 
@@ -207,7 +209,7 @@ class Ar4Version0:
         return self._atom_pairs_exp_terms
 
     @property
-    def atom_accum_exp_terms(self)->AtomExpAccumTerm:
+    def atom_accum_exp_terms(self)->ArrayAccumulator:
         return self._accum_atom_exp_terms
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
@@ -297,22 +299,24 @@ def _create_atom_pairs_exp_terms()->AtomPairsTerms:
 
     atom_pairs_terms["1-3"] = np.array([0.8090189944341818-0.5877824994372538j,
                                         1.00 + 0j,
-                                        0.8090189944341818+0.5877824994372538,
+                                        0.8090189944341818+0.5877824994372538j,
                                         0.8090189944341818-0.5877824994372538j,
                                         0.8090189944341818-0.5877824994372538j,
                                         0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
     return atom_pairs_terms
 
 def _create_accum_atom_exp_terms(atom_pairs_exp_terms: AtomPairsTerms,
-                                 nm_atoms: np.int32)->AtomExpAccumTerm:
+                                 nm_atoms: np.int32)->ArrayAccumulator:
 
-    accum_exp_terms: AtomExpAccumTerm = (
-            np.zeros(nm_atoms,dtype=np.complex64))
+    accum_exp_terms: ArrayAccumulator= ( ArrayAccumulator(np.complex64,
+                                                          initial_value=0j,
+                                                          capacity=4,
+                                                          name="Reference Accumulated Atom exp Terms"))
     for key,value in atom_pairs_exp_terms.items():
         sum1 = np.sum(value)
         (atom_index1,atom_index2) = key.split('-')
-        accum_exp_terms[int(atom_index1)] += sum1
-        accum_exp_terms[int(atom_index2)] += sum1
+        accum_exp_terms.accumulate(np.int32(atom_index1),sum1)
+        accum_exp_terms.accumulate(np.int32(atom_index2),sum1)
     return accum_exp_terms
 
 def _main():
