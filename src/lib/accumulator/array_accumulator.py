@@ -36,8 +36,10 @@ class ArrayAccumulator(Generic[T]):
 
         # Pre-allocate memory block
         self._buffer: np.ndarray = np.empty(self._capacity, dtype=self._dtype)
-        self._intial_value = initial_value
-        self._buffer[:] = self._coerce_value(initial_value)
+        self._intial_value = self._coerce_value(initial_value)
+        self._buffer[:] = self._intial_value
+        self._counters : np.ndarray = np.zeros(self._capacity, dtype=np.int32)
+ 
 
     @staticmethod
     def _coerce_dtype(dtype: np.dtype | type) -> np.dtype:
@@ -85,6 +87,19 @@ class ArrayAccumulator(Generic[T]):
         """
         validated_index = self._validate_index(index)
         self._buffer[validated_index] += self._coerce_value(value)
+        self._counters[validated_index] += 1
+
+    def reset(self):
+        """Reset the accumulator in place.
+
+        Sets every entry in the internal buffer to the configured initial value and
+        sets all counters to zero, preserving capacity and dtype.
+
+        Returns:
+            None.
+        """
+        self._buffer[:] = self._intial_value
+        self._counters[:] = 0
 
     @property
     def dtype(self) -> np.dtype:

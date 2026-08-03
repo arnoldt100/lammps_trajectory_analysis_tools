@@ -16,7 +16,6 @@ from data_types import (
 
 from lop_sf_fcc.lop_sf_fcc import (
     calculate_atom_pairs,
-    calculate_sf_fcc_order_parameter,
     create_reciprocal_lattice_vectors,
     create_wavevectors,
     calculate_atom_pairs_vectors)

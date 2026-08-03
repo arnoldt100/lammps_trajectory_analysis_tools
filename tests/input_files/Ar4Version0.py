@@ -116,9 +116,15 @@ class Ar4Version0:
 
         """ The accumulated exp(iq*r) terms for each atom."""
         (nm_atoms,_) = self._coordinates.shape
-        self._accum_atom_exp_terms: ArrayAccumulator = (
-            _create_accum_atom_exp_terms(self._atom_pairs_exp_terms,
+        self._accum_atom_exp_terms_no_coeffs: ArrayAccumulator = (
+            _create_accum_atom_exp_terms_no_coeffs(self._atom_pairs_exp_terms,
                                          np.int32(nm_atoms)))
+
+        self._accum_atom_exp_terms_with_coeffs: np.ndarray = (
+            _create_accum_atom_exp_terms_with_coeffs(
+                self._atom_pairs_exp_terms,
+                np.int32(nm_atoms),
+                self._wave_vectors))
 
 
     def create_md_analysis_universe(self):
@@ -209,8 +215,12 @@ class Ar4Version0:
         return self._atom_pairs_exp_terms
 
     @property
-    def atom_accum_exp_terms(self)->ArrayAccumulator:
-        return self._accum_atom_exp_terms
+    def atom_accum_exp_terms_nocoeffs(self)->ArrayAccumulator:
+        return self._accum_atom_exp_terms_no_coeffs
+
+    @property
+    def atom_accum_exp_terms_with_coeffs(self)->ArrayAccumulator:
+        return self._accum_atom_exp_terms_with_coeffs
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.
@@ -292,7 +302,7 @@ def _create_atom_pairs_exp_terms()->AtomPairsTerms:
 
     atom_pairs_terms["0-3"] = np.array([1.00 + 0j,
                                         1.00 + 0j,
-                                        0.8090189944341818+0.5877824994372538,
+                                        0.8090189944341818+0.5877824994372538j,
                                         1.00 + 0j,
                                         1.00 + 0j,
                                         0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
@@ -305,19 +315,54 @@ def _create_atom_pairs_exp_terms()->AtomPairsTerms:
                                         0.8090189944341818+0.5877824994372538j],dtype=np.complex64)
     return atom_pairs_terms
 
-def _create_accum_atom_exp_terms(atom_pairs_exp_terms: AtomPairsTerms,
+def _create_accum_atom_exp_terms_no_coeffs(atom_pairs_exp_terms: AtomPairsTerms,
                                  nm_atoms: np.int32)->ArrayAccumulator:
 
     accum_exp_terms: ArrayAccumulator= ( ArrayAccumulator(np.complex64,
                                                           initial_value=0j,
                                                           capacity=4,
                                                           name="Reference Accumulated Atom exp Terms"))
+
+    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
+
     for key,value in atom_pairs_exp_terms.items():
         sum1 = np.sum(value)
         (atom_index1,atom_index2) = key.split('-')
         accum_exp_terms.accumulate(np.int32(atom_index1),sum1)
         accum_exp_terms.accumulate(np.int32(atom_index2),sum1)
+
     return accum_exp_terms
+
+def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerms,
+                                             nm_atoms: np.int32,
+                                             wavevectors: np.ndarray)->np.ndarray:
+
+    accum_exp_terms: ArrayAccumulator= ( ArrayAccumulator(np.complex64,
+                                                          initial_value=0j,
+                                                          capacity=4,
+                                                          name="Reference Accumulated Atom exp Terms"))
+
+    accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
+    (nm_wavevectors,_) = wavevectors.shape
+    for key,value in atom_pairs_exp_terms.items():
+        sum1 = np.sum(value)
+        (atom_index1,atom_index2) = key.split('-')
+        accum_lop_terms[np.int32(atom_index1)]  += sum1
+        accum_lop_terms[np.int32(atom_index2)]  += sum1
+        accum_lop_nm_neighbors[np.int32(atom_index1)] += 1
+        accum_lop_nm_neighbors[np.int32(atom_index2)] += 1
+
+    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
+    for atom_index in range(nm_atoms):
+        x = np.complex64(0.00)
+        if accum_lop_nm_neighbors[atom_index] > 0:
+            x = accum_lop_terms[atom_index]
+            y = np.abs(x)**2
+            accum_lop[atom_index] = y/((nm_wavevectors*accum_lop_nm_neighbors[atom_index])**2)
+    return accum_lop
 
 def _main():
     return

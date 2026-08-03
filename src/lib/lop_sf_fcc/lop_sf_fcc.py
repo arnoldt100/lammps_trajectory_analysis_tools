@@ -220,7 +220,7 @@ def calculate_lop_fcc_atom_pair_exp_terms(dr,
 def calculate_lop_fcc_exp_terms(atom_pairs_indices,
                                 atoms_pairs_vector,
                                 wavevectors: LatticeVectors,
-                                n_atoms: int32):
+                                n_atoms: np.int32):
 
     """ Calculates the exp(iq*dr) for all wavevectors for all atom pairs in
     atom_pairs_indices.
@@ -258,7 +258,7 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
     accumulator_exp_x = (
         ArrayAccumulator(dtype=np.complex64,capacity=nm_wavevectors,
                          initial_value=np.complex64(0.00),
-                         name="waveivector_exp_accumulator"))
+                         name="wavevector_exp_accumulator"))
 
     for counter1 in range(nm_pairs):
         [atom_index1,atom_index2] = atom_pairs_indices[counter1]
@@ -271,13 +271,15 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
         accumulator_atom_exp_terms.accumulate(atom_index2,accum_exp_iqr_term)
     return (accumulator_atom_nm_neighbors,accumulator_atom_exp_terms)
 
-def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
+def calculate_sf_fcc_atom_order_parameter_no_ceoffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
-                                     cutoff: float)->float:
-    """ Calculates the FCC local order parameter for a set of atom coordinates.
+                                     cutoff: float)->np.ndarray:
+    """ Calculates the FCC local order parameter exp(iq*r) for a set of atom coordinates.
+
+    These terms do not factor in any coefficients.
 
     Parameters:
-        univers: The MDAnalysis universe that contains all the atoms.
+        universe: The MDAnalysis universe that contains all the atoms.
 
         wave_vectors: An numpy array of floats with array shape (N,3) where N
         is the number of wave vectors. The The [i,:] slice is the i'th
@@ -292,50 +294,40 @@ def calculate_sf_fcc_order_parameter(universe : MDA_Universe,
     pairs = calculate_atom_pairs(atom_coordinates,cutoff,box)
     atom_pairs_vectors = calculate_atom_pairs_vectors(universe,pairs)
 
-    # Create an accumulator over for each atom. For each atom we acummulate 
+    # Create an accumulator over for each atom. For each atom we accumulate 
     # the number of neighbors and the exp(q*r) terms.
     nm_atoms = universe.atoms.n_atoms
     (nm_wavevectors,_) = wave_vectors.shape
     accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
     accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
     accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
-
-
  
     (nm_pairs,_) = pairs.shape
     for counter in range(nm_pairs):
         accumulator_exp_x = (
-            ArrayAccumulator(dtype=np.complex64,capacity=nm_wavevectors,
+            ArrayAccumulator(dtype=np.complex64,
+                             capacity=np.int32(nm_wavevectors),
                              initial_value=np.complex64(0.00),
                              name="wavevector_exp_accumulator"))
         atom_index1 = pairs[counter,0]
         atom_index2 = pairs[counter,1]
         dr = atom_pairs_vectors[counter]
-        print(f"Atoms pairs: {atom_index1} -- {atom_index2}; dr = {dr}")
-        print(f"Wavevectors: {wave_vectors}")
         accum_lop_nm_neighbors[atom_index1] += 1
         accum_lop_nm_neighbors[atom_index2] += 1
         accum1 = calculate_lop_fcc_atom_pair_exp_terms(dr,
                     wave_vectors,
                     accumulator_exp_x)
-        print(f"Atoms pairs exp sum: {atom_index1} -- {atom_index2}; exp_sum = {accum1}")
         accum_lop_terms[atom_index1] += accum1
         accum_lop_terms[atom_index2] += accum1
-        print(f"accumulator_exp_x=\n{accumulator_exp_x}")
-        print("\n\n")
 
-    for atom_index in range(nm_atoms):
-        x = np.complex64(0.00)
-        if accum_lop_nm_neighbors[atom_index] > 0:
-            x = accum_lop_terms[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
-            x = np.abs(x)**2
-            accum_lop[atom_index] = x/((nm_wavevectors*accum_lop_nm_neighbors[atom_index])**2)
+    # for atom_index in range(nm_atoms):
+    #     x = np.complex64(0.00)
+    #     if accum_lop_nm_neighbors[atom_index] > 0:
+    #         x = accum_lop_terms[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
+    #         x = np.abs(x)**2
+    #         accum_lop[atom_index] = x
 
-    print(f"Atoms number of neighbors = \n{accum_lop_nm_neighbors}")
-    print(f"Atoms LOP terms = \n{accum_lop_terms}")
-    print(f"Atoms LOP = \n{accum_lop}")
-
-    return 0.02
+    return accum_lop_terms
 
 def create_atom_pair_key(atom1: np.int32,
                          atom2: np.int32):

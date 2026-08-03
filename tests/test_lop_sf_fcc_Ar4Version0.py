@@ -1,7 +1,8 @@
 # Third party library imports
+import enum
 import pytest
 import numpy as np
-from numpy.typing import npt
+import numpy.typing as npt
 
 # Local Library package imports
 from tests.input_files.Ar4Version0 import Ar4Version0
@@ -11,7 +12,7 @@ from data_types import (
     LatticeVectors,
     MDA_Universe)
 
-from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_order_parameter,
+from lop_sf_fcc.lop_sf_fcc import ( calculate_sf_fcc_atom_order_parameter_no_ceoffs,
     calculate_lop_fcc_exp_terms, 
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)
@@ -30,29 +31,70 @@ class ErrMsgLopFccExpTerms:
         return
 
     @classmethod
-    def incorrect_exp_terms(self,
+    def incorrect_exp_terms(cls,
             atom1_index: np.int32,
             atom2_index: np.int32,
             dr: np.ndarray ,
-            wavevectors: np.NDarray[tuple[],dtype=np.float64] ,
-            ref_exp_terms: np.ndarray ,
-            experimental_exp_terms: np.array)->str:
-        """
+            wavevectors: np.ndarray ,
+            ref_exp_terms: np.ndarray,
+            experimental_exp_terms: np.ndarray)->str:
+        """ Creates an error meessage for incorect exp terms.
+
+        Given an atom pau
+
         Args:
             atom1_index : The index of the initial atom.
             atom2_index : The index of the destination atom.
             dr : The displacement vector from atom1 to atom2.
+
+        Returns:
+            Returns a string. The string contains the following information:
+                * The atom pair indices 
+                * The displacement vector form atom1 to atom atom2
+                * The wave vector terms
+                * The reference exp terms
+                * The programatically calculated exp terms
+
         """
-        message = "Dummy error message"
+        message  = f"\nAtoms pairs indices, {atom1_index} and {atom2_index}, have incorrect exp terms."
+        message += f"\nwavevectors = {wavevectors}\n\n"
+        message += f"dr = {dr}\n\n"
+        message += "exp terms\n"
+        message += f"experimental    reference\n"
+        message += f"-------------------------\n"
+        for idx,value in enumerate(ref_exp_terms):
+            message += f"{experimental_exp_terms[idx]} , {ref_exp_terms[idx]}\n"
         return message
 
-def test_lop_fcc_accumulators(ar4_version0):
-    message = "The local order parameter fcc structure factor is wrong."
+def test_lop_sf_fcc_atom_order_parameter_with_coeffs(ar4_version0):
+    rtolerance = 1e-5
+    atolerance = 1e-8
+    
     [my_test_configuration,my_test_configuration_universe] = ar4_version0
-    value = calculate_sf_fcc_order_parameter(my_test_configuration_universe,
-                                             my_test_configuration.wave_vectors,
-                                             my_test_configuration.cutoff)
-    assert value == 0.01
+
+    reference_values = my_test_configuration.atom_accum_exp_terms_with_coeffs
+
+    print(f"reference values = {reference_values}")
+
+def test_lop_sf_fcc_atom_order_parameter_no_ceoffs(ar4_version0):
+    rtolerance = 1e-5
+    atolerance = 1e-8
+
+    [my_test_configuration,my_test_configuration_universe] = ar4_version0
+
+    programatic_values = calculate_sf_fcc_atom_order_parameter_no_ceoffs(my_test_configuration_universe,
+                                              my_test_configuration.wave_vectors,
+                                              my_test_configuration.cutoff)
+
+    reference_values = my_test_configuration.atom_accum_exp_terms_nocoeffs
+
+    np.testing.assert_allclose(programatic_values,
+                               reference_values.finalize(),
+                               rtol=rtolerance,
+                               atol=atolerance,
+                               equal_nan=False,
+                               strict=True)
+
 
 def test_lop_fcc_exp_terms(ar4_version0):
     # The tolerances for comparing the exp terms.
@@ -70,22 +112,28 @@ def test_lop_fcc_exp_terms(ar4_version0):
 
     for row_id, atom_pair in enumerate(atom_pairs_indices):
         dr = atom_pairs_vectors[row_id]
-
         key = create_atom_pair_key(*atom_pair)
         accumulator_exp_x = (
             ArrayAccumulator(dtype=np.complex64,capacity=nm_wavevectors,
                              initial_value=np.complex64(0.00),
                              name="wavevector_exp_accumulator"))
         accum1 = calculate_lop_fcc_atom_pair_exp_terms(dr,wave_vectors,accumulator_exp_x)
-        print(f"key={key}")
-        print(f"accumulator_exp_x={accumulator_exp_x.finalize()}")
-        print(f"reference_atom_pairs_exp_terms={reference_atom_pairs_exp_terms[key]}")
-        close_enough = np.allocate()
 
-        print(f"testing atom pair {atom_pair}")
-        message  = f"For atom indicex {atom_pair[0]} and {atom_pair[1]} we have exp(iq*r) that are not in tolerance.\n"
-        message += f"dr={dr}\n"
-        for idx, row in enumerate(accumulator_exp_x):
-            message += f"  "
-        print("\n")
+        error_message = ErrMsgLopFccExpTerms.incorrect_exp_terms(
+                atom_pair[0],
+                atom_pair[1],
+                dr,
+                wave_vectors,
+                reference_atom_pairs_exp_terms[key],
+                accumulator_exp_x.finalize())
+
+
+        np.testing.assert_allclose(accumulator_exp_x.finalize(),
+                                   reference_atom_pairs_exp_terms[key],
+                                   rtol=rtolerance,
+                                   atol=atolerance,
+                                   equal_nan=False,
+                                   strict=True,
+                                   err_msg=error_message)
+
 
