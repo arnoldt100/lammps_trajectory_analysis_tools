@@ -288,13 +288,27 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
         accum_lop_nm_neighbors: The number of neighbors atoms in calculating the structure factor.
 
     Returns:
-        accum_lop_terms_no_coeffs: The struture factor terms for each atom
+        accum_lop_terms_with_coeffs: The struture factor terms for each atom
         adjusted for coefficients.
 
     """
-
-    final_accum_lop_terms = np.zeros(nm_atoms,dtype=np.float64)
-    return final_accum_lop_terms
+    print("\nIn function calculate_sf_fcc_atom_order_parameter_with_coeffs")
+    print(f"nm_atoms={nm_atoms}")
+    print(f"accum_lop_terms_no_coeffs={accum_lop_terms_no_coeffs}")
+    accum_lop_terms_with_coeffs = np.zeros(nm_atoms,dtype=np.complex64)
+    for atom_index in range(nm_atoms):
+        x = np.complex64(0.00)
+        print(f"Pre accum_lop_terms_with_coeffs[{atom_index}] = {accum_lop_terms_with_coeffs[atom_index]}")
+        if accum_lop_nm_neighbors[atom_index] > 0:
+            x = accum_lop_terms_no_coeffs[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
+            print(f"nm_wavevectors={nm_wavevectors}")
+            print(f"accum_lop_nm_neighbors={accum_lop_nm_neighbors[atom_index]}")
+            print(f"\tx={x}")
+            y = np.abs(x)**2
+            accum_lop_terms_with_coeffs[atom_index] = y
+        print(f"Post accum_lop_terms_with_coeffs[{atom_index}] = {accum_lop_terms_with_coeffs[atom_index]}\n")
+    print("Leaving function calculate_sf_fcc_atom_order_parameter_with_coeffs\n")
+    return accum_lop_terms_with_coeffs
 
 def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,

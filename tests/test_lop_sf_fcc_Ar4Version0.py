@@ -81,7 +81,7 @@ def test_lop_sf_fcc_atom_order_parameter_with_coeffs(ar4_version0):
 
     programatic_values = calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
                                                                            nm_wavevectors,
-                                                                           atom_accum_exp_terms_nocoeffs,
+                                                                           atom_accum_exp_terms_nocoeffs.finalize(),
                                                                            accum_lop_nm_neighbors)
 
     reference_values = my_test_configuration.atom_accum_exp_terms_with_coeffs

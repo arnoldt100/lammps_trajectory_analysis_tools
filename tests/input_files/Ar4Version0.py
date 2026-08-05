@@ -66,9 +66,6 @@ class Ar4Version0:
         self._reciprocal_lattice_vectors: LatticeVectors = (
             create_reciprocal_lattice_vectors(self._edge_length))
 
-        """ The number of wave_vectors. """
-        self._nm_wavevectors: np.int32 = _compute_nm_wavevectors(self._reciprocal_lattice_vectors)
-
         """ The lattice vectors of the FCC structure. """
         self._primitive_lattice_vectors: LatticeVectors = (
             create_primitive_lattice_vectors(self._edge_length))
@@ -120,7 +117,10 @@ class Ar4Version0:
              [ 0.6053165,  0.6053165, -0.6053165]],dtype=np.float64)
 
         """ The correct wave vectors of the unit FCC lattice. """
-        self._wave_vectors = _create_wavevectors()
+        self._wave_vectors = _create_reference_wavevectors()
+
+        """ The number of wave_vectors. """
+        self._nm_wavevectors: np.int32 = _compute_nm_wavevectors(self._wave_vectors)
 
         """ The exp(iq*r) terms for the atom pair terms.
 
@@ -300,8 +300,8 @@ def _create_right_rectangular_box(edge_scaling_factor: np.float64,
                          np.float64)
     return box
 
-def _create_wavevectors()->LatticeVectors:
-    """ The wave vectors are a linear combination of the reciprocal lattice vectors.
+def _create_reference_wavevectors()->LatticeVectors:
+    """ The reference wave vectors are a linear combination of the reciprocal lattice vectors.
 
     wv_0 = reciprocal_lattice_vectors[1] + reciprocal_lattice_vectors[2]
     wv_1 = reciprocal_lattice_vectors[0] + reciprocal_lattice_vectors[2]
@@ -366,6 +366,7 @@ def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerm
                                              nm_atoms: np.int32,
                                              wavevectors: np.ndarray)->np.ndarray:
 
+    print("\nIn method _create_accum_atom_exp_terms_with_coeffs")
     accum_exp_terms: ArrayAccumulator= ( ArrayAccumulator(np.complex64,
                                                           initial_value=0j,
                                                           capacity=4,
@@ -382,16 +383,21 @@ def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerm
         accum_lop_nm_neighbors[np.int32(atom_index1)] += 1
         accum_lop_nm_neighbors[np.int32(atom_index2)] += 1
 
+    print(f"accum_lop_terms_no_coeffs={accum_lop_terms}")
+
     accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
     for atom_index in range(nm_atoms):
+        print(f"Pre -accum_lop_terms_with_coeffs[{atom_index}] = {accum_lop[atom_index]}")
         x = np.complex64(0.00)
         if accum_lop_nm_neighbors[atom_index] > 0:
             x = accum_lop_terms[atom_index]
             y = np.abs(x)**2
+            print(f"nm_wavevectors={nm_wavevectors}")
+            print(f"accum_lop_nm_neighbors={accum_lop_nm_neighbors[atom_index]}")
+            print(f"\ty={y}")
             accum_lop[atom_index] = y/((nm_wavevectors*accum_lop_nm_neighbors[atom_index])**2)
-
-    for atom_index in range(nm_atoms):
-        pass
+        print(f"Post accum_lop_terms_with_coeffs[{atom_index}] = {accum_lop[atom_index]}\n")
+    print("Leaving method _create_accum_atom_exp_terms_with_coeffs\n")
 
     return accum_lop
 
