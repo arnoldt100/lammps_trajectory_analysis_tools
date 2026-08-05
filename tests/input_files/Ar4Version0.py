@@ -21,7 +21,7 @@ from accumulator.array_accumulator import ArrayAccumulator
 
 from data_types import ( AtomCoordinates,LatticeVectors,
     AtomPairs, AtomPairsTerms, TimeStep,
-    TimeUnits, Box, AtomExpAccumTerm)
+    TimeUnits, Box)
 
 class Ar4Version0:
     def __init__(self):
@@ -59,15 +59,24 @@ class Ar4Version0:
         self._coordinates: AtomCoordinates = (
             _scale_atom_coordinates(self._coordinates1,self._box))
 
+        """ The number of atoms in the system. """
+        self._nm_atoms: np.int32 =_compute_nm_atoms(self._coordinates)
+
         """ The reciprocal lattice vectors of the FCC structure. """
         self._reciprocal_lattice_vectors: LatticeVectors = (
             create_reciprocal_lattice_vectors(self._edge_length))
+
+        """ The number of wave_vectors. """
+        self._nm_wavevectors: np.int32 = _compute_nm_wavevectors(self._reciprocal_lattice_vectors)
 
         """ The lattice vectors of the FCC structure. """
         self._primitive_lattice_vectors: LatticeVectors = (
             create_primitive_lattice_vectors(self._edge_length))
 
-        """ The absolute path to the PSF file. """
+        """ The absolute path to the PSF file. 
+
+        Do not modify. Modification will berak this test configuration.
+        """
         self._psf_filepath: str = (
             os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf"))
 
@@ -80,9 +89,15 @@ class Ar4Version0:
         # cls.cutoff = 1.0*cls.edge_length
         self._cutoff = 0.5*self._edge_length
 
-        """ The correct atom pairs for cutoff and set of atoms. """
+        """ The correct atom pairs for cutoff and set of atoms. 
+
+        Do not modify. Modification will berak this test configuration.
+        """
         self._atom_pairs: AtomPairs = (
             np.array([[0,1],[0,3],[1,3]],dtype=np.int32))
+
+        """ The number of neigbors for each atom. """
+        self.accum_lop_nm_neighbors= np.array([2,2,0,2],dtype=np.int32)
 
         """ The correct atom pairs vectors adjusted for pbc conditions.
 
@@ -167,6 +182,10 @@ class Ar4Version0:
         return self._coordinates
 
     @property
+    def nm_atoms(self):
+        return self._nm_atoms
+
+    @property
     def timeunits(self)->TimeUnits:
         return self._timeunits
 
@@ -184,7 +203,7 @@ class Ar4Version0:
 
     @property
     def cutoff(self)->np.float64:
-        return self._cutoff
+        return np.float64(self._cutoff)
 
     @property
     def reciprocal_lattice_vectors(self)->LatticeVectors:
@@ -197,6 +216,10 @@ class Ar4Version0:
     @property
     def wave_vectors(self)->LatticeVectors:
         return self._wave_vectors
+
+    @property
+    def nm_wavevectors(self)->np.int32:
+        return self._nm_wavevectors
 
     @property
     def lattice_edge_length(self)->np.float64:
@@ -221,6 +244,14 @@ class Ar4Version0:
     @property
     def atom_accum_exp_terms_with_coeffs(self)->ArrayAccumulator:
         return self._accum_atom_exp_terms_with_coeffs
+
+def _compute_nm_atoms(coordinates: AtomCoordinates)->np.int32:
+    (nm_atoms,_) = coordinates.shape
+    return np.int32(nm_atoms)
+
+def _compute_nm_wavevectors(wavevectors: LatticeVectors)->np.int32:
+    (nm_wavevectors,_) = wavevectors.shape
+    return np.int32(nm_wavevectors)
 
 def _scale_atom_coordinates(atom_coordinates: AtomCoordinates, box: Box):
     """ Scales the atoms coordinates by the length of ege in box.
@@ -323,10 +354,6 @@ def _create_accum_atom_exp_terms_no_coeffs(atom_pairs_exp_terms: AtomPairsTerms,
                                                           capacity=4,
                                                           name="Reference Accumulated Atom exp Terms"))
 
-    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
-    accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
-    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
-
     for key,value in atom_pairs_exp_terms.items():
         sum1 = np.sum(value)
         (atom_index1,atom_index2) = key.split('-')
@@ -362,6 +389,10 @@ def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerm
             x = accum_lop_terms[atom_index]
             y = np.abs(x)**2
             accum_lop[atom_index] = y/((nm_wavevectors*accum_lop_nm_neighbors[atom_index])**2)
+
+    for atom_index in range(nm_atoms):
+        pass
+
     return accum_lop
 
 def _main():

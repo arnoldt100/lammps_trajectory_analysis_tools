@@ -13,8 +13,8 @@ from data_types import (
     MDA_Universe)
 
 from lop_sf_fcc.lop_sf_fcc import ( 
-    calculate_sf_fcc_atom_order_parameter_no_ceoffs,
-    calculate_sf_fcc_atom_order_parameter_with_ceoffs,
+    calculate_sf_fcc_atom_order_parameter_no_coeffs,
+    calculate_sf_fcc_atom_order_parameter_with_coeffs,
     calculate_lop_fcc_exp_terms, 
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)
@@ -71,12 +71,26 @@ class ErrMsgLopFccExpTerms:
 def test_lop_sf_fcc_atom_order_parameter_with_coeffs(ar4_version0):
     rtolerance = 1e-5
     atolerance = 1e-8
-    
+
     [my_test_configuration,my_test_configuration_universe] = ar4_version0
 
-    reference_values = my_test_configuration.atom_accum_exp_terms_with_coeffs
+    atom_accum_exp_terms_nocoeffs = my_test_configuration.atom_accum_exp_terms_nocoeffs
+    nm_wavevectors = my_test_configuration.nm_wavevectors
+    accum_lop_nm_neighbors = my_test_configuration.accum_lop_nm_neighbors
+    nm_atoms = my_test_configuration.nm_atoms
 
-    print(f"reference values = {reference_values}")
+    programatic_values = calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
+                                                                           nm_wavevectors,
+                                                                           atom_accum_exp_terms_nocoeffs,
+                                                                           accum_lop_nm_neighbors)
+
+    reference_values = my_test_configuration.atom_accum_exp_terms_with_coeffs
+    np.testing.assert_allclose(programatic_values,
+                               reference_values,
+                               rtol=rtolerance,
+                               atol=atolerance,
+                               equal_nan=False,
+                               strict=True)
 
 def test_lop_sf_fcc_atom_order_parameter_no_ceoffs(ar4_version0):
     rtolerance = 1e-5
@@ -84,7 +98,7 @@ def test_lop_sf_fcc_atom_order_parameter_no_ceoffs(ar4_version0):
 
     [my_test_configuration,my_test_configuration_universe] = ar4_version0
 
-    programatic_values = calculate_sf_fcc_atom_order_parameter_no_ceoffs(my_test_configuration_universe,
+    programatic_values = calculate_sf_fcc_atom_order_parameter_no_coeffs(my_test_configuration_universe,
                                               my_test_configuration.wave_vectors,
                                               my_test_configuration.cutoff)
 

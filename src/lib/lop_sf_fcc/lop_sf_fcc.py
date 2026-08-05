@@ -271,17 +271,40 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
         accumulator_atom_exp_terms.accumulate(atom_index2,accum_exp_iqr_term)
     return (accumulator_atom_nm_neighbors,accumulator_atom_exp_terms)
 
-def calculate_sf_fcc_atom_order_parameter_with_ceoffs()->np.ndarray:
-    raise NotImplementedError
+def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
+        nm_wavevectors: np.int32,
+        accum_lop_terms_no_coeffs: np.ndarray[tuple[int],np.dtype[np.complex64]],
+        accum_lop_nm_neighbors: np.ndarray[tuple[int],np.dtype[np.int32]])->np.ndarray[tuple[int],np.dtype[np.float64]]:
+    """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
+    coordinates.
 
-def calculate_sf_fcc_atom_order_parameter_no_ceoffs(universe : MDA_Universe,
+    These terms factor in the coefficients.
+
+
+    Args:
+        nm_atoms: The number of atoms in the molecular system.
+        nm_wavevectors: The number of wave vectors.
+        accum_lop_terms_no_coeffs: The struture factor terms for each atom.
+        accum_lop_nm_neighbors: The number of neighbors atoms in calculating the structure factor.
+
+    Returns:
+        accum_lop_terms_no_coeffs: The struture factor terms for each atom
+        adjusted for coefficients.
+
+    """
+
+    final_accum_lop_terms = np.zeros(nm_atoms,dtype=np.float64)
+    return final_accum_lop_terms
+
+def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
                                      cutoff: float)->np.ndarray:
-    """ Calculates the FCC local order parameter exp(iq*r) for a set of atom coordinates.
+    """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
+    coordinates.
 
     These terms do not factor in any coefficients.
 
-    Parameters:
+    Args:
         universe: The MDAnalysis universe that contains all the atoms.
 
         wave_vectors: An numpy array of floats with array shape (N,3) where N
@@ -289,6 +312,9 @@ def calculate_sf_fcc_atom_order_parameter_no_ceoffs(universe : MDA_Universe,
         wavevector.
 
         cutoff: The cutoff to search for neighboring atoms.
+
+    Returns:
+        TBD
     """
 
     ar_atoms = universe.select_atoms("all")
