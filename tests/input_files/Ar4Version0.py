@@ -25,12 +25,28 @@ from data_types import ( AtomCoordinates,LatticeVectors,
 
 class Ar4Version0:
     def __init__(self):
-        # We define the edge length in angstroms of the FCC lattice structure.
+        """ The absolute path to the PSF file. 
+
+        Do not modify. Modification will break this test configuration.
+        """
+        self._psf_filepath: str = (
+            os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf"))
+
+        """ We define the edge length in angstroms of the FCC lattice structure.
+
+        Do not modify. Modification will berak this test configuration.
+        """
         self._edge_length: np.float64 = np.float64(5.19)
+
+        """ The scaling factor setting the containing box and the atomic coordinates.
+
+        Do not modify. Modification will break this test configuration.
+        """
+        self._edge_scaling_factor: np.float64 = np.float64(10.0)
 
         """ The box dimensions of all trajectories.
 
-        _box : An numpy 1d array floats of len 6. This is the box dimensions of
+        _box : An numpy 1d array floats of length 6. This is the box dimensions of
         the atomic coordinates in "atom_coordinates" where:
             box_dimensions[0] = x-axis length in angstroms
             box_dimensions[1] = y-axis length in angstroms
@@ -44,16 +60,19 @@ class Ar4Version0:
         "cls.edge_length*10". If the box is too small, then the
         neighbor search algorithm has issues finding neighboring pairs.
         """
-        self._edge_scaling_factor: np.float64 = np.float64(10.0)
         self._box: Box = _create_right_rectangular_box(self._edge_scaling_factor,
             self._edge_length)
+        
+        """ A atomic system of 4 atoms with an edge length equal to 1.00 angstroms
 
-        """ A atomic system of 4 atoms with an edge length equal to 1.00 angstroms"""
+        Do not modify. Modification will berak this test configuration.
+        """
         self._coordinates1: AtomCoordinates = np.array([
             [0.00, 0.00, 0.00],
             [1.01, 0.00, 0.00],
             [0.50, 0.00, 0.50],
             [0.00, 0.00, 1.01]],dtype=np.float64)
+
 
         """ The atoms atomic coordinates. """
         self._coordinates: AtomCoordinates = (
@@ -70,13 +89,6 @@ class Ar4Version0:
         self._primitive_lattice_vectors: LatticeVectors = (
             create_primitive_lattice_vectors(self._edge_length))
 
-        """ The absolute path to the PSF file. 
-
-        Do not modify. Modification will berak this test configuration.
-        """
-        self._psf_filepath: str = (
-            os.path.join(os.getenv("LTAT_TOP_LEVEL"),"tests","input_files","ar4.psf"))
-
         """ The units of the time step"""
         self._timeunits: TimeUnits = "ps"
 
@@ -88,12 +100,15 @@ class Ar4Version0:
 
         """ The correct atom pairs for cutoff and set of atoms. 
 
-        Do not modify. Modification will berak this test configuration.
+        Do not modify. Modification will break this test configuration.
         """
         self._atom_pairs: AtomPairs = (
             np.array([[0,1],[0,3],[1,3]],dtype=np.int32))
 
-        """ The number of neigbors for each atom. """
+        """ The number of neighbors for each atom. 
+
+        Do not modify. Modification will break this test configuration.
+        """
         self.accum_lop_nm_neighbors= np.array([2,2,0,2],dtype=np.int32)
 
         """ The correct atom pairs vectors adjusted for pbc conditions.
@@ -101,6 +116,8 @@ class Ar4Version0:
         self._atom_pairs_vectors[0] = atom position 1 - atom position 0
         self._atom_pairs_vectors[1] = atom position 3 - atom position 0
         self._atom_pairs_vectors[2] = atom position 3 - atom position 1
+
+        Do not modify. Modification will break this test configuration.
         """
         self._atom_pairs_vectors: LatticeVectors = np.array(
             [[0.519, 0.00, 0.00],
@@ -109,7 +126,7 @@ class Ar4Version0:
 
         """ The correct reciprocal lattice vectors of the unit FCC lattice.
 
-        If this array is modified, one breaks this test.
+        Do not modify. Modification will break this test configuration.
         """
         self._correct_reciprocal_lattice_vectors: LatticeVectors = np.array(
             [[-0.6053165, 0.6053165, 0.6053165],
