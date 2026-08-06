@@ -2,6 +2,7 @@
 """Public MDAnalysis integration API."""
 
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.analysis_bridge import run_lop_sf_fcc_from_universe
+from lammps_trajectory_analysis_tools.integrations.mdanalysis.analysis_bridge import run_lop_sf_fcc_terms_from_universe
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.conversion import to_internal_trajectory
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.selection import select_atoms
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import load_universe
@@ -11,4 +12,5 @@ __all__ = [
 	"select_atoms",
 	"to_internal_trajectory",
 	"run_lop_sf_fcc_from_universe",
+	"run_lop_sf_fcc_terms_from_universe",
 ]
