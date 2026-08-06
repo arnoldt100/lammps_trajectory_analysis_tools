@@ -10,12 +10,13 @@ import MDAnalysis as mda
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.errors import UniverseLoadError
 
 
-def load_universe(topology_path: str, trajectory_path: str, **kwargs: Any) -> mda.Universe:
+def load_universe(topology_path: str, trajectory_source: Any, **kwargs: Any) -> mda.Universe:
     """Create an MDAnalysis Universe from topology and trajectory inputs.
 
     Args:
         topology_path: Path to the topology file.
-        trajectory_path: Path to the trajectory file.
+        trajectory_source: Path or in-memory trajectory source accepted by
+            ``MDAnalysis.Universe``.
         **kwargs: Additional keyword arguments passed to MDAnalysis.Universe.
 
     Returns:
@@ -25,6 +26,6 @@ def load_universe(topology_path: str, trajectory_path: str, **kwargs: Any) -> md
         UniverseLoadError: If MDAnalysis fails to build the universe.
     """
     try:
-        return mda.Universe(topology_path, trajectory_path, **kwargs)
+        return mda.Universe(topology_path, trajectory_source, **kwargs)
     except Exception as exc:  # pragma: no cover - passthrough wrapper
         raise UniverseLoadError(str(exc)) from exc
