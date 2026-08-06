@@ -6,20 +6,20 @@ import numpy.typing as npt
 
 # Local Library package imports
 from tests.input_files.Ar4Version0 import Ar4Version0
-from data_types import (
+from lammps_trajectory_analysis_tools.lib.data_types import (
     AtomCoordinates,
     AtomPairs,
     LatticeVectors,
     MDA_Universe)
 
-from lop_sf_fcc.lop_sf_fcc import ( 
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import ( 
     calculate_sf_fcc_atom_order_parameter_no_coeffs,
     calculate_sf_fcc_atom_order_parameter_with_coeffs,
     calculate_lop_fcc_exp_terms, 
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)
 
-from accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
 
 @pytest.fixture
 def ar4_version0():

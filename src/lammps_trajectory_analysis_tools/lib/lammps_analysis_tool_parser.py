@@ -24,10 +24,10 @@ from typing import TypeAlias
 # Local library import
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
-from lop_sf_fcc.lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
-from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
-from lop_sf_fcc.lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
-from lop_sf_fcc.lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
 
 """ Define a type alias that is the union of all subcommand command line interface types. """
 CLI_ID: TypeAlias = CLILopSfFcc

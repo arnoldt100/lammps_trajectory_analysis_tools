@@ -8,13 +8,13 @@ import numpy as np
 import numpy.typing as npt
 
 # Local Library package imports
-from data_types import (
+from lammps_trajectory_analysis_tools.lib.data_types import (
     AtomCoordinates,
     AtomPairs,
     LatticeVectors,
     MDA_Universe)
 
-from lop_sf_fcc.lop_sf_fcc import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
     calculate_atom_pairs,
     create_reciprocal_lattice_vectors,
     create_wavevectors,

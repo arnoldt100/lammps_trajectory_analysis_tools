@@ -21,7 +21,7 @@ export PATH="${LTAT_TOP_LEVEL}/src/bin:${PATH}"
 # ---------------------------------------------------
 # Modify the PYTHONPATH variable.
 # ---------------------------------------------------
-export PYTHONPATH="$(pwd)/src/lib:$(pwd)/tests:${PYTHONPATH}"
+export PYTHONPATH="$(pwd)/src:$(pwd)/tests:${PYTHONPATH}"
 
 # ---------------------------------------------------
 # Set the machine name.

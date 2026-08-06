@@ -19,11 +19,11 @@ import numpy as np
 import numpy.typing as npt
 
 # Local imports
-from lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
-from data_types import (AtomCoordinates, AtomDisplacement,
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
+from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, AtomDisplacement,
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
     MDA_Universe)
-from accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
 
 # ----------
 # Public members

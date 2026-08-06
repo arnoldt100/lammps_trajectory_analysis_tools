@@ -4,8 +4,8 @@
 from typing import Any
 
 # Local library import
-from lop_sf_fcc.lop_sf_fcc_builder import key_lop_sf_fcc_factory
-from lop_sf_fcc.lop_sf_fcc_builder import LopSfFccFactory
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_builder import key_lop_sf_fcc_factory
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_builder import LopSfFccFactory
 
 # ----------
 # Public members

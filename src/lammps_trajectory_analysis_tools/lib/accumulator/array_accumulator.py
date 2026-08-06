@@ -7,7 +7,7 @@ from typing import TypeVar, Generic
 # Local Library package imports
 import numpy as np
 
-from data_types import Integer
+from lammps_trajectory_analysis_tools.lib.data_types import Integer
 
 # Define a TypeVar restricted to supported NumPy types
 T = TypeVar("T", np.float64, np.int32, np.complex64)

@@ -10,11 +10,11 @@ from typing import Protocol
 import numpy as np
 
 # Local Library package imports
-from data_types import MDA_Universe
-from data_types import AtomCoordinates, LatticeVectors
-from data_types import TimeStep,TimeUnits
-from data_types import Box
-from data_types import AtomPairs
+from lammps_trajectory_analysis_tools.lib.data_types import MDA_Universe
+from lammps_trajectory_analysis_tools.lib.data_types import AtomCoordinates, LatticeVectors
+from lammps_trajectory_analysis_tools.lib.data_types import TimeStep,TimeUnits
+from lammps_trajectory_analysis_tools.lib.data_types import Box
+from lammps_trajectory_analysis_tools.lib.data_types import AtomPairs
 
 class ArLOPFCCTestStructure(Protocol):
 

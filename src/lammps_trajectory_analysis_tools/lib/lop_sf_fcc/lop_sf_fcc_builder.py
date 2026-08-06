@@ -8,7 +8,7 @@ The public members provided by this module are:
 """
 
 # Local imports
-from  lop_sf_fcc.lop_sf_fcc import LopSfFcc
+from  lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import LopSfFcc
 
 # ----------
 # Public members
