@@ -380,7 +380,7 @@ class LopSfFcc:
         edge_length = np.float64(command_line_arguments.edge_length)
         self.wavevectors = create_wavevectors(edge_length)
 
-# ----------
+        # Form the MDAnalysis universe:wavevectors
 # Private members
 # ----------
 
