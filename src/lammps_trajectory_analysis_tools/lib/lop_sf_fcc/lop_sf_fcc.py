@@ -19,11 +19,12 @@ import numpy as np
 import numpy.typing as npt
 
 # Local imports
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc, create_mdanalysis_arguments
 from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, AtomDisplacement,
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
     MDA_Universe)
 from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
+import lammps_trajectory_analysis_tools.integrations.mdanalysis
 
 # ----------
 # Public members
@@ -378,9 +379,16 @@ class LopSfFcc:
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
         edge_length = np.float64(command_line_arguments.edge_length)
-        self.wavevectors = create_wavevectors(edge_length)
 
         # Form the MDAnalysis universe:wavevectors
+        self.wavevectors = create_wavevectors(edge_length)
+
+        my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
+        # my_universe = load_universe(my_positional_args["topology_path"],
+        #                             my_positional_args["trajectory_source"],
+        #                             my_keyword_args)
+        return
+
 # Private members
 # ----------
 

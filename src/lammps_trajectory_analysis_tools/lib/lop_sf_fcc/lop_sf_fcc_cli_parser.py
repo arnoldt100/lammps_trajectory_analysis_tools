@@ -8,7 +8,7 @@
 import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Required
+from typing import Required,Any
 
 # Local Library package imports
 
@@ -26,15 +26,15 @@ def lop_sf_fcc_subcommand_name()->str:
 @dataclass
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
-    subcommand_name:str
-    trajectory: str
-    psf: str
-    edge_length: float
-    output: str
-    timeunits: str
-    dt: float
-    cutoff: float
-    do_data_analysis: Callable[...,None]
+    subcommand_name:str = None
+    trajectory: str = None
+    psf: str = None
+    edge_length: float = None
+    output: str = None
+    timeunits: str = None
+    dt: float = None
+    cutoff: float = None
+    do_data_analysis: Callable[...,None] = None
 
 class LopSfFccSubparserFactory:
     """ The concrete builder for LOP Structure FCC order parameter. 
@@ -78,7 +78,7 @@ class LopSfFccSubparserFactory:
 
         parser1.add_argument("--timeunits",
                              type=str,required=True,help=self._timeunits_help,
-                             choices=["fs","ps"])
+                             choices=["ps"])
 
         parser1.add_argument("--dt",
                              type=float,required=True,help=self._dt_help)
@@ -102,6 +102,34 @@ def process_lop_sf_fcc_cli_args(my_arg_parser : argparse.ArgumentParser)->CLILop
     my_cliargs = CLILopSfFcc(**vars(my_arg_parser.parse_args()))
     return my_cliargs
 
+
+def create_mdanalysis_arguments( cli_lop_fcc: CLILopSfFcc)->tuple[dict[str,Any],dict[str,Any]]:
+    """ Create the positional and keyword arguments for MDAnalysis Universe creation.
+
+    Args: 
+        cli_lop_fcc: The command line arguments for the lop_sf_fcc subcommand.
+
+    Returns:
+        A tuple containing two dictionaries:
+            - The first dictionary contains the positional arguments for MDAnalysis Universe creation.
+            - The second dictionary contains the keyword arguments for MDAnalysis Universe creation.
+
+    """
+
+    # The positional arguments for MDAnalysis Universe creation are the
+    # topology file and the trajectory source. These arguments are required and
+    # must be provided by the user.
+    my_positional_args = {"topology_path" : cli_lop_fcc.psf,
+              "trajectory_source" : cli_lop_fcc.trajectory}
+ 
+    # The keyword arguments for MDAnalysis Universe creation are optional and
+    # can be provided by the user.
+    my_keyword_args = {}
+    # Check for valid timestep in dataclass cli_lop_fcc.
+    if hasattr(cli_lop_fcc,"dt") and getattr(cli_lop_fcc,"dt") is not None:
+        my_keyword_args = {"dt" : cli_lop_fcc.dt}
+
+    return my_positional_args, my_keyword_args
 
 def _main()->None:
     return
