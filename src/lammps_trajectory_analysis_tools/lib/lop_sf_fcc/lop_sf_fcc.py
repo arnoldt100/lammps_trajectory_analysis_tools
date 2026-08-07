@@ -11,14 +11,16 @@ The public members provided by this module are:
 from typing import Literal, Any
 
 # Third party library imports
-import MDAnalysis as mda
-from MDAnalysis.lib.pkdtree import PeriodicKDTree
-from MDAnalysis.lib.distances import distance_array
-from MDAnalysis.lib.distances import calc_bonds
 import numpy as np
 import numpy.typing as npt
 
 # Local imports
+from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
+    calculate_atom_pairs,
+    calculate_atom_pairs_vectors,
+    get_universe_data_for_lop_fcc_sf,
+    load_universe,
+)
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc, create_mdanalysis_arguments
 from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, AtomDisplacement,
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
@@ -113,86 +115,6 @@ def create_wavevectors(fcc_edge_length : np.float64):
     wavevectors = np.array([wv_0,wv_1,wv_2,wv_3,wv_4,wv_5])
     return wavevectors
 
-def calculate_atom_pairs(atom_coordinates: AtomCoordinates,
-                         cutoff : float,
-                         box: Box)->AtomPairs:
-    """ Calculates the atom unique pairs that are within distance 'cutoff'
-
-    The algorithm assumes that we have periodic boundary conditions of a rectangular box.
-    Otherwise one may get indeterminate results.
-
-    Args:
-
-        atom_coordinates: The atoms x,y,z atomic coordinates.
-
-        cutoff: The cutoff to search for neighboring atoms.
-
-        box : An numpy 1d array floats of length 6. This is the box dimensions of
-        the atomic coordinates in "atom_coordinates" where:
-            box_dimensions[0] = x-axis length in angstroms
-            box_dimensions[1] = y-axis length in angstroms
-            box_dimensions[2] = z-axis length in angstroms
-            box_dimensions[3] = Angle between y and z axis in degrees
-            box_dimensions[4] = Angle between x and z axis in degrees
-            box_dimensions[5] = Angle between x and y axis in degrees
-
-    Returns:
-        AtomPairs: An numpy array of integers of shape (N,2).
-
-        If the variable 'pairs' is returned, then the k'th pair elements
-        pairs[k,0] and pairs[k,;] are the atomic indices of the pair of atoms.
-        Let i = pairs[k,0], then atom_coordinates[i,:] is coordinates of atom
-        corresponding to pairs[k,0]. Similarly, Let j = pairs[k,1], then
-        atom_coordinates[j,:] is coordinates of atom corresponding to
-        pairs[k,1].
-    """
-
-    kdtree = PeriodicKDTree(box=box)
-    kdtree.set_coords(atom_coordinates,cutoff)
-    pairs = kdtree.search_pairs(cutoff)
-    return pairs
-
-def calculate_atom_pairs_vectors(universe : MDA_Universe,
-                         pairs: AtomPairs):
-    """ Calculates the atom displacement vector between the atoms.
-
-    For each atom pair (i,j), we calculate the vector r_j - r_i.
-    The algorithm assumes that we have periodic boundary conditions of a cubic box.
-    Otherwise one may get indeterminate results.
-
-    Parameters:
-
-        universe: The MDAnalysis universe that contains all the atoms.
-
-        pairs: The k'th pair, pairs[k,0] and pairs[k,1] are the atomic indices
-        of the pair of atoms. Let i = pairs[k,0], then atom_coordinates[i,:] is
-        coordinates of atom corresponding to pairs[k,0]. Similarly, Let j =
-        pairs[k,1], then atom_coordinates[j,:] is coordinates of atom
-        corresponding to pairs[k,1].
-
- Returns:
-        calculate_atom_pairs_vectors
-
-        vector from pairs[k,0] to pairs[k,1].
-    """
-    box_lengths = universe.dimensions[0:3]
-
-    initial_atoms_indices_data = pairs[:,0:1]
-    initial_atoms_indices = initial_atoms_indices_data.flatten()
-    initial_atoms_group = universe.atoms[initial_atoms_indices]
-    initial_atoms_positions = initial_atoms_group.positions
-
-    final_atoms_indices_data = pairs[:,1:2]
-    final_atoms_indices = final_atoms_indices_data.flatten()
-    final_atoms_group = universe.atoms[final_atoms_indices]
-    final_atoms_positions = final_atoms_group.positions
-
-    disp_vectors = final_atoms_positions - initial_atoms_positions 
-    pbc_delta = box_lengths*np.round(disp_vectors/box_lengths)
-    atom_pair_vectors = disp_vectors - pbc_delta
-
-    return atom_pair_vectors
-
 def calculate_lop_fcc_atom_pair_exp_terms(dr,
                                           wavevectors: LatticeVectors,
                                           accumulator_exp_x: ArrayAccumulator )->np.complex64:
@@ -224,8 +146,8 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
 
     """ Calculates the exp(iq*dr) for all wavevectors for all atom pairs in
     atom_pairs_indices.
-
     Args:
+
         atoms_pairs_vector: The displacement vector dr from atom 1 to atom 2.
 
         atom_pairs_indices: The index of the initial atom, atom 1.
@@ -382,10 +304,25 @@ class LopSfFcc:
         # Form the MDAnalysis universe:wavevectors
         self.wavevectors = create_wavevectors(edge_length)
 
+        # Form the universse .
         my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
-        # my_universe = load_universe(my_positional_args["topology_path"],
-        #                             my_positional_args["trajectory_source"],
-        #                             my_keyword_args)
+        my_universe = load_universe(my_positional_args["topology_path"],
+                                    my_positional_args["trajectory_source"],
+                                    **my_keyword_args)
+
+        # Loop over each trajectory and calculate the lop fcc fcc
+        all_atoms = my_universe.select_atoms("all")
+        nm_frames = my_universe.trajectory.n_frames
+        print(f"Number of trajectory frames = {nm_frames}")
+        for ts in my_universe.trajectory:
+            # A helper function is invoked to get the data needed for the current frame.
+            selected_atoms, atom_coordinates, box, pairs, atom_pair_vectors = (
+                get_universe_data_for_lop_fcc_sf(
+                    my_universe,
+                    np.float32(command_line_arguments.cutoff),
+                    "all",
+                )
+            )
         return
 
 # Private members

@@ -14,11 +14,14 @@ from lammps_trajectory_analysis_tools.lib.data_types import (
     LatticeVectors,
     MDA_Universe)
 
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
+from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
     calculate_atom_pairs,
+    calculate_atom_pairs_vectors,
+)
+
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
     create_reciprocal_lattice_vectors,
-    create_wavevectors,
-    calculate_atom_pairs_vectors)
+    create_wavevectors)
 
 from tests.input_files.Ar4Version0 import Ar4Version0
 
