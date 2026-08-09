@@ -1,5 +1,5 @@
 import time
-from typing import Optional, Type
+from typing import Self, Optional
 
 class LoopTimer:
     """A class-based timer to track and report the progress of a loop.
@@ -25,9 +25,9 @@ class LoopTimer:
         self.label: str = label
         self.total: int = total_iterations
         self.interval: int = report_interval
-        self.start_time: Optional[float] = None
+        self.start_time: float | None = None
 
-    def __enter__(self) -> "LoopTimer":
+    def __enter__(self) -> Self:
         """Enters the runtime context, automatically starting the timer.
 
         Returns:
@@ -38,8 +38,8 @@ class LoopTimer:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
         exc_tb: Optional[object],
     ) -> None:
         """Exits the runtime context, automatically stopping the timer.
