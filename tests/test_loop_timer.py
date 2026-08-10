@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import patch
-from your_module import LoopTimer  # Replace 'your_module' with your actual file name
+
+import pytest
+
+from lammps_trajectory_analysis_tools.timer_utils.LoopTimer import LoopTimer
+
 
 def test_timer_initialization() -> None:
     """Verify that the timer properties are correctly assigned on creation."""
@@ -25,7 +28,7 @@ def test_timer_update_intervals(capsys: pytest.CaptureFixture[str]) -> None:
     """Verify that updates print only on designated intervals or at completion."""
     timer = LoopTimer(label="Loop", total_iterations=5, report_interval=2)
     
-    with patch("time.time", side_effect=[1000.0, 1001.0, 1002.0, 1003.0, 1004.0, 1005.0]):
+    with patch("time.time", side_effect=[1000.0, 1002.0, 1005.0]):
         timer.start()
         capsys.readouterr()  # Clear the start message from stdout buffer
         
