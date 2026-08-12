@@ -26,6 +26,7 @@ from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, At
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
     MDA_Universe)
 from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.timer_utils.LoopTimer import LoopTimer
 
 # ----------
 # Public members
