@@ -151,9 +151,9 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
     atom_pairs_indices.
     Args:
 
-        atoms_pairs_vector: The displacement vector dr from atom 1 to atom 2.
-
         atom_pairs_indices: The index of the initial atom, atom 1.
+
+        atoms_pairs_vector: The displacement vector dr from atom 1 to atom 2.
 
         wavevectors: The wave_vectors to form the dot product with dr. A numpy
         array of shape (N,3) where wavevectors[i,:] is the i'th wave vector.
@@ -314,10 +314,8 @@ class LopSfFcc:
                                     **my_keyword_args)
 
         # Loop over each trajectory and calculate the lop fcc fcc
-        all_atoms = my_universe.select_atoms("all")
         nm_frames = my_universe.trajectory.n_frames
         print(f"Number of trajectory frames = {nm_frames}")
-
 
         report_iteration = 100
         trajectory_loop_timer = (
@@ -326,13 +324,10 @@ class LopSfFcc:
         trajectory_loop_timer.start()
         counter = 0
         for ts in my_universe.trajectory:
-            # A helper function is invoked to get the data needed for the current frame.
-            selected_atoms, atom_coordinates, box, pairs, atom_pair_vectors = (
-                get_universe_data_for_lop_fcc_sf(
-                    my_universe,
-                    np.float32(command_line_arguments.cutoff),
-                    "all",
-                )
+            accum_lop_terms = (
+                calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
+                    self.wavevectors,
+                    np.float32(command_line_arguments.cutoff))
             )
             counter += 1
             trajectory_loop_timer.update(counter)

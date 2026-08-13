@@ -92,7 +92,7 @@ def test_lop_sf_fcc_atom_order_parameter_with_coeffs(ar4_version0):
                                equal_nan=False,
                                strict=True)
 
-def test_lop_sf_fcc_atom_order_parameter_no_ceoffs(ar4_version0):
+def test_lop_sf_fcc_atom_order_parameter_no_coeffs(ar4_version0):
     rtolerance = 1e-5
     atolerance = 1e-8
 
