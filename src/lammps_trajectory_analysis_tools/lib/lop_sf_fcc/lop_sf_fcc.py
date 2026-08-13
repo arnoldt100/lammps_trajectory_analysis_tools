@@ -8,6 +8,7 @@ The public members provided by this module are:
 """
 
 # Python standard library imports
+import time
 from typing import Literal, Any
 
 # Third party library imports
@@ -26,7 +27,8 @@ from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, At
     LatticeVectors, AtomPairs, AtomPairsTerms, Box,
     MDA_Universe)
 from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
-from lammps_trajectory_analysis_tools.timer_utils.LoopTimer import LoopTimer
+from lammps_trajectory_analysis_tools.timer_utils import timer_object_factory
+from lammps_trajectory_analysis_tools.timer_utils import LoopTimerBuilderKey
 
 # ----------
 # Public members
@@ -316,8 +318,11 @@ class LopSfFcc:
         nm_frames = my_universe.trajectory.n_frames
         print(f"Number of trajectory frames = {nm_frames}")
 
+
         report_iteration = 100
-        trajectory_loop_timer = LoopTimer("trajectory_loop_timer",nm_frames,report_iteration)
+        trajectory_loop_timer = (
+            timer_object_factory.create(LoopTimerBuilderKey,"trajectory_loop",nm_frames,report_iteration)
+        )
         trajectory_loop_timer.start()
         counter = 0
         for ts in my_universe.trajectory:

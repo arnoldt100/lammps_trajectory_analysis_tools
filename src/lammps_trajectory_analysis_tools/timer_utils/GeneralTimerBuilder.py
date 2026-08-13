@@ -1,23 +1,17 @@
 #! /usr/bin/env python3
-""" <Brief Description>
-
-<Detailed Description>
-
-This module provides the following public members:
-    <List of public members>
-"""
 
 # Python standard library imports
 from typing import Any
 
 # Local library import 
-from .concrete_object_factory import ConcreteObjectFactory
+from .LoopTimerBuilder import ( LoopTimerBuilder,
+                                LoopTimerBuilderKey )
 
 # ----------
 # Public members
 # ----------
 
-class GeneralObjectFactory:
+class GeneralTimerBuilder:
     def __init__(self,*args,**kwargs)->None:
         self._builders = {}
 
@@ -31,8 +25,8 @@ class GeneralObjectFactory:
         my_builder = builder()
         return my_builder(*args,**kwargs)
 
-concrete_object_factory = GeneralObjectFactory()
-concrete_object_factory.register_builder('__concretefactorykey__',ConcreteObjectFactory)
+timer_object_factory = GeneralTimerBuilder()
+timer_object_factory.register_builder(LoopTimerBuilderKey ,LoopTimerBuilder)
 
 # ----------
 # Private members

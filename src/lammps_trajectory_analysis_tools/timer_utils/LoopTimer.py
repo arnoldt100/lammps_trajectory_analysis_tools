@@ -51,7 +51,7 @@ class LoopTimer:
     def start(self) -> None:
         """Starts the internal timer and prints an initial start message."""
         self.start_time = time.time()
-        print(f"[{self.label}] Started tracking {self.total} iterations...")
+        print(f"[{self.label}] Started tracking {self.total} iterations...",flush=True)
 
     def update(self, current_iteration: int) -> None:
         """Evaluates progress and prints a status update if the interval is met.
@@ -69,7 +69,8 @@ class LoopTimer:
             elapsed: float = time.time() - self.start_time
             percentage: float = (current_iteration / self.total) * 100
             print(
-                f"[{self.label}] Progress: {current_iteration}/{self.total} ({percentage:.1f}%) | Elapsed: {elapsed:.2f}s"
+                f"[{self.label}] Progress: {current_iteration}/{self.total} ({percentage:.1f}%) | Elapsed: {elapsed:.2f}s",
+                flush=True
             )
 
     def stop(self) -> None:
@@ -80,5 +81,5 @@ class LoopTimer:
             )
 
         total_time: float = time.time() - self.start_time
-        print(f"[{self.label}] Completed! Total Time: {total_time:.2f}s")
+        print(f"[{self.label}] Completed! Total Time: {total_time:.2f}s",flush=True)
 

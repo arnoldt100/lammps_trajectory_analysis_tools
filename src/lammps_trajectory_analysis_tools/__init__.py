@@ -14,6 +14,7 @@ from .plotting import plot_rdf, plot_trajectory
 
 __all__ = [
     "lib",
+    "timer_utils",
     "read_dump",
     "Trajectory",
     "TrajectoryReader",
