@@ -315,6 +315,11 @@ class LopSfFcc:
         all_atoms = my_universe.select_atoms("all")
         nm_frames = my_universe.trajectory.n_frames
         print(f"Number of trajectory frames = {nm_frames}")
+
+        report_iteration = 100
+        trajectory_loop_timer = LoopTimer("trajectory_loop_timer",nm_frames,report_iteration)
+        trajectory_loop_timer.start()
+        counter = 0
         for ts in my_universe.trajectory:
             # A helper function is invoked to get the data needed for the current frame.
             selected_atoms, atom_coordinates, box, pairs, atom_pair_vectors = (
@@ -324,8 +329,12 @@ class LopSfFcc:
                     "all",
                 )
             )
+            counter += 1
+            trajectory_loop_timer.update(counter)
+        trajectory_loop_timer.stop()
         return
 
+# ----------
 # Private members
 # ----------
 
