@@ -34,6 +34,7 @@ class CLILopSfFcc:
     timeunits: str = None
     dt: float = None
     cutoff: float = None
+    output_hdf5_file: str = None
     do_data_analysis: Callable[...,None] = None
 
 class LopSfFccSubparserFactory:
@@ -59,6 +60,8 @@ class LopSfFccSubparserFactory:
 
     _cutoff_help = "The neighbor search cutoff in angstroms."
 
+    _hdf5_data_file_help = "The hdf5 file where the data is stored."
+
     def __init__(self, *args, **kwargs)->None:
         return
 
@@ -81,14 +84,26 @@ class LopSfFccSubparserFactory:
                              choices=["ps"])
 
         parser1.add_argument("--dt",
-                             type=float,required=True,help=self._dt_help)
+                             type=float,
+                             required=True,
+                             help=self._dt_help)
 
         parser1.add_argument("--cutoff",
-                             type=float,required=True,help=self._cutoff_help)
+                             type=float,
+                             required=True,
+                             help=self._cutoff_help)
 
         parser1.add_argument("--output",
-                             type=str,required=False,
-                             default="output.data",help=self._ouput_help)
+                             type=str,
+                             required=False,
+                             default="output.data",
+                             help=self._ouput_help)
+
+        parser1.add_argument("--output-hdf5-file",
+                             type=str,
+                             required=False,
+                             default="output.hdf5",
+                             help=self._hdf5_data_file_help)
 
         # Add the callable object for calculating the local structure factor
         # fcc order parameter as an the callable attribute  'do_data_analysis'.
@@ -102,8 +117,7 @@ def process_lop_sf_fcc_cli_args(my_arg_parser : argparse.ArgumentParser)->CLILop
     my_cliargs = CLILopSfFcc(**vars(my_arg_parser.parse_args()))
     return my_cliargs
 
-
-def create_mdanalysis_arguments( cli_lop_fcc: CLILopSfFcc)->tuple[dict[str,Any],dict[str,Any]]:
+def create_mdanalysis_arguments(cli_lop_fcc: CLILopSfFcc)->tuple[dict[str,Any],dict[str,Any]]:
     """ Create the positional and keyword arguments for MDAnalysis Universe creation.
 
     Args: 
@@ -125,6 +139,7 @@ def create_mdanalysis_arguments( cli_lop_fcc: CLILopSfFcc)->tuple[dict[str,Any],
     # The keyword arguments for MDAnalysis Universe creation are optional and
     # can be provided by the user.
     my_keyword_args = {}
+
     # Check for valid timestep in dataclass cli_lop_fcc.
     if hasattr(cli_lop_fcc,"dt") and getattr(cli_lop_fcc,"dt") is not None:
         my_keyword_args = {"dt" : cli_lop_fcc.dt}

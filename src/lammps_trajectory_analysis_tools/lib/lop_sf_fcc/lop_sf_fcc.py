@@ -10,6 +10,7 @@ The public members provided by this module are:
 # Python standard library imports
 import time
 from typing import Literal, Any
+from collections import OrderedDict
 
 # Third party library imports
 import numpy as np
@@ -295,6 +296,10 @@ class LopSfFcc:
     def __init__(self,*args,**kwargs)->None:
         self.__accumulator = []
         self._normalized_wave_vectors = None
+
+        # This attribute stores the final FCC structure propert for 
+        # each at time t.
+        self._lop_sf_fcc = None
         return
 
     def __call__(self, command_line_arguments:CLILopSfFcc,
@@ -315,22 +320,31 @@ class LopSfFcc:
 
         # Loop over each trajectory and calculate the lop fcc fcc
         nm_frames = my_universe.trajectory.n_frames
+        nm_atoms = my_universe.atoms.n_atoms
+        nm_wavevectors,_ = self.wavevectors.shape
+
         print(f"Number of trajectory frames = {nm_frames}")
 
-        report_iteration = 100
+        report_iteration = 5
+        max_trajectories_to_compute = 100
         trajectory_loop_timer = (
-            timer_object_factory.create(LoopTimerBuilderKey,"trajectory_loop",nm_frames,report_iteration)
+            timer_object_factory.create(LoopTimerBuilderKey,"trajectory_loop",max_trajectories_to_compute,report_iteration)
         )
         trajectory_loop_timer.start()
         counter = 0
         for ts in my_universe.trajectory:
-            accum_lop_terms = (
+            frame_index = ts.frame
+            frame_time = ts.time
+            accum_lop_terms0 = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
                     self.wavevectors,
                     np.float32(command_line_arguments.cutoff))
             )
             counter += 1
             trajectory_loop_timer.update(counter)
+
+            if counter == max_trajectories_to_compute:
+                break
         trajectory_loop_timer.stop()
         return
 
