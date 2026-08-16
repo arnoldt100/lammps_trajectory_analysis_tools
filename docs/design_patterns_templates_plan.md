@@ -40,6 +40,7 @@ The exact module split may be reduced if a smaller initial template is sufficien
 
 ## Design Rules
 
+- Keep every class-level and instance-level data attribute private with a single leading underscore; expose required external access through properties.
 - Keep templates domain-neutral. They must not import trajectory, analysis, writer, HDF5, or MDAnalysis modules.
 - Prefer composition and small protocols over inheritance-heavy frameworks.
 - Make value state explicit and inspectable.

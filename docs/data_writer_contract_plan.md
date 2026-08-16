@@ -34,6 +34,17 @@ close()
 
 The concrete API may use backend-specific names or configuration, but adapters should preserve these semantics.
 
+## Proposed Module Layout
+
+Keep the shared contract small and keep backend details in concrete modules:
+
+- `data_writer_utils/data_writer_protocol.py`: `DataWriterProtocol`, including configuration, complete writes, frame appends, and lifecycle operations.
+- `data_writer_utils/exceptions.py`: predictable contract-level configuration, lifecycle, and target errors.
+- `data_writer_utils/hdf5_data_writer.py`: the HDF5 adapter and its `h5py` operations.
+- `tests/test_hdf5_data_writer.py`: contract behavior tests against the HDF5 adapter; backend-specific tests should remain separate if needed.
+
+The initial HDF5 policy is that `create()` replaces an existing target, `write_data()` replaces the stream contents, and `data_type` is a safe-cast boundary. The configured `frame_shape` is stored after a leading, resizable frame axis. `append_data()` accepts either one frame or a batch and validates the entire input before changing the dataset.
+
 ### Construction
 
 Construction records the output target and stream configuration. It should not require the target to be created or opened unless the backend requires eager validation.
@@ -125,6 +136,7 @@ Errors should identify the failed operation and relevant stream or target withou
 
 ## Backend Adapter Rules
 
+- Keep every class-level and instance-level data attribute private with a single leading underscore; expose required external access through properties.
 - Keep backend-specific imports and storage operations inside the concrete writer module.
 - Do not expose backend objects through the common writer contract.
 - Translate backend errors at the contract boundary where practical.

@@ -43,6 +43,10 @@ Use one package root for all importable code:
 
 ## Import Rewrite Rules
 
+### Rule 0: Keep class data private
+- Prefix every class-level and instance-level data attribute with a single leading underscore.
+- Expose required external access through properties rather than public mutable storage.
+
 ### Rule 1: Replace implicit local imports with package-qualified imports
 - Before: `from data_types import AtomCoordinates`
 - After: `from lammps_trajectory_analysis_tools.lib.data_types import AtomCoordinates`

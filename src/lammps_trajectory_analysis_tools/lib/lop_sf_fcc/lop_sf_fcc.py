@@ -310,7 +310,7 @@ class LopSfFcc:
         edge_length = np.float64(command_line_arguments.edge_length)
 
         # Form the MDAnalysis universe:wavevectors
-        self.wavevectors = create_wavevectors(edge_length)
+        self._wavevectors = create_wavevectors(edge_length)
 
         # Form the universse .
         my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
@@ -321,7 +321,7 @@ class LopSfFcc:
         # Loop over each trajectory and calculate the lop fcc fcc
         nm_frames = my_universe.trajectory.n_frames
         nm_atoms = my_universe.atoms.n_atoms
-        nm_wavevectors,_ = self.wavevectors.shape
+        nm_wavevectors,_ = self._wavevectors.shape
 
         print(f"Number of trajectory frames = {nm_frames}")
 
@@ -337,7 +337,7 @@ class LopSfFcc:
             frame_time = ts.time
             accum_lop_terms0 = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
-                    self.wavevectors,
+                    self._wavevectors,
                     np.float32(command_line_arguments.cutoff))
             )
             counter += 1

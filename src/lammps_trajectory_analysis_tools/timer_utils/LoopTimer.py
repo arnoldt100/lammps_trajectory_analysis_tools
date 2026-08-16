@@ -22,10 +22,30 @@ class LoopTimer:
             total_iterations (int): Total count of iterations in the target loop.
             report_interval (int): Print progress updates every 'm' iterations.
         """
-        self.label: str = label
-        self.total: int = total_iterations
-        self.interval: int = report_interval
-        self.start_time: float | None = None
+        self._label: str = label
+        self._total: int = total_iterations
+        self._interval: int = report_interval
+        self._start_time: float | None = None
+
+    @property
+    def label(self) -> str:
+        """Return the timer label."""
+        return self._label
+
+    @property
+    def total(self) -> int:
+        """Return the expected iteration count."""
+        return self._total
+
+    @property
+    def interval(self) -> int:
+        """Return the reporting interval."""
+        return self._interval
+
+    @property
+    def start_time(self) -> float | None:
+        """Return the start timestamp, if the timer has started."""
+        return self._start_time
 
     def __enter__(self) -> Self:
         """Enters the runtime context, automatically starting the timer.
@@ -50,7 +70,7 @@ class LoopTimer:
 
     def start(self) -> None:
         """Starts the internal timer and prints an initial start message."""
-        self.start_time = time.time()
+        self._start_time = time.time()
         print(f"[{self.label}] Started tracking {self.total} iterations...",flush=True)
 
     def update(self, current_iteration: int) -> None:
@@ -59,14 +79,14 @@ class LoopTimer:
         Args:
             current_iteration (int): The current 1-based loop index.
         """
-        if self.start_time is None:
+        if self._start_time is None:
             raise RuntimeError(
                 f"Timer '{self.label}' was updated before start() was called."
             )
 
         # Check if the 1-based loop index matches the interval
         if current_iteration % self.interval == 0 or current_iteration == self.total:
-            elapsed: float = time.time() - self.start_time
+            elapsed: float = time.time() - self._start_time
             percentage: float = (current_iteration / self.total) * 100
             print(
                 f"[{self.label}] Progress: {current_iteration}/{self.total} ({percentage:.1f}%) | Elapsed: {elapsed:.2f}s",
@@ -75,11 +95,11 @@ class LoopTimer:
 
     def stop(self) -> None:
         """Stops the internal timer and prints a final execution summary."""
-        if self.start_time is None:
+        if self._start_time is None:
             raise RuntimeError(
                 f"Timer '{self.label}' was stopped before start() was called."
             )
 
-        total_time: float = time.time() - self.start_time
+        total_time: float = time.time() - self._start_time
         print(f"[{self.label}] Completed! Total Time: {total_time:.2f}s",flush=True)
 

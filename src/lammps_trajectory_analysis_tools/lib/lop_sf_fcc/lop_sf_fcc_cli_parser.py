@@ -6,9 +6,7 @@
 
 # Python standard library imports
 import argparse
-from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Required,Any
+from typing import Any, Callable, Optional
 
 # Local Library package imports
 
@@ -23,19 +21,82 @@ Each subcommand name must be unique.
 def lop_sf_fcc_subcommand_name()->str:
     return 'lop_sf_fcc'
 
-@dataclass
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
-    subcommand_name:str = None
-    trajectory: str = None
-    psf: str = None
-    edge_length: float = None
-    output: str = None
-    timeunits: str = None
-    dt: float = None
-    cutoff: float = None
-    output_hdf5_file: str = None
-    do_data_analysis: Callable[...,None] = None
+
+    def __init__(
+        self,
+        subcommand_name: Optional[str] = None,
+        trajectory: Optional[str] = None,
+        psf: Optional[str] = None,
+        edge_length: Optional[float] = None,
+        output: Optional[str] = None,
+        timeunits: Optional[str] = None,
+        dt: Optional[float] = None,
+        cutoff: Optional[float] = None,
+        output_hdf5_file: Optional[str] = None,
+        do_data_analysis: Optional[Callable[..., None]] = None,
+    ) -> None:
+        self._subcommand_name = subcommand_name
+        self._trajectory = trajectory
+        self._psf = psf
+        self._edge_length = edge_length
+        self._output = output
+        self._timeunits = timeunits
+        self._dt = dt
+        self._cutoff = cutoff
+        self._output_hdf5_file = output_hdf5_file
+        self._do_data_analysis = do_data_analysis
+
+    @property
+    def subcommand_name(self) -> Optional[str]:
+        """Return the selected subcommand name."""
+        return self._subcommand_name
+
+    @property
+    def trajectory(self) -> Optional[str]:
+        """Return the trajectory path."""
+        return self._trajectory
+
+    @property
+    def psf(self) -> Optional[str]:
+        """Return the topology path."""
+        return self._psf
+
+    @property
+    def edge_length(self) -> Optional[float]:
+        """Return the FCC edge length."""
+        return self._edge_length
+
+    @property
+    def output(self) -> Optional[str]:
+        """Return the text output path."""
+        return self._output
+
+    @property
+    def timeunits(self) -> Optional[str]:
+        """Return the configured time units."""
+        return self._timeunits
+
+    @property
+    def dt(self) -> Optional[float]:
+        """Return the trajectory timestep."""
+        return self._dt
+
+    @property
+    def cutoff(self) -> Optional[float]:
+        """Return the neighbor-search cutoff."""
+        return self._cutoff
+
+    @property
+    def output_hdf5_file(self) -> Optional[str]:
+        """Return the HDF5 output path."""
+        return self._output_hdf5_file
+
+    @property
+    def do_data_analysis(self) -> Optional[Callable[..., None]]:
+        """Return the configured analysis callable."""
+        return self._do_data_analysis
 
 class LopSfFccSubparserFactory:
     """ The concrete builder for LOP Structure FCC order parameter. 

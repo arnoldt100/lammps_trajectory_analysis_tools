@@ -22,6 +22,7 @@ src/
 ```
 
 ## Design Rules
+- Keep every class-level and instance-level data attribute private with a single leading underscore; expose required external access through properties.
 - Keep all MDAnalysis imports inside `src/lammps_trajectory_analysis_tools/integrations/mdanalysis/*`.
 - Keep core analysis modules free of direct MDAnalysis imports.
 - Expose a minimal stable API from `src/lammps_trajectory_analysis_tools/integrations/mdanalysis/__init__.py`.

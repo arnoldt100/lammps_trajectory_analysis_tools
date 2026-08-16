@@ -33,12 +33,42 @@ class RadialDistributionFunction:
             n_bins: Number of radial bins
             atom_type_pairs: Restrict calculation to specific atom type pairs
         """
-        self.trajectory = trajectory
-        self.cutoff = cutoff
-        self.n_bins = n_bins
-        self.atom_type_pairs = atom_type_pairs
-        self.rdf = None
-        self.r_values = None
+        self._trajectory = trajectory
+        self._cutoff = cutoff
+        self._n_bins = n_bins
+        self._atom_type_pairs = atom_type_pairs
+        self._rdf = None
+        self._r_values = None
+
+    @property
+    def trajectory(self) -> Trajectory:
+        """Return the configured trajectory."""
+        return self._trajectory
+
+    @property
+    def cutoff(self) -> float:
+        """Return the maximum distance used by the calculation."""
+        return self._cutoff
+
+    @property
+    def n_bins(self) -> int:
+        """Return the number of radial bins."""
+        return self._n_bins
+
+    @property
+    def atom_type_pairs(self) -> Optional[Tuple[int, int]]:
+        """Return the optional atom-type filter."""
+        return self._atom_type_pairs
+
+    @property
+    def rdf(self) -> Optional[np.ndarray]:
+        """Return the computed RDF values, if available."""
+        return self._rdf
+
+    @property
+    def r_values(self) -> Optional[np.ndarray]:
+        """Return the computed radial values, if available."""
+        return self._r_values
     
     def compute(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -65,10 +95,30 @@ class MeanSquareDisplacement:
             trajectory: Trajectory object
             origin_frame: Reference frame (t=0)
         """
-        self.trajectory = trajectory
-        self.origin_frame = origin_frame
-        self.msd = None
-        self.times = None
+        self._trajectory = trajectory
+        self._origin_frame = origin_frame
+        self._msd = None
+        self._times = None
+
+    @property
+    def trajectory(self) -> Trajectory:
+        """Return the configured trajectory."""
+        return self._trajectory
+
+    @property
+    def origin_frame(self) -> int:
+        """Return the reference frame index."""
+        return self._origin_frame
+
+    @property
+    def msd(self) -> Optional[np.ndarray]:
+        """Return the computed MSD values, if available."""
+        return self._msd
+
+    @property
+    def times(self) -> Optional[np.ndarray]:
+        """Return the computed time values, if available."""
+        return self._times
     
     def compute(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -101,11 +151,36 @@ class StructureFactor:
             q_max: Maximum wavevector magnitude (1/Angstroms)
             n_q_bins: Number of q bins
         """
-        self.trajectory = trajectory
-        self.q_max = q_max
-        self.n_q_bins = n_q_bins
-        self.sq = None
-        self.q_values = None
+        self._trajectory = trajectory
+        self._q_max = q_max
+        self._n_q_bins = n_q_bins
+        self._sq = None
+        self._q_values = None
+
+    @property
+    def trajectory(self) -> Trajectory:
+        """Return the configured trajectory."""
+        return self._trajectory
+
+    @property
+    def q_max(self) -> float:
+        """Return the maximum wavevector magnitude."""
+        return self._q_max
+
+    @property
+    def n_q_bins(self) -> int:
+        """Return the number of wavevector bins."""
+        return self._n_q_bins
+
+    @property
+    def sq(self) -> Optional[np.ndarray]:
+        """Return the computed structure factor, if available."""
+        return self._sq
+
+    @property
+    def q_values(self) -> Optional[np.ndarray]:
+        """Return the computed wavevector values, if available."""
+        return self._q_values
     
     def compute(self) -> Tuple[np.ndarray, np.ndarray]:
         """

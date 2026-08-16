@@ -5,7 +5,7 @@ Provides classes and functions for reading, parsing, and storing LAMMPS trajecto
 in various formats (dump, lammpstrj, etc.).
 """
 
-from typing import List, Tuple, Union, Optional
+from typing import List, Union, Optional
 from pathlib import Path
 import numpy as np
 
@@ -29,10 +29,30 @@ class Frame:
         metadata: Optional[dict] = None,
     ):
         """Initialize a Frame."""
-        self.timestep = timestep
-        self.atoms = atoms
-        self.box = box
-        self.metadata = metadata or {}
+        self._timestep = timestep
+        self._atoms = atoms
+        self._box = box
+        self._metadata = metadata or {}
+
+    @property
+    def timestep(self) -> int:
+        """Return the simulation timestep."""
+        return self._timestep
+
+    @property
+    def atoms(self) -> np.ndarray:
+        """Return the atom data for this frame."""
+        return self._atoms
+
+    @property
+    def box(self) -> np.ndarray:
+        """Return the simulation box data."""
+        return self._box
+
+    @property
+    def metadata(self) -> dict:
+        """Return the frame metadata."""
+        return self._metadata
     
     def __repr__(self) -> str:
         return f"Frame(timestep={self.timestep}, n_atoms={len(self.atoms)})"
@@ -47,9 +67,14 @@ class TrajectoryReader:
     
     def __init__(self, filepath: Union[str, Path]):
         """Initialize reader with trajectory file path."""
-        self.filepath = Path(filepath)
-        if not self.filepath.exists():
-            raise FileNotFoundError(f"Trajectory file not found: {self.filepath}")
+        self._filepath = Path(filepath)
+        if not self._filepath.exists():
+            raise FileNotFoundError(f"Trajectory file not found: {self._filepath}")
+
+    @property
+    def filepath(self) -> Path:
+        """Return the source trajectory path."""
+        return self._filepath
     
     def __iter__(self):
         """Iterate over frames in trajectory."""
@@ -69,7 +94,12 @@ class Trajectory:
     
     def __init__(self, frames: List[Frame]):
         """Initialize with list of Frame objects."""
-        self.frames = frames
+        self._frames = frames
+
+    @property
+    def frames(self) -> List[Frame]:
+        """Return the trajectory frames."""
+        return self._frames
     
     def __len__(self) -> int:
         return len(self.frames)
