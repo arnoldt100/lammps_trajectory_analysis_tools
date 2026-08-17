@@ -171,7 +171,7 @@ class LopSfFccSubparserFactory:
         from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_builder import key_lop_sf_fcc_factory
         from lammps_trajectory_analysis_tools.lib import lammps_analysis_tool_builder
         my_analysis_tool = (
-            lammps_analysis_tool_builder.analysis_tool_factory.create_analysis_tool(key_lop_sf_fcc_factory) )
+            lammps_analysis_tool_builder.analysis_tool_factory.build(key_lop_sf_fcc_factory) )
         parser1.set_defaults(do_data_analysis=my_analysis_tool)
 
 def process_lop_sf_fcc_cli_args(my_arg_parser : argparse.ArgumentParser)->CLILopSfFcc:
