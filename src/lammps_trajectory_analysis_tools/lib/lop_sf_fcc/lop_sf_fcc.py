@@ -229,7 +229,7 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
 
 def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
-                                     cutoff: float)->np.ndarray:
+                                     cutoff: float)->tuple[np.ndarray,np.ndarray]:
     """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
     coordinates.
 
@@ -245,7 +245,8 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
         cutoff: The cutoff to search for neighboring atoms.
 
     Returns:
-        TBD
+        A tuple of the accumulated exp(q*r) terms and the number of neighbors
+        of each atom.
     """
 
     ar_atoms = universe.select_atoms("all")
@@ -279,7 +280,7 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                     accumulator_exp_x)
         accum_lop_terms[atom_index1] += accum1
         accum_lop_terms[atom_index2] += accum1
-    return accum_lop_terms
+    return (accum_lop_terms,accum_lop_nm_neighbors)
 
 def create_atom_pair_key(atom1: np.int32,
                          atom2: np.int32):
@@ -335,11 +336,20 @@ class LopSfFcc:
         for ts in my_universe.trajectory:
             frame_index = ts.frame
             frame_time = ts.time
-            accum_lop_terms0 = (
+
+            (accum_lop_terms0,accum_nm_neighbors) = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
                     self._wavevectors,
                     np.float32(command_line_arguments.cutoff))
             )
+
+            accum_lop_terms1 = (
+                calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
+                    nm_wavevectors,
+                    accum_lop_terms0,
+                    accum_nm_neighbors))
+
+
             counter += 1
             trajectory_loop_timer.update(counter)
 

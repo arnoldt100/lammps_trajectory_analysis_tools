@@ -42,8 +42,6 @@ class ErrMsgLopFccExpTerms:
             experimental_exp_terms: np.ndarray)->str:
         """ Creates an error meessage for incorect exp terms.
 
-        Given an atom pau
-
         Args:
             atom1_index : The index of the initial atom.
             atom2_index : The index of the destination atom.
@@ -98,9 +96,10 @@ def test_lop_sf_fcc_atom_order_parameter_no_coeffs(ar4_version0):
 
     [my_test_configuration,my_test_configuration_universe] = ar4_version0
 
-    programatic_values = calculate_sf_fcc_atom_order_parameter_no_coeffs(my_test_configuration_universe,
-                                              my_test_configuration.wave_vectors,
-                                              my_test_configuration.cutoff)
+    (programatic_values,programatic_nm_neighbors) = (
+        calculate_sf_fcc_atom_order_parameter_no_coeffs(my_test_configuration_universe,
+        my_test_configuration.wave_vectors,
+        my_test_configuration.cutoff) )
 
     reference_values = my_test_configuration.atom_accum_exp_terms_nocoeffs
 

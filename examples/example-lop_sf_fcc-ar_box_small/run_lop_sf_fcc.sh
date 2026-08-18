@@ -37,6 +37,9 @@ dcd_file=argon_box_small.dcd
 # Name of PSF file.
 psf_file=argon_box_small.psf
 
+# Name of the output hdf5 file
+output_hdf5=ar_box_small.lop_sf_fcc.hdf5
+
 # The edge length in angstroms.
 edge_length=5.196
 
@@ -55,4 +58,4 @@ cat argon_box_small_dcd_* >${dcd_file}
 # Run the example.
 uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd \
   --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} \
-  --cutoff ${cutoff}
+  --cutoff ${cutoff} --output-hdf5-file ${output_hdf5}
