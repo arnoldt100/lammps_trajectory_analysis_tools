@@ -12,6 +12,7 @@ This document contains requirements that apply to the entire repository. Package
 - Give every public function, method, and class an explicit type signature and a concise Google-style docstring.
 - Keep modules focused on one responsibility and avoid classes and functions that grow beyond what can be understood and tested locally.
 - Prefer small protocols, composition, and focused helpers over unnecessary inheritance hierarchies or universal abstractions.
+- Common classes that implement a shared protocol must provide a corresponding builder that follows the reusable `design_patterns_templates` builder pattern.
 - Keep backend-specific dependencies behind the owning integration or adapter boundary.
 - Avoid hidden global state, singleton registries, and unrelated resource ownership in reusable value-oriented code.
 - Preserve existing public behavior unless a plan explicitly documents a deliberate API change.
@@ -72,6 +73,7 @@ A project change is complete when its implementation, tests, documentation, and 
 
 - [Data Writer Contract Plan](data_writer_contract_plan.md)
 - [Design Patterns Templates Plan](design_patterns_templates_plan.md)
+- [Builder Design Pattern Plan](builder_design_pattern_plan.md)
 - [MDAnalysis Integration Plan](mdanalysis_integration_plan.md)
 - [Module Migration Path Plan](module_migration_path_plan.md)
 - [Architecture](../ARCHITECTURE.md)
