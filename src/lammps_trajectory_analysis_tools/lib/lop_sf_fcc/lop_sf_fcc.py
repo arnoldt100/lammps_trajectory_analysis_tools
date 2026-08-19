@@ -8,28 +8,32 @@ The public members provided by this module are:
 """
 
 # Python standard library imports
-import time
-from typing import Literal, Any
-from collections import OrderedDict
+from typing import Any
 
 # Third party library imports
 import numpy as np
-import numpy.typing as npt
 
 # Local imports
 from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
     calculate_atom_pairs,
     calculate_atom_pairs_vectors,
-    get_universe_data_for_lop_fcc_sf,
     load_universe,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc, create_mdanalysis_arguments
-from lammps_trajectory_analysis_tools.lib.data_types import (AtomCoordinates, AtomDisplacement,
-    LatticeVectors, AtomPairs, AtomPairsTerms, Box,
-    MDA_Universe)
-from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
-from lammps_trajectory_analysis_tools.timer_utils import timer_object_factory
-from lammps_trajectory_analysis_tools.timer_utils import LoopTimerBuilderKey
+from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import (
+    ArrayAccumulator,
+)
+from lammps_trajectory_analysis_tools.lib.data_types import (
+    LatticeVectors,
+    MDA_Universe,
+)
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import (
+    CLILopSfFcc,
+    create_mdanalysis_arguments,
+)
+from lammps_trajectory_analysis_tools.timer_utils import (
+    LoopTimerBuilderKey,
+    timer_object_factory,
+)
 
 # ----------
 # Public members
@@ -329,7 +333,7 @@ class LopSfFcc:
         report_iteration = 5
         max_trajectories_to_compute = 100
         trajectory_loop_timer = (
-            timer_object_factory.create(LoopTimerBuilderKey,"trajectory_loop",max_trajectories_to_compute,report_iteration)
+            timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",max_trajectories_to_compute,report_iteration)
         )
         trajectory_loop_timer.start()
         counter = 0

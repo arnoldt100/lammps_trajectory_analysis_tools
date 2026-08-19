@@ -18,7 +18,7 @@ This module provides the following public members:
 # ----------
 # Python standard library imports
 # ----------
-# No standard library imports are currently required by this module.
+from typing import Any
 
 # ----------
 # Local library imports
@@ -31,51 +31,15 @@ from .LoopTimer import LoopTimer
 # ----------
 
 class LoopTimerBuilder:
-    # Builder class for creating LoopTimer instances.
-    #
-    # The intent of this class is to provide a lightweight factory object.
-    # An instance of this class can be stored, passed around, or registered
-    # elsewhere and then invoked later to create a new LoopTimer.
-    #
-    # Because the class implements __call__, instances behave like functions.
-    # This allows usage such as:
-    #
-    #     builder = LoopTimerBuilder()
-    #     timer = builder(...)
-    #
-    # Any positional and keyword arguments supplied during the call are passed
-    # directly to the LoopTimer constructor without modification.
     """The builder of LoopTimer objects.
 
     A callable class; when called, it builds a LoopTimer object. See
     the LoopTimer class for the permitted arguments.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        # No object state is currently stored on the builder.
-        #
-        # The constructor accepts arbitrary positional and keyword arguments
-        # for interface flexibility and future compatibility. This can be
-        # useful if all builders in a framework are expected to share the same
-        # construction signature, even when some builders do not need the
-        # provided values.
-        #
-        # Since no initialization logic is required, the method simply returns.
-        return
-
-    def __call__(self, *kargs, **kwargs) -> LoopTimer:
-        # Build and return a new LoopTimer instance.
-        #
-        # Parameters:
-        #   *kargs   Positional arguments forwarded to LoopTimer.
-        #   **kwargs Keyword arguments forwarded to LoopTimer.
-        #
-        # Returns:
-        #   A newly constructed LoopTimer object.
-        #
-        # This method performs no validation itself; argument validation is
-        # delegated to the LoopTimer constructor.
-        return LoopTimer(*kargs, **kwargs)
+    def __call__(self, *args: Any, **kwargs: Any) -> LoopTimer:
+        """Build and return a LoopTimer from forwarded constructor arguments."""
+        return LoopTimer(*args, **kwargs)
 
 # Public identifier that can be used as a registry or lookup key for this
 # builder. For example, a factory dictionary might map this string to the

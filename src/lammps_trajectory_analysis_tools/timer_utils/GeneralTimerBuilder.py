@@ -1,38 +1,16 @@
-#! /usr/bin/env python3
+"""Compatibility name for the shared builder registry."""
 
-# Python standard library imports
-from typing import Any
+from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (
+    BuilderRegistry,
+)
 
-# Local library import 
-from .LoopTimerBuilder import ( LoopTimerBuilder,
-                                LoopTimerBuilderKey )
-
-# ----------
-# Public members
-# ----------
-
-class GeneralTimerBuilder:
-    def __init__(self,*args,**kwargs)->None:
-        self._builders = {}
-
-    def register_builder(self, key, builder)->None:
-        self._builders[key] = builder
-
-    def create(self,key,*args, **kwargs)->Any:
-        builder = self._builders.get(key)
-        if not builder:
-            raise ValueError(key)
-        my_builder = builder()
-        return my_builder(*args,**kwargs)
-
-timer_object_factory = GeneralTimerBuilder()
-timer_object_factory.register_builder(LoopTimerBuilderKey ,LoopTimerBuilder)
+GeneralTimerBuilder = BuilderRegistry
 
 # ----------
 # Private members
 # ----------
 
-def _main()->None:
+def _main() -> None:
     return
 
 if __name__ == "__main__":

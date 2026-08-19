@@ -91,6 +91,85 @@ analysis_tool_factory.register_builder(key_lop_sf_fcc_factory, LopSfFccFactory()
 `LopSfFccFactory` itself remains domain code; only the registry and protocol
 move into the shared template.
 
+## Timer Module Migration Plan
+
+The timer modules should adopt the shared builder contract after the template
+has been reviewed and its tests pass.
+
+### `LoopTimer.py`
+
+Keep `LoopTimer` as the product being built. Preserve its constructor,
+properties, start/update/stop behavior, context-manager behavior, output, and
+current exceptions. It does not need to inherit from a builder type.
+
+Only add product validation or change timer behavior as a separate, explicitly
+tested decision.
+
+### `LoopTimerBuilder.py`
+
+Keep `LoopTimerBuilderKey` unchanged and make `LoopTimerBuilder` a direct
+callable builder:
+
+```python
+from typing import Any
+
+from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (
+    SupportsBuild,
+)
+
+
+class LoopTimerBuilder:
+    def __call__(self, *args: Any, **kwargs: Any) -> LoopTimer:
+        return LoopTimer(*args, **kwargs)
+```
+
+The builder should forward constructor arguments directly. It must not require
+zero-argument construction followed by a separate build call. Verify that its
+callable instance satisfies `SupportsBuild`.
+
+### `GeneralTimerBuilder.py`
+
+Replace the local registry implementation with `BuilderRegistry`. Register a
+callable builder instance rather than the builder class:
+
+```python
+timer_registry: BuilderRegistry[LoopTimer] = BuilderRegistry()
+timer_registry.register_builder(LoopTimerBuilderKey, LoopTimerBuilder())
+```
+
+Callers should use `build(key, *args, **kwargs)` instead of `create(...)`.
+Search for all `create` call sites before changing the API. If compatibility
+is required, retain `create` only as a temporary forwarding shim to `build`.
+
+### Correct duplicate module-level registration
+
+Registration currently occurs in both `GeneralTimerBuilder.py` and
+`timer_utils/__init__.py`, creating two independent `timer_object_factory`
+instances. This must be reduced to one registry and one registration site.
+
+- Keep the single public `timer_object_factory` definition in
+  `timer_utils/__init__.py`.
+- Remove the module-level factory creation and registration from
+  `GeneralTimerBuilder.py`.
+- Register `LoopTimerBuilder()` exactly once in the package initializer.
+- Export the same factory instance through the timer package API.
+- Do not register the builder again when importing the implementation module.
+
+Add an integration test that imports the package factory, verifies that its
+registered keys contain exactly `LoopTimerBuilderKey`, and builds a
+`LoopTimer`. This should also cover import-order regressions.
+
+### Timer migration sequence
+
+1. Add or verify the shared builder contract tests.
+2. Add focused tests for `LoopTimerBuilder` and the timer registry.
+3. Update `LoopTimerBuilder.py` to implement the direct callable contract.
+4. Replace `GeneralTimerBuilder` registry behavior with `BuilderRegistry`.
+5. Move module-level factory ownership to `timer_utils/__init__.py`.
+6. Update callers from `create` to `build`, or add a temporary compatibility
+   shim if existing public usage requires it.
+7. Run the timer tests, builder-template tests, and then the full test suite.
+
 ## Test Plan
 
 1. Registering a builder and calling `build()` returns the expected product,
@@ -102,6 +181,11 @@ move into the shared template.
 5. Two `BuilderRegistry` instances do not share state.
 6. The template package has no dependency on trajectory, analysis, writer,
    HDF5, or MDAnalysis modules.
+7. `LoopTimerBuilder` satisfies `SupportsBuild` and forwards constructor
+  arguments to `LoopTimer`.
+8. The timer package exposes one factory instance with one registration site.
+9. The timer factory builds a `LoopTimer` and raises template exceptions for
+  unknown keys and duplicate registrations.
 
 ## Implementation Phases
 
