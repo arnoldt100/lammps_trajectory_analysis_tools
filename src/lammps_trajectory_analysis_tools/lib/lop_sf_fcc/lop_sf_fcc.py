@@ -299,11 +299,11 @@ class LopSfFcc:
 
 
     def __init__(self,*args,**kwargs)->None:
-        self.__accumulator = []
+        self._accumulator = []
         self._normalized_wave_vectors = None
 
-        # This attribute stores the final FCC structure propert for 
-        # each at time t.
+        # This attribute stores the final FCC structure factor property for 
+        # every time t.
         self._lop_sf_fcc = None
         return
 
