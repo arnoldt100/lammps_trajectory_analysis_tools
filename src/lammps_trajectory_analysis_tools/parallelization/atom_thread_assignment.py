@@ -1,11 +1,14 @@
 """Immutable deterministic assignments of atoms to worker threads."""
 
 from collections.abc import Iterable, Sequence
-from operator import index as as_index
 
 import numpy as np
 
 from .atom_assignment_protocol import AtomAssignmentProtocol
+from .validation import (
+    validate_non_negative_integer,
+    validate_positive_integer,
+)
 
 
 class AtomThreadAssignment(AtomAssignmentProtocol):
@@ -18,8 +21,8 @@ class AtomThreadAssignment(AtomAssignmentProtocol):
         assignments: Sequence[Iterable[int]],
     ) -> None:
         """Create an assignment after validating complete atom ownership."""
-        self._atom_count = self._validate_non_negative(atom_count, "atom_count")
-        self._thread_count = self._validate_positive(thread_count, "thread_count")
+        self._atom_count = validate_non_negative_integer(atom_count, "atom_count")
+        self._thread_count = validate_positive_integer(thread_count, "thread_count")
         self._assignments = self._normalize_assignments(assignments)
         self._owners = self._create_owner_index()
 
@@ -30,8 +33,8 @@ class AtomThreadAssignment(AtomAssignmentProtocol):
         thread_count: int,
     ) -> AtomThreadAssignment:
         """Create a deterministic contiguous balanced atom partition."""
-        atom_count = cls._validate_non_negative(atom_count, "atom_count")
-        thread_count = cls._validate_positive(thread_count, "thread_count")
+        atom_count = validate_non_negative_integer(atom_count, "atom_count")
+        thread_count = validate_positive_integer(thread_count, "thread_count")
         base_size, remainder = divmod(atom_count, thread_count)
         assignments: list[np.ndarray] = []
         start = 0
@@ -41,27 +44,6 @@ class AtomThreadAssignment(AtomAssignmentProtocol):
             assignments.append(np.arange(start, stop, dtype=np.int64))
             start = stop
         return cls(atom_count, thread_count, assignments)
-
-    @staticmethod
-    def _validate_non_negative(value: int, name: str) -> int:
-        """Validate and normalize a non-negative integer."""
-        if isinstance(value, bool):
-            raise TypeError(f"{name} must be an integer")
-        try:
-            normalized_value = as_index(value)
-        except TypeError as error:
-            raise TypeError(f"{name} must be an integer") from error
-        if normalized_value < 0:
-            raise ValueError(f"{name} must be non-negative")
-        return normalized_value
-
-    @staticmethod
-    def _validate_positive(value: int, name: str) -> int:
-        """Validate and normalize a positive integer."""
-        normalized_value = AtomThreadAssignment._validate_non_negative(value, name)
-        if normalized_value == 0:
-            raise ValueError(f"{name} must be positive")
-        return normalized_value
 
     def _normalize_assignments(
         self,
