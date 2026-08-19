@@ -50,6 +50,9 @@ tests/
 - Registry instances hold no hidden global state; a domain module is
   responsible for instantiating and populating its own registry (as
   `lammps_analysis_tool_builder.py` does today).
+- Every domain builder migration must include registry integration. This is a
+  required step even when only one concrete builder currently exists; deferring
+  registry integration until a second implementation appears is not supported.
 - Registering a key that is already registered raises
   `BuilderRegistrationError`. Silent overwrite is not supported by default.
 - Building with an unregistered key raises `BuilderKeyError`.
@@ -168,7 +171,9 @@ registered keys contain exactly `LoopTimerBuilderKey`, and builds a
 5. Move module-level factory ownership to `timer_utils/__init__.py`.
 6. Update callers from `create` to `build`, or add a temporary compatibility
    shim if existing public usage requires it.
-7. Run the timer tests, builder-template tests, and then the full test suite.
+7. Register the timer builder in a domain-owned `BuilderRegistry` and add a
+  registry integration test.
+8. Run the timer tests, builder-template tests, and then the full test suite.
 
 ## Test Plan
 
@@ -210,11 +215,13 @@ registered keys contain exactly `LoopTimerBuilderKey`, and builds a
 - Add the tests described above under
   `tests/design_patterns_templates/builder/`.
 
-### Phase 5: Migrate `lammps_analysis_tool_builder.py` (optional follow-up)
+### Phase 5: Migrate `lammps_analysis_tool_builder.py`
 
-- Only after the template is reviewed and tested, consider updating
+- After the template is reviewed and tested, update
   `lammps_analysis_tool_builder.py` to use `BuilderRegistry` instead of its
   local `GeneralLammpsAnalysisToolFactory`.
+- Registry integration is mandatory for this migration and must not remain an
+  optional follow-up.
 
 ## Non-Goals
 

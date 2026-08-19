@@ -24,3 +24,6 @@ class ArrayAccumulatorBuilder:
             initial_value=initial_value,
             name=name,
         )
+
+
+array_accumulator_builder_key = "ArrayAccumulator"

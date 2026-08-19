@@ -313,9 +313,9 @@ The partitioning and execution mechanism belongs outside the accumulator package
 - **Completed:** Create and export `ArrayAccumulatorBuilder` using the shared
     direct-callable builder contract.
 - **Completed:** Ensure each build call returns an independent accumulator.
-- **Deferred:** Add a `BuilderRegistry` only when multiple accumulator types
-    require lookup by key; the package currently has one accumulator
-    implementation and does not need a global registry.
+- **Completed:** Register `ArrayAccumulatorBuilder` in the domain-owned
+    `array_accumulator_builder_registry`, even though the package currently has
+    one accumulator implementation.
 
 ### Phase 5: Integrate the FCC calculation
 

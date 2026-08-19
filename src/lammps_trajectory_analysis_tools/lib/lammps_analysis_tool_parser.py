@@ -21,6 +21,10 @@ import argparse
 from typing import Any
 from typing import TypeAlias
 
+from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (
+    BuilderRegistry,
+)
+
 # Local library import
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
@@ -32,23 +36,6 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser impor
 """ Define a type alias that is the union of all subcommand command line interface types. """
 CLI_ID: TypeAlias = CLILopSfFcc
 
-
-class _GeneralSubparserFactory:
-    """ The director for adding the subparsers to the top level parser."""
-    def __init__(self, *args, **kwargs)->None:
-        self._builders = {}
-
-    def register_builder(self, key:str, builder:Any)->None:
-        self._builders[key] = builder
-
-    def add_subparser(self, key:str, top_level_subparsers,
-                      *args, 
-                      **kwargs)->None:
-        builder = self._builders.get(key)
-        if not builder:
-            raise ValueError(key)
-        my_builder = builder()
-        my_builder(top_level_subparsers,*args,**kwargs)
 
 # ----------
 # This section adds the subparser for the calculating
@@ -71,19 +58,20 @@ def process_command_line_arguments()->CLI_ID:
         my_top_level_parser.add_subparsers(dest="subcommand_name",
                                            help="subcommand help"))
 
-    # Instatiate a subparser factory.
-    my_subparser_factory = _GeneralSubparserFactory()
+    # Create the domain-owned registry for subparser builders.
+    my_subparser_factory: BuilderRegistry[Any] = BuilderRegistry()
 
     # Register the builder and the function to process the command line arguments
     # for the LOP FCC fcc structure factor.
     my_subparser_factory.register_builder(_lop_sf_fcc_builder_key,
-        LopSfFccSubparserFactory)
+        LopSfFccSubparserFactory())
 
     parse_subcommand_args = { _lop_sf_fcc_builder_key : process_lop_sf_fcc_cli_args }
 
     # Invoke the add_subparser method to add the subparser
     # to the top level parser.
-    my_subparser_factory.add_subparser(_lop_sf_fcc_builder_key,my_subparsers)
+    my_subparser_builder = my_subparser_factory.build(_lop_sf_fcc_builder_key)
+    my_subparser_builder(my_subparsers)
 
     # Now parse the command line args for the subcommand.
     my_args = my_top_level_parser.parse_args()
