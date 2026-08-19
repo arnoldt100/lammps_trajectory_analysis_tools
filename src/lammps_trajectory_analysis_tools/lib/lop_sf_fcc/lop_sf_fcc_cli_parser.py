@@ -21,6 +21,21 @@ Each subcommand name must be unique.
 def lop_sf_fcc_subcommand_name()->str:
     return 'lop_sf_fcc'
 
+
+def positive_integer(value: str) -> int:
+    """Parse a strictly positive integer command-line value."""
+    try:
+        parsed_value = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "parallel thread count must be a positive integer"
+        ) from error
+    if parsed_value <= 0:
+        raise argparse.ArgumentTypeError(
+            "parallel thread count must be a positive integer"
+        )
+    return parsed_value
+
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
 
@@ -35,8 +50,13 @@ class CLILopSfFcc:
         dt: Optional[float] = None,
         cutoff: Optional[float] = None,
         output_hdf5_file: Optional[str] = None,
+        parallel_threads: int = 1,
         do_data_analysis: Optional[Callable[..., None]] = None,
     ) -> None:
+        if isinstance(parallel_threads, bool) or not isinstance(parallel_threads, int):
+            raise TypeError("parallel_threads must be a positive integer")
+        if parallel_threads <= 0:
+            raise ValueError("parallel_threads must be a positive integer")
         self._subcommand_name = subcommand_name
         self._trajectory = trajectory
         self._psf = psf
@@ -46,6 +66,7 @@ class CLILopSfFcc:
         self._dt = dt
         self._cutoff = cutoff
         self._output_hdf5_file = output_hdf5_file
+        self._parallel_threads = parallel_threads
         self._do_data_analysis = do_data_analysis
 
     @property
@@ -92,6 +113,11 @@ class CLILopSfFcc:
     def output_hdf5_file(self) -> Optional[str]:
         """Return the HDF5 output path."""
         return self._output_hdf5_file
+
+    @property
+    def parallel_threads(self) -> int:
+        """Return the configured number of parallel threads."""
+        return self._parallel_threads
 
     @property
     def do_data_analysis(self) -> Optional[Callable[..., None]]:
@@ -165,6 +191,12 @@ class LopSfFccSubparserFactory:
                              required=False,
                              default="output.hdf5",
                              help=self._hdf5_data_file_help)
+
+        parser1.add_argument("--parallel-threads",
+                     type=positive_integer,
+                     required=False,
+                     default=1,
+                             help="Number of parallel threads. If omitted, the default is 1.")
 
         # Add the callable object for calculating the local structure factor
         # fcc order parameter as an the callable attribute  'do_data_analysis'.

@@ -301,6 +301,7 @@ class LopSfFcc:
     def __init__(self,*args,**kwargs)->None:
         self._accumulator = []
         self._normalized_wave_vectors = None
+        self._parallel_threads = 1
 
         # This attribute stores the final FCC structure factor property for 
         # every time t.
@@ -309,6 +310,8 @@ class LopSfFcc:
 
     def __call__(self, command_line_arguments:CLILopSfFcc,
                  *args: Any, **kwargs: Any) -> Any:
+
+        self._parallel_threads = command_line_arguments.parallel_threads
 
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
