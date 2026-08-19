@@ -52,10 +52,14 @@ dt=1.0
 # The cutoff distance in angstroms for the neighbore search.
 cutoff=10.4
 
+# Define the number of parallel threads.
+nm_threads=2
+
 # Reform the original DCD file.
 cat argon_box_small_dcd_* >${dcd_file}
 
 # Run the example.
 uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd \
   --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} \
-  --cutoff ${cutoff} --output-hdf5-file ${output_hdf5}
+  --cutoff ${cutoff} --output-hdf5-file ${output_hdf5} \
+  --parallel-threads=${nm_threads}
