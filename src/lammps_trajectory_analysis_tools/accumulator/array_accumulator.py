@@ -124,4 +124,3 @@ class ArrayAccumulator(Generic[T]):
             region.
         """
         return self._active_view()
-

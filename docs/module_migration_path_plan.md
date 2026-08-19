@@ -28,9 +28,9 @@ Use one package root for all importable code:
 - `src/lib/lammps_analysis_tool_parser.py` -> `src/lammps_trajectory_analysis_tools/lib/lammps_analysis_tool_parser.py`
 
 ### Accumulator subpackage
-- `src/lib/accumulator/__init__.py` -> `src/lammps_trajectory_analysis_tools/lib/accumulator/__init__.py`
-- `src/lib/accumulator/array_accumulator.py` -> `src/lammps_trajectory_analysis_tools/lib/accumulator/array_accumulator.py`
-- `src/lib/accumulator/merge_accumulators.py` -> `src/lammps_trajectory_analysis_tools/lib/accumulator/merge_accumulators.py`
+- `src/lib/accumulator/__init__.py` -> `src/lammps_trajectory_analysis_tools/accumulator/__init__.py`
+- `src/lib/accumulator/array_accumulator.py` -> `src/lammps_trajectory_analysis_tools/accumulator/array_accumulator.py`
+- `src/lib/accumulator/merge_accumulators.py` -> `src/lammps_trajectory_analysis_tools/accumulator/merge_accumulators.py`
 
 ### LOP/SF FCC subpackage
 - `src/lib/lop_sf_fcc/__init__.py` -> `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/__init__.py`
@@ -53,7 +53,7 @@ Use one package root for all importable code:
 
 ### Rule 2: Replace sibling imports with absolute imports
 - Before: `from accumulator.array_accumulator import ArrayAccumulator`
-- After: `from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator`
+- After: `from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator`
 
 ### Rule 3: Keep one canonical import style across src, tests, and scripts
 - Use only `from lammps_trajectory_analysis_tools...` imports for project code.

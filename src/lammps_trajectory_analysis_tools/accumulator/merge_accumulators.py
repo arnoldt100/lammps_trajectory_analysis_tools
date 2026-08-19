@@ -7,7 +7,7 @@ from typing import TypeVar
 # Local Library package imports
 import numpy as np
 
-from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
 
 T = TypeVar("T", np.float64, np.int32, np.complex64)
 

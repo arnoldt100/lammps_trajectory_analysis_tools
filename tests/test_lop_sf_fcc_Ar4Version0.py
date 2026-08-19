@@ -19,7 +19,7 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)
 
-from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
 
 @pytest.fixture
 def ar4_version0():

@@ -17,7 +17,7 @@ from MDAnalysis.coordinates.memory import MemoryReader
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (create_reciprocal_lattice_vectors,
  create_primitive_lattice_vectors)
 
-from lammps_trajectory_analysis_tools.lib.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
 
 from lammps_trajectory_analysis_tools.lib.data_types import ( AtomCoordinates,LatticeVectors,
     AtomPairs, AtomPairsTerms, TimeStep,
