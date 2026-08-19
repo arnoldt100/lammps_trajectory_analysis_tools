@@ -14,6 +14,11 @@ that every atom index belongs to one and only one thread.
 No files are modified by this planning task. This document defines the
 contract for the later implementation.
 
+The assignment protocol and value object belong to the
+`lammps_trajectory_analysis_tools.parallelization` package. The accumulator
+package remains responsible for numerical storage, accumulation, and
+reduction.
+
 ## Atom Assignment Contract
 
 Represent the assignment as an immutable collection:
@@ -393,11 +398,14 @@ merging.
 
 ### Phase 1: Define the assignment value object
 
-- Create an immutable assignment type.
-- Add deterministic balanced partition construction.
-- Allow empty thread assignments.
-- Validate exact, disjoint, complete atom coverage.
-- Expose only read-only NumPy 1D arrays inside an immutable outer tuple.
+- **Completed:** Create `AtomThreadAssignment` implementing the common
+    `AtomAssignmentProtocol`.
+- **Completed:** Add deterministic contiguous balanced partition construction.
+- **Completed:** Allow empty thread assignments when the thread count exceeds
+    the atom count.
+- **Completed:** Validate exact, disjoint, complete atom coverage.
+- **Completed:** Expose only read-only NumPy 1D arrays inside an immutable
+    outer tuple.
 
 ### Phase 2: Integrate assignment creation
 
