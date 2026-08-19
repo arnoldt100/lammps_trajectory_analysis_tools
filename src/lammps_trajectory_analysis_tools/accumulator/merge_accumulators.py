@@ -8,19 +8,22 @@ from typing import TypeVar
 import numpy as np
 
 from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.accumulator.accumulator_protocol import (
+    AccumulatorProtocol,
+)
 
 T = TypeVar("T", np.float64, np.int32, np.complex64)
 
 
 def merge_array_accumulators(
-    lhs: ArrayAccumulator[T],
-    rhs: ArrayAccumulator[T],
+    lhs: AccumulatorProtocol[T],
+    rhs: AccumulatorProtocol[T],
     name: str = "Merged Accumulator",
 ) -> ArrayAccumulator[T]:
     """Merge two ArrayAccumulator instances by element-wise summation.
 
-    When the two accumulators have different capacities, the smaller one is
-    treated as if it were padded with zeros up to the larger capacity.
+    The two accumulators must use the same global capacity. The inputs are not
+    mutated and the returned accumulator is a new dense accumulator.
 
     Args:
         lhs: The left-hand accumulator.
@@ -33,22 +36,23 @@ def merge_array_accumulators(
 
     Raises:
         TypeError: If the two accumulators have incompatible dtypes.
+        ValueError: If the two accumulators have different capacities.
     """
     if lhs.dtype != rhs.dtype:
         raise TypeError(
             f"Cannot merge accumulators with different dtypes: "
             f"{lhs.dtype} vs {rhs.dtype}"
         )
+    if lhs.capacity != rhs.capacity:
+        raise ValueError(
+            "Cannot merge accumulators with different capacities: "
+            f"{lhs.capacity} vs {rhs.capacity}"
+        )
 
-    merged_capacity: np.int32 = max(lhs.capacity, rhs.capacity)
+    merged_capacity = lhs.capacity
     dtype: np.dtype = lhs.dtype
 
-    lhs_padded: np.ndarray = np.zeros(merged_capacity, dtype=dtype)
-    rhs_padded: np.ndarray = np.zeros(merged_capacity, dtype=dtype)
-    lhs_padded[: lhs.capacity] = lhs.finalize()
-    rhs_padded[: rhs.capacity] = rhs.finalize()
-
-    combined: np.ndarray = lhs_padded + rhs_padded
+    combined: np.ndarray = np.asarray(lhs.finalize()) + np.asarray(rhs.finalize())
 
     merged: ArrayAccumulator[T] = ArrayAccumulator(
         dtype=dtype, capacity=merged_capacity, name=name

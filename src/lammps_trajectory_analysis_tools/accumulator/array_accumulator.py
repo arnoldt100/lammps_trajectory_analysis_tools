@@ -2,25 +2,20 @@
 """Defines a bounded accumulator designed for a fixed sequence of elements."""
 
 # Python standard library imports
-from typing import TypeVar, Generic
+from typing import Any
 
-# Local Library package imports
 import numpy as np
 
-from lammps_trajectory_analysis_tools.lib.data_types import Integer
+from .accumulator_protocol import AccumulatorProtocol
 
-# Define a TypeVar restricted to supported NumPy types
-T = TypeVar("T", np.float64, np.int32, np.complex64)
-
-
-class ArrayAccumulator(Generic[T]):
+class ArrayAccumulator[T](AccumulatorProtocol[T]):
     """ A bounded accumulator for a fixed sequence of elements. """
     def __init__(
         self,
         dtype: np.dtype | type,
-        capacity: np.int32 = 100,
-        initial_value=0.00,
-        name="Generic Accumulator",
+        capacity: int = 100,
+        initial_value: Any = 0.00,
+        name: str = "Generic Accumulator",
     ) -> None:
         """ Initialize the accumulator with a specified data type, capacity, and initial value.
 
@@ -47,18 +42,18 @@ class ArrayAccumulator(Generic[T]):
         return np.dtype(dtype)
 
     @staticmethod
-    def _validate_capacity(capacity: Integer) -> np.int32:
+    def _validate_capacity(capacity: int) -> np.int32:
         """Validate and normalize storage capacity."""
         normalized_capacity = np.int32(capacity)
         if normalized_capacity <= 0:
             raise ValueError("capacity must be a positive integer")
         return normalized_capacity
 
-    def _coerce_value(self, value: T) -> T:
+    def _coerce_value(self, value: Any) -> T:
         """Coerce values to the configured dtype."""
         return self._dtype.type(value)
 
-    def _validate_index(self, index: Integer) -> np.int32:
+    def _validate_index(self, index: int) -> np.int32:
         """Validate and normalize an index into the backing array."""
         normalized_index = np.int32(index)
         if normalized_index < 0:
@@ -78,7 +73,7 @@ class ArrayAccumulator(Generic[T]):
         message += f"accumulator sum, = {np.sum(self._buffer)}\n"
         return message
 
-    def accumulate(self, index: Integer, value: T) -> None:
+    def accumulate(self, index: int, value: T) -> None:
         """Adds a single value of type T to the accumulator.
 
         Args:
@@ -109,7 +104,7 @@ class ArrayAccumulator(Generic[T]):
     @property
     def capacity(self) -> int:
         """The maximum number of elements the accumulator can hold."""
-        return self._capacity
+        return int(self._capacity)
 
     @property
     def name(self) -> str:
