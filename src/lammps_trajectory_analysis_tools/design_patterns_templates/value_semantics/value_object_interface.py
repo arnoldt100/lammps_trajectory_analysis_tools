@@ -20,8 +20,8 @@ class ValueObjectInterface(ABC):
 
     @property
     @abstractmethod
-    def state(self) -> Mapping[str, Any]:
-        """Return the object's named value state."""
+    def state_implementations(self) -> Mapping[str, Any]:
+        """Return the object's concrete state implementations."""
         ...
 
     @abstractmethod
