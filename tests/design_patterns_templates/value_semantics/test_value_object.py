@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+from typing import Any, Self
+
 import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
@@ -15,6 +18,15 @@ class PositiveValue(MutableValue):
     def _validate(cls, state):
         if state.get("amount", 0) <= 0:
             raise ValueValidationError("amount must be positive")
+
+
+class IncompleteValue(ValueObjectInterface):
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {}
+
+    def replace(self, **changes: Any) -> Self:
+        return self
 
 
 def test_equal_state_is_equal_for_distinct_instances():
@@ -89,6 +101,11 @@ def test_interface_and_stateful_implementation_are_separated():
 
     assert value.state == {"name": "sample"}
     assert isinstance(value, ValueSemantics)
+
+
+def test_interface_requires_equality_and_representation_implementations():
+    with pytest.raises(TypeError, match="abstract"):
+        IncompleteValue()
 
 
 def test_immutable_value_is_explicit_template():

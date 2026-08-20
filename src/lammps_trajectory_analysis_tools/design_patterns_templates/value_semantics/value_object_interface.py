@@ -28,3 +28,13 @@ class ValueObjectInterface(ABC):
     def replace(self, **changes: Any) -> Self:
         """Return a new value object with state changes applied."""
         ...
+
+    @abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """Compare this value object with another object."""
+        ...
+
+    @abstractmethod
+    def __repr__(self) -> str:
+        """Return a debugging representation of this value object."""
+        ...
