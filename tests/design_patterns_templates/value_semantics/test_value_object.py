@@ -4,7 +4,6 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics 
     ImmutableValue,
     MutableValue,
     StateValueObject,
-    ValueObject,
     ValueObjectInterface,
     ValueSemantics,
     ValueValidationError,
@@ -19,22 +18,22 @@ class PositiveValue(MutableValue):
 
 
 def test_equal_state_is_equal_for_distinct_instances():
-    first = ValueObject({"name": "sample", "values": [1, 2]})
-    second = ValueObject({"name": "sample", "values": [1, 2]})
+    first = StateValueObject({"name": "sample", "values": [1, 2]})
+    second = StateValueObject({"name": "sample", "values": [1, 2]})
 
     assert first == second
     assert first is not second
 
 
 def test_different_state_is_not_equal():
-    first = ValueObject({"name": "first"})
-    second = ValueObject({"name": "second"})
+    first = StateValueObject({"name": "first"})
+    second = StateValueObject({"name": "second"})
 
     assert first != second
 
 
 def test_replace_returns_new_value_without_mutating_original():
-    original = ValueObject({"name": "before", "count": 1})
+    original = StateValueObject({"name": "before", "count": 1})
 
     replacement = original.replace(name="after")
 
@@ -44,7 +43,7 @@ def test_replace_returns_new_value_without_mutating_original():
 
 
 def test_state_is_defensively_copied():
-    original = ValueObject({"values": [1, 2]})
+    original = StateValueObject({"values": [1, 2]})
     exposed_state = original.state
     exposed_state["values"].append(3)
 
@@ -53,7 +52,7 @@ def test_state_is_defensively_copied():
 
 def test_invalid_field_name_is_rejected():
     with pytest.raises(ValueError, match="field names"):
-        ValueObject({"": 1})
+        StateValueObject({"": 1})
 
 
 def test_subclass_validation_is_applied_on_construction_and_replacement():
@@ -64,21 +63,21 @@ def test_subclass_validation_is_applied_on_construction_and_replacement():
 
 
 def test_hashing_supports_hashable_state():
-    first = ValueObject({"name": "sample", "count": 1})
-    second = ValueObject({"name": "sample", "count": 1})
+    first = StateValueObject({"name": "sample", "count": 1})
+    second = StateValueObject({"name": "sample", "count": 1})
 
     assert hash(first) == hash(second)
 
 
 def test_hashing_rejects_unhashable_state():
-    value = ValueObject({"values": [1, 2]})
+    value = StateValueObject({"values": [1, 2]})
 
     with pytest.raises(TypeError, match="unhashable"):
         hash(value)
 
 
 def test_value_object_conforms_to_protocol():
-    value = ValueObject({"name": "sample"})
+    value = StateValueObject({"name": "sample"})
 
     assert isinstance(value, ValueSemantics)
 

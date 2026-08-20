@@ -9,7 +9,7 @@ from .builder import (
 from .value_semantics import (
 	ImmutableValue,
 	MutableValue,
-	ValueObject,
+	StateValueObject,
 	ValueSemantics,
 	ValueValidationError,
 )
@@ -20,8 +20,8 @@ __all__ = [
 	"BuilderRegistry",
 	"ImmutableValue",
 	"MutableValue",
+	"StateValueObject",
 	"SupportsBuild",
-	"ValueObject",
 	"ValueSemantics",
 	"ValueValidationError",
 ]
