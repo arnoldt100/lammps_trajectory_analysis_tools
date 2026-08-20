@@ -113,7 +113,7 @@ Only capabilities needed by actual templates should be included in the first ver
 ## API and Naming Principles
 
 - Use names that describe behavior rather than the eventual domain.
-- Prefer `ValueObject`, `ImmutableValue`, or similarly direct names over pattern-jargon-heavy names.
+- Prefer `StateValueObjectImmutable`, `StateValueObjectMutable`, or similarly direct names over pattern-jargon-heavy names.
 - Avoid a generic base class when a dataclass, protocol, or helper function is clearer.
 - Keep constructors unsurprising and avoid accepting arbitrary `*args` and `**kwargs` in public templates.
 - Document whether nested values are copied deeply, copied shallowly, or required to be immutable.

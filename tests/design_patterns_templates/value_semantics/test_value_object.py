@@ -1,19 +1,20 @@
 from collections.abc import Mapping
+from inspect import getmro
 from typing import Any, Self
 
 import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
-    ImmutableValue,
-    MutableValue,
     StateValueObject,
+    StateValueObjectImmutable,
+    StateValueObjectMutable,
     ValueObjectInterface,
     ValueSemantics,
     ValueValidationError,
 )
 
 
-class PositiveValue(MutableValue):
+class PositiveValue(StateValueObjectMutable):
     @classmethod
     def _validate(cls, state):
         if state.get("amount", 0) <= 0:
@@ -103,26 +104,38 @@ def test_interface_and_stateful_implementation_are_separated():
     assert isinstance(value, ValueSemantics)
 
 
+def test_state_value_object_variants_directly_implement_interface():
+    assert getmro(StateValueObjectImmutable)[1] is ValueObjectInterface
+    assert getmro(StateValueObjectMutable)[1] is ValueObjectInterface
+
+
 def test_interface_requires_equality_and_representation_implementations():
     with pytest.raises(TypeError, match="abstract"):
         IncompleteValue()
 
 
-def test_immutable_value_is_explicit_template():
-    value = ImmutableValue({"name": "sample"})
+def test_state_value_object_immutable_is_explicit_template():
+    value = StateValueObjectImmutable({"name": "sample"})
 
     assert value.replace(name="updated") != value
 
 
-def test_mutable_value_updates_state():
-    value = MutableValue({"name": "before", "count": 1})
+def test_state_value_object_immutable_is_immutable_template():
+    value = StateValueObjectImmutable({"name": "sample"})
+
+    assert value.replace(name="updated") != value
+    assert not hasattr(value, "update")
+
+
+def test_state_value_object_mutable_updates_state():
+    value = StateValueObjectMutable({"name": "before", "count": 1})
 
     value.update(name="after")
 
     assert value.state == {"name": "after", "count": 1}
 
 
-def test_mutable_value_update_is_atomic_when_validation_fails():
+def test_state_value_object_mutable_update_is_atomic_when_validation_fails():
     value = PositiveValue({"amount": 2})
 
     with pytest.raises(ValueValidationError, match="positive"):
@@ -131,6 +144,6 @@ def test_mutable_value_update_is_atomic_when_validation_fails():
     assert value.state == {"amount": 2}
 
 
-def test_mutable_value_is_not_hashable():
+def test_state_value_object_mutable_is_not_hashable():
     with pytest.raises(TypeError):
-        hash(MutableValue({"name": "sample"}))
+        hash(StateValueObjectMutable({"name": "sample"}))
