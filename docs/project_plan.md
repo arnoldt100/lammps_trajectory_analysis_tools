@@ -12,6 +12,7 @@ This document contains requirements that apply to the entire repository. Package
 - Give every public function, method, and class an explicit type signature and a concise Google-style docstring.
 - Keep modules focused on one responsibility and avoid classes and functions that grow beyond what can be understood and tested locally.
 - Aim for classes to stay roughly around one page of readable code in length; if a class grows significantly beyond that, split responsibilities or simplify the design.
+- Keep the public API explicit: only exported classes, functions, and modules intended for external use are public. Internal helpers, support functions, implementation details, and non-public classes must be clearly marked as internal and must not be part of the supported external contract.
 - Prefer small protocols, composition, and focused helpers over unnecessary inheritance hierarchies or universal abstractions.
 - Base classes should define the interface only; they should not store implementation data. State, configuration, and mutable working data belong in concrete subclasses, composition objects, or dedicated value objects.
 - A base class may store state only for an extraordinary reason that is explicitly documented in the owning plan and is approved by the coder before the implementation is merged. This exception must be rare, intentional, and justified as necessary to preserve the interface contract or shared behavior; it is not a default pattern and must not be introduced casually.
