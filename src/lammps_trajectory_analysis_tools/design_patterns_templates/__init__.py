@@ -7,7 +7,6 @@ from .builder import (
 	SupportsBuild,
 )
 from .value_semantics import (
-	StateValueObject,
 	StateValueObjectImmutable,
 	StateValueObjectMutable,
 	ValueSemantics,
@@ -18,7 +17,6 @@ __all__ = [
 	"BuilderKeyError",
 	"BuilderRegistrationError",
 	"BuilderRegistry",
-	"StateValueObject",
 	"StateValueObjectImmutable",
 	"StateValueObjectMutable",
 	"SupportsBuild",

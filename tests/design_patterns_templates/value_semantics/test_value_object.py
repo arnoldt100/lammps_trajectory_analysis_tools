@@ -5,7 +5,6 @@ from typing import Any, Self
 import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
-    StateValueObject,
     StateValueObjectImmutable,
     StateValueObjectMutable,
     ValueObjectInterface,
@@ -31,22 +30,22 @@ class IncompleteValue(ValueObjectInterface):
 
 
 def test_equal_state_is_equal_for_distinct_instances():
-    first = StateValueObject({"name": "sample", "values": [1, 2]})
-    second = StateValueObject({"name": "sample", "values": [1, 2]})
+    first = StateValueObjectImmutable({"name": "sample", "values": [1, 2]})
+    second = StateValueObjectImmutable({"name": "sample", "values": [1, 2]})
 
     assert first == second
     assert first is not second
 
 
 def test_different_state_is_not_equal():
-    first = StateValueObject({"name": "first"})
-    second = StateValueObject({"name": "second"})
+    first = StateValueObjectImmutable({"name": "first"})
+    second = StateValueObjectImmutable({"name": "second"})
 
     assert first != second
 
 
 def test_replace_returns_new_value_without_mutating_original():
-    original = StateValueObject({"name": "before", "count": 1})
+    original = StateValueObjectImmutable({"name": "before", "count": 1})
 
     replacement = original.replace(name="after")
 
@@ -56,7 +55,7 @@ def test_replace_returns_new_value_without_mutating_original():
 
 
 def test_state_is_defensively_copied():
-    original = StateValueObject({"values": [1, 2]})
+    original = StateValueObjectImmutable({"values": [1, 2]})
     exposed_state = original.state
     exposed_state["values"].append(3)
 
@@ -65,7 +64,7 @@ def test_state_is_defensively_copied():
 
 def test_invalid_field_name_is_rejected():
     with pytest.raises(ValueError, match="field names"):
-        StateValueObject({"": 1})
+        StateValueObjectImmutable({"": 1})
 
 
 def test_subclass_validation_is_applied_on_construction_and_replacement():
@@ -76,21 +75,21 @@ def test_subclass_validation_is_applied_on_construction_and_replacement():
 
 
 def test_hashing_supports_hashable_state():
-    first = StateValueObject({"name": "sample", "count": 1})
-    second = StateValueObject({"name": "sample", "count": 1})
+    first = StateValueObjectImmutable({"name": "sample", "count": 1})
+    second = StateValueObjectImmutable({"name": "sample", "count": 1})
 
     assert hash(first) == hash(second)
 
 
 def test_hashing_rejects_unhashable_state():
-    value = StateValueObject({"values": [1, 2]})
+    value = StateValueObjectImmutable({"values": [1, 2]})
 
     with pytest.raises(TypeError, match="unhashable"):
         hash(value)
 
 
 def test_value_object_conforms_to_protocol():
-    value = StateValueObject({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"})
 
     assert isinstance(value, ValueSemantics)
 
@@ -98,7 +97,7 @@ def test_value_object_conforms_to_protocol():
 def test_interface_and_stateful_implementation_are_separated():
     assert not hasattr(ValueObjectInterface, "_state")
 
-    value = StateValueObject({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"})
 
     assert value.state == {"name": "sample"}
     assert isinstance(value, ValueSemantics)
