@@ -1,13 +1,24 @@
-"""Internal hashing helpers for value-object implementations.
+"""Internal helper functions for value-object implementations.
 
-These functions are intentionally private support utilities. They are not part
-of the public value-semantics API and should only be used by the concrete
-value-object implementation classes that require deterministic hashing.
+These utilities are intentionally support-only functions. They are not part of
+ the public value-semantics API and should only be used by concrete
+value-object implementations that need deterministic hashing or placeholder
+behaviors.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
+
+
+def free_dummy_method(state: Mapping[str, Any], *args: Any, **kwargs: Any) -> Any:
+    """Placeholder free-function implementation for dummy_method semantics.
+
+    The value object delegates to this helper so the actual behavior can be
+    implemented separately from the concrete object API.
+    """
+    return None
 
 
 def _hashable_state(state: dict[str, Any]) -> tuple[tuple[str, Any], ...]:

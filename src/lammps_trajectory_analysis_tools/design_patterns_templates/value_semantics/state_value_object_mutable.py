@@ -7,6 +7,7 @@ from copy import deepcopy
 from typing import Any, Self
 
 from .validation import validate_state
+from .value_object_helpers import free_dummy_method
 from .value_object_interface import ValueObjectInterface
 
 
@@ -41,6 +42,10 @@ class StateValueObjectMutable(ValueObjectInterface):
         updated_state = dict(self.state)
         updated_state.update(changes)
         return type(self)(updated_state)
+
+    def dummy_method(self, *args: Any, **kwargs: Any) -> Any:
+        """Placeholder interface method that delegates to the free helper."""
+        return free_dummy_method(self._state, *args, **kwargs)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, StateValueObjectMutable):

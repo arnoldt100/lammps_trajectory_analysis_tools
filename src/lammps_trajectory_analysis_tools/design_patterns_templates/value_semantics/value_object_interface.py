@@ -30,6 +30,11 @@ class ValueObjectInterface(ABC):
         ...
 
     @abstractmethod
+    def dummy_method(self) -> Any:
+        """Return a placeholder value required by the interface contract."""
+        ...
+
+    @abstractmethod
     def __eq__(self, other: object) -> bool:
         """Compare this value object with another object."""
         ...
