@@ -1,5 +1,12 @@
-"""A small immutable value-object starting point."""
+"""A small value-object template with a separate interface layer.
 
+The interface layer contains the behavior contract and stores no instance data.
+Concrete implementations own their state separately.
+"""
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any, Self
@@ -7,12 +14,35 @@ from typing import Any, Self
 from .validation import validate_state
 
 
-class ValueObject:
-    """An immutable-by-interface object identified by named state.
+class ValueObjectInterface(ABC):
+    """Interface contract for value-oriented objects.
 
-    The input state and state returned by the public property are deep-copied
-    so callers cannot mutate the value through a nested mutable object. Domain
-    subclasses can override ``_validate`` to establish additional invariants.
+    This type defines the required value semantics only: callers expect a
+    state-bearing object with copy-on-write replacement behavior. It is an
+    abstract interface and intentionally stores no instance data. Any concrete
+    implementation must own its own private state separately.
+    """
+
+    __slots__ = ()
+
+    @property
+    @abstractmethod
+    def state(self) -> Mapping[str, Any]:
+        """Return the object's named value state."""
+        ...
+
+    @abstractmethod
+    def replace(self, **changes: Any) -> Self:
+        """Return a new value object with state changes applied."""
+        ...
+
+
+class StateValueObject(ValueObjectInterface):
+    """Concrete state-bearing implementation of the value-object contract.
+
+    Unlike ``ValueObjectInterface``, this class owns the actual private state
+    and validates it during construction and replacement. This is the concrete
+    implementation that stores data; the interface remains data-free.
     """
 
     __slots__ = ("_state",)
@@ -58,12 +88,32 @@ class ValueObject:
             raise TypeError("value state contains an unhashable value") from error
 
 
+class ValueObject(StateValueObject):
+    """Concrete value object implementation.
+
+    This is the default immutable-by-default value object: equality is based on
+    state and new values are created with ``replace()`` rather than mutating the
+    existing instance.
+    """
+
+
 class ImmutableValue(ValueObject):
-    """Explicit name for the immutable value-object template."""
+    """Explicit immutable value-object variant.
+
+    This is a concrete value object, not the interface type. It preserves the
+    standard copy-on-write semantics and intentionally does not expose in-place
+    mutation.
+    """
 
 
 class MutableValue(ValueObject):
-    """A value object that permits validated, atomic state updates."""
+    """Mutable value-object variant.
+
+    This still implements the value-object contract, but adds an explicit
+    in-place ``update()`` operation. The object remains value-based in equality
+    and replacement semantics; mutation is just a convenience method on the
+    concrete implementation.
+    """
 
     __hash__ = None
 

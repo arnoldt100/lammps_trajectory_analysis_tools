@@ -13,6 +13,51 @@ The long-term calculation model uses replicated data decomposition:
 
 The first target calculation is a local order parameter for FCC structure factors.
 
+## Mutability Decision
+
+The accumulator design has two possible models:
+
+### Immutable-only accumulator
+
+An immutable accumulator would return a new object after every accumulation.
+This provides strong value semantics and safe cross-thread sharing, but it is
+not appropriate for the worker hot loop because repeated array updates would
+create unnecessary allocations and copies.
+
+### Mutable-only accumulator
+
+A mutable accumulator is efficient for worker-local updates, but its state can
+change while another layer is reading or reducing it. That makes ownership and
+snapshot boundaries harder to enforce.
+
+### Selected design: mutable worker plus immutable value
+
+Use two related objects:
+
+```text
+ArrayAccumulator
+    mutable, worker-local accumulation buffer
+
+ArrayAccumulatorValue
+    immutable snapshot of finalized values and counters
+```
+
+`ArrayAccumulator` remains mutable and is never shared between workers.
+`ArrayAccumulator.to_value()` creates an independent immutable snapshot.
+Reduction and cross-worker handoff should operate on immutable values wherever
+possible:
+
+```text
+worker-local ArrayAccumulator
+    -> to_value()
+    -> immutable ArrayAccumulatorValue
+    -> deterministic reduction
+    -> final immutable result
+```
+
+This preserves efficient accumulation while giving the parallel reduction
+layer explicit immutable value semantics.
+
 ## Architectural Boundaries
 
 Keep the responsibilities separate:
@@ -41,9 +86,12 @@ src/
     accumulator/
       __init__.py
       accumulator_protocol.py
+            accumulator_value_protocol.py
       array_accumulator.py
+            array_accumulator_value.py
       accumulator_reducer.py
       array_accumulator_builder.py
+            array_accumulator_value_builder.py
 ```
 
 The existing `merge_accumulators.py` may remain as the initial reducer module, or be renamed to `accumulator_reducer.py` when the generic protocol-based reducer is introduced.
@@ -59,18 +107,14 @@ T = TypeVar("T")
 
 
 class AccumulatorProtocol(Protocol[T]):
-    """Protocol for thread-local accumulation and deterministic merging."""
+    """Protocol for mutable worker-local accumulation."""
 
     def accumulate(self, index: int, value: T) -> None:
         """Add a value associated with an atom or result index."""
         ...
 
-    def merge(self, other: Self) -> Self:
-        """Return a merged accumulator without mutating either input."""
-        ...
-
     def finalize(self) -> Any:
-        """Return the accumulated result in public form."""
+        """Return the current accumulated result in public form."""
         ...
 
     def reset(self) -> None:
@@ -124,6 +168,39 @@ def merge_accumulators(
 ```
 
 The reducer should accept protocol-compatible accumulators rather than only `ArrayAccumulator`.
+
+Add a separate immutable value protocol for finalized snapshots:
+
+```python
+class AccumulatorValueProtocol(Protocol[T]):
+    """Protocol for immutable finalized accumulator values."""
+
+    @property
+    def values(self) -> Any:
+        """Return read-only accumulated values."""
+        ...
+
+    @property
+    def counters(self) -> Any:
+        """Return read-only contribution counts."""
+        ...
+
+    @property
+    def capacity(self) -> int:
+        """Return the global result capacity."""
+        ...
+
+    @property
+    def dtype(self) -> Any:
+        """Return the stored value dtype."""
+        ...
+```
+
+`ArrayAccumulatorValue` should implement both `AccumulatorValueProtocol` and
+the repository's `ValueSemantics` protocol. Its state must use defensive
+copies and read-only NumPy arrays. Equality should use `np.array_equal`; raw
+NumPy array comparison must not be delegated to ordinary dictionary equality.
+Hashing should remain disabled initially because NumPy arrays are unhashable.
 
 ## Phase 1 Contract Decisions
 
@@ -180,6 +257,65 @@ Phase 1 establishes the following decisions for the protocol implementation:
 ## Dense And Sparse Storage
 
 Consider two storage strategies:
+
+### Dense storage
+
+Dense storage is the default initial implementation. Every worker and every global result index is represented explicitly in an array of fixed capacity. This is efficient for repeated additive accumulation in fixed-size local-property calculations and matches the initial FCC local-order use case well.
+
+Benefits:
+
+- predictable memory layout
+- direct indexing by global atom index
+- easy validation for capacity and dtype compatibility
+- simple deterministic reduction semantics
+
+Costs:
+
+- memory grows with the configured global capacity
+- sparse domains waste space when many indices are unused
+- some calculations may compute only a small subset of atoms or properties
+
+### Sparse storage
+
+Sparse storage permits only populated indices to be tracked and is useful when the domain is large but the actual touched indices are small. This reduces memory when local calculations are limited to a subset of atoms or properties.
+
+Benefits:
+
+- lower memory use in sparse domains
+- natural fit for irregular local property calculations
+
+Costs:
+
+- more complex indexing and validation rules
+- more complicated reducer semantics
+- less straightforward determinism guarantees when merging partial sparse maps
+
+### Decision
+
+Start with dense storage for Phase 1. Keep the protocol abstract enough to support sparse implementations later if the workload or memory profile warrants it.
+
+## Implementation Notes
+
+The canonical implementation should keep the following responsibilities clear:
+
+- `ArrayAccumulator` owns local mutable accumulation state.
+- `ArrayAccumulatorValue` owns immutable snapshot state.
+- `merge_accumulators` owns reduction semantics.
+- builders own construction policy and configuration validation.
+
+The dense accumulator should remain independent of the FCC calculation itself and should not embed trajectory or atom metadata in the storage contract.
+
+## Phase 2 and Beyond
+
+After the dense implementation is stabilized, extend the protocol with more explicit metadata and compatibility validation only when there is demonstrated need. Candidate additions include:
+
+- frame or timestep metadata
+- worker identity or partition metadata
+- units or normalization fields
+- sparse-capacity or occupancy metadata
+- specialized reducer factories for exact reproducibility
+
+This keeps Phase 1 focused on the essential storage and reduction contract without prematurely overfitting the accumulator design to a single domain-specific calculation.
 
 ### Dense replicated accumulator
 
@@ -240,7 +376,8 @@ Do not store worker IDs unless they are needed for diagnostics or deterministic 
 
 ## ArrayAccumulator Migration
 
-Adapt `ArrayAccumulator` to satisfy `AccumulatorProtocol` without changing its existing public behavior.
+Adapt `ArrayAccumulator` to satisfy the mutable `AccumulatorProtocol` without
+changing its existing public behavior.
 
 Preserve:
 
@@ -251,7 +388,14 @@ Preserve:
 - `dtype`;
 - current validation and value-coercion behavior.
 
-Add only the minimum missing protocol surface. If `merge` is implemented as a method, it should return a new accumulator and leave both inputs unchanged. Otherwise, use the separate reducer function as the canonical merge API.
+Add:
+
+- `to_value() -> ArrayAccumulatorValue` for immutable snapshots;
+- defensive copying at the snapshot boundary;
+- no sharing of mutable worker state across workers.
+
+Keep reduction as a separate operation over immutable values rather than
+adding merge policy to the mutable worker object.
 
 ## Builder Integration
 
@@ -264,6 +408,9 @@ builder(dtype=np.complex64, capacity=number_of_atoms)
 The parallel calculation layer must never share one mutable accumulator between workers. The builder should produce independent instances with the requested dtype, capacity, initial value, and optional name or metadata.
 
 The builder should satisfy the existing `SupportsBuild` protocol and be registered through `BuilderRegistry` if a registry is needed for multiple accumulator implementations.
+
+Also create an `ArrayAccumulatorValueBuilder` for immutable finalized values.
+Both builders must be registered in domain-owned `BuilderRegistry` instances.
 
 ## Parallel Calculation Sequence
 
@@ -299,12 +446,15 @@ The partitioning and execution mechanism belongs outside the accumulator package
 
 - Create `accumulator_protocol.py`.
 - Export `AccumulatorProtocol` from `accumulator/__init__.py`.
+- Define `AccumulatorValueProtocol` for immutable finalized values.
 - Keep the protocol independent of trajectory, analysis, writer, HDF5, and MDAnalysis modules.
 
 ### Phase 3: Adapt the existing implementation
 
 - Make `ArrayAccumulator` satisfy the protocol.
 - Preserve its current public API and storage semantics.
+- Add `ArrayAccumulatorValue` using the value-semantics templates.
+- Add `ArrayAccumulator.to_value()` with defensive array copies.
 - Refine merge logic to operate on protocol-compatible accumulators.
 - Keep domain-specific calculation code out of the accumulator package.
 
@@ -335,7 +485,13 @@ The partitioning and execution mechanism belongs outside the accumulator package
 ## Acceptance Criteria
 
 - `AccumulatorProtocol` is domain-neutral and has a documented public contract.
-- `ArrayAccumulator` satisfies the protocol without an unnecessary API break.
+- `ArrayAccumulator` satisfies the mutable worker-local protocol without an
+    unnecessary API break.
+- `ArrayAccumulatorValue` satisfies the immutable value protocol and the
+    repository's value-semantics contract.
+- Snapshot arrays are defensively copied and read-only.
+- `ArrayAccumulator.to_value()` produces a value independent of later worker
+    mutations.
 - Independent accumulators can be created for each worker.
 - Worker-local accumulation requires no shared mutable state or locks.
 - Protocol-compatible accumulator results can be merged without mutating inputs.

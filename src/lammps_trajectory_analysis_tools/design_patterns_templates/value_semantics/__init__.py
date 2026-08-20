@@ -2,12 +2,20 @@
 
 from .protocols import ValueSemantics
 from .validation import ValueValidationError
-from .value_object import ImmutableValue, MutableValue, ValueObject
+from .value_object import (
+    ImmutableValue,
+    MutableValue,
+    StateValueObject,
+    ValueObject,
+    ValueObjectInterface,
+)
 
 __all__ = [
-	"ImmutableValue",
-	"MutableValue",
-	"ValueObject",
-	"ValueSemantics",
-	"ValueValidationError",
+    "ImmutableValue",
+    "MutableValue",
+    "StateValueObject",
+    "ValueObject",
+    "ValueObjectInterface",
+    "ValueSemantics",
+    "ValueValidationError",
 ]

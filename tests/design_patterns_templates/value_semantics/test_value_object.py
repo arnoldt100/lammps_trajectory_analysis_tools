@@ -3,7 +3,9 @@ import pytest
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
     ImmutableValue,
     MutableValue,
+    StateValueObject,
     ValueObject,
+    ValueObjectInterface,
     ValueSemantics,
     ValueValidationError,
 )
@@ -78,6 +80,15 @@ def test_hashing_rejects_unhashable_state():
 def test_value_object_conforms_to_protocol():
     value = ValueObject({"name": "sample"})
 
+    assert isinstance(value, ValueSemantics)
+
+
+def test_interface_and_stateful_implementation_are_separated():
+    assert not hasattr(ValueObjectInterface, "_state")
+
+    value = StateValueObject({"name": "sample"})
+
+    assert value.state == {"name": "sample"}
     assert isinstance(value, ValueSemantics)
 
 
