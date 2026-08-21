@@ -186,3 +186,49 @@ Tests should verify observable value behavior rather than implementation details
 - The templates have no dependencies on concrete analysis backends.
 - A domain implementation can use the templates through composition without inheriting unrelated behavior.
 - Additional templates require demonstrated reuse and documented semantics before being added.
+
+## Concrete State Implementation Helper Modules
+
+### Previous Prompt
+
+I have added to files `concrete_state_implementation.py` and
+`concrete_state_implementation_helpers.py`. Each concrete state implementation
+file will contain a class named `ConcreteStateimplementation`. Here is my
+question. Should each class `ConcreteStateImplementation` have its own helper
+file with associated functions, or should there be one common helper file and
+functions for the `ConcreteStateImplementation` classes? I plan to several
+different types of `ConcreteStateImplementation` classes. Do not modify any
+files.
+
+### Previous Reply
+
+Use a hybrid structure:
+
+- Keep genuinely shared, type-independent functions in one common module,
+  similar to `value_object_helpers.py`.
+- Give each substantially different `ConcreteStateImplementation` its own
+  helper module when its functions encode type-specific rules, validation,
+  construction, or transformations.
+
+Because several different concrete state types are planned, avoid one large
+`concrete_state_implementation_helpers.py` catch-all module. Prefer a layout
+such as:
+
+```text
+concrete_state_implementation.py
+concrete_state_implementation_helpers.py
+
+temperature_state_implementation.py
+temperature_state_implementation_helpers.py
+
+position_state_implementation.py
+position_state_implementation_helpers.py
+```
+
+Keep the common helper file only for operations shared by multiple concrete
+implementations. Helper functions should accept explicit state and arguments
+rather than depend heavily on one concrete class; this keeps testing simple
+and avoids circular imports.
+
+Standardize the class spelling as `ConcreteStateImplementation` with a capital
+`I`; the filename can remain `concrete_state_implementation.py`.
