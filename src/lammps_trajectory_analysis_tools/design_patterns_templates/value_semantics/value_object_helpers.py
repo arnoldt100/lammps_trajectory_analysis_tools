@@ -8,11 +8,10 @@ behaviors.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Any
 
 
-def free_dummy_method(state: Mapping[str, Any], *args: Any, **kwargs: Any) -> Any:
+def free_dummy_method(state: Any, *args: Any, **kwargs: Any) -> Any:
     """Placeholder free-function implementation for dummy_method semantics.
 
     The value object delegates to this helper so the actual behavior can be

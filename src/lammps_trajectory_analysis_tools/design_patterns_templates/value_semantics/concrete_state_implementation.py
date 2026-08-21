@@ -15,3 +15,7 @@ class ConcreteStateImplementation:
     def message(self) -> str:
         """Return the object's message."""
         return self._message
+
+    def dummy_method(self) -> None:
+        """Print the object's message as an example behavior."""
+        print(self._message)

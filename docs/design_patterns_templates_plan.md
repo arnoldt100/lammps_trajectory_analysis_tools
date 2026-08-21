@@ -247,3 +247,9 @@ point for users adapting the template; it is not a required domain behavior.
 Concrete owned-object types must satisfy the package's behavior contract but
 do not need explicit helper-module imports. Replacement operations preserve
 the behavior instance used by the original value object.
+
+The initial concrete example is `ConcreteStateImplementation`, which owns a
+private `_message` value and implements `dummy_method` by printing that
+message. The default `StateValueBehavior` delegates its placeholder method to
+the owned object's `dummy_method`, demonstrating the ownership and delegation
+relationship without requiring inheritance from a value-object template.

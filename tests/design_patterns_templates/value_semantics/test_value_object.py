@@ -204,9 +204,37 @@ def test_value_object_supports_non_mapping_state_with_custom_behavior() -> None:
     assert mutable_value.state == 13
 
 
-def test_concrete_state_implementation_is_an_independent_owned_object() -> None:
+def test_concrete_state_implementation_is_an_independent_owned_object(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     owned_object = ConcreteStateImplementation("sample message")
 
     assert owned_object.message == "sample message"
     assert not isinstance(owned_object, StateValueObjectMutable)
     assert not isinstance(owned_object, StateValueObjectImmutable)
+
+    owned_object.dummy_method()
+
+    assert capsys.readouterr().out == "sample message\n"
+
+
+def test_value_object_delegates_dummy_method_to_owned_object(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    owned_object = ConcreteStateImplementation("owned message")
+    value = StateValueObjectMutable(owned_object, BEHAVIOR)
+
+    value.dummy_method()
+
+    assert capsys.readouterr().out == "owned message\n"
+
+
+def test_immutable_value_object_delegates_dummy_method_to_owned_object(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    owned_object = ConcreteStateImplementation("immutable message")
+    value = StateValueObjectImmutable(owned_object, BEHAVIOR)
+
+    value.dummy_method()
+
+    assert capsys.readouterr().out == "immutable message\n"

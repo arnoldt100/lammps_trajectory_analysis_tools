@@ -59,4 +59,4 @@ class StateValueBehavior:
         **kwargs: Any,
     ) -> Any:
         """Demonstrate behavior delegated for an owned object."""
-        return None
+        return owned_object.dummy_method(*args, **kwargs)
