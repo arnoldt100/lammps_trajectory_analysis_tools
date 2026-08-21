@@ -6,11 +6,6 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.
 )
 
 
-def test_validate_state_requires_named_fields():
-    with pytest.raises(ValueValidationError, match="missing required"):
-        validate_state({}, required_fields=("name",))
-
-
 def test_validate_state_runs_cross_field_validators():
     def validate_range(state):
         if state["low"] > state["high"]:
@@ -26,3 +21,7 @@ def test_validate_state_runs_cross_field_validators():
             {"low": 3, "high": 2},
             validators=(validate_range,),
         )
+
+
+def test_validate_state_accepts_arbitrary_state_without_mapping_requirements():
+    validate_state(10)

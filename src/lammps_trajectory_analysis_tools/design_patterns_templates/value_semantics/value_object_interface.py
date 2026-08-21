@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
 from typing import Any, Self
 
 
@@ -20,8 +19,8 @@ class ValueObjectInterface(ABC):
 
     @property
     @abstractmethod
-    def state_implementations(self) -> Mapping[str, Any]:
-        """Return the object's concrete state implementations."""
+    def state_implementations(self) -> Any:
+        """Return the object's concrete state."""
         ...
 
     @abstractmethod

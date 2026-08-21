@@ -5,12 +5,16 @@ from typing import Any, Self
 import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
+    ConcreteStateImplementation,
+    StateValueBehavior,
     StateValueObjectImmutable,
     StateValueObjectMutable,
     ValueObjectInterface,
     ValueSemantics,
     ValueValidationError,
 )
+
+BEHAVIOR = StateValueBehavior()
 
 
 class PositiveValue(StateValueObjectMutable):
@@ -30,22 +34,22 @@ class IncompleteValue(ValueObjectInterface):
 
 
 def test_equal_state_is_equal_for_distinct_instances():
-    first = StateValueObjectImmutable({"name": "sample", "values": [1, 2]})
-    second = StateValueObjectImmutable({"name": "sample", "values": [1, 2]})
+    first = StateValueObjectImmutable({"name": "sample", "values": [1, 2]}, BEHAVIOR)
+    second = StateValueObjectImmutable({"name": "sample", "values": [1, 2]}, BEHAVIOR)
 
     assert first == second
     assert first is not second
 
 
 def test_different_state_is_not_equal():
-    first = StateValueObjectImmutable({"name": "first"})
-    second = StateValueObjectImmutable({"name": "second"})
+    first = StateValueObjectImmutable({"name": "first"}, BEHAVIOR)
+    second = StateValueObjectImmutable({"name": "second"}, BEHAVIOR)
 
     assert first != second
 
 
 def test_replace_returns_new_value_without_mutating_original():
-    original = StateValueObjectImmutable({"name": "before", "count": 1})
+    original = StateValueObjectImmutable({"name": "before", "count": 1}, BEHAVIOR)
 
     replacement = original.replace(name="after")
 
@@ -55,7 +59,7 @@ def test_replace_returns_new_value_without_mutating_original():
 
 
 def test_state_is_defensively_copied():
-    original = StateValueObjectImmutable({"values": [1, 2]})
+    original = StateValueObjectImmutable({"values": [1, 2]}, BEHAVIOR)
     exposed_state = original.state
     exposed_state["values"].append(3)
 
@@ -64,32 +68,32 @@ def test_state_is_defensively_copied():
 
 def test_invalid_field_name_is_rejected():
     with pytest.raises(ValueError, match="field names"):
-        StateValueObjectImmutable({"": 1})
+        StateValueObjectImmutable({"": 1}, BEHAVIOR)
 
 
 def test_subclass_validation_is_applied_on_construction_and_replacement():
-    value = PositiveValue({"amount": 2})
+    value = PositiveValue({"amount": 2}, BEHAVIOR)
 
     with pytest.raises(ValueValidationError, match="positive"):
         value.replace(amount=0)
 
 
 def test_hashing_supports_hashable_state():
-    first = StateValueObjectImmutable({"name": "sample", "count": 1})
-    second = StateValueObjectImmutable({"name": "sample", "count": 1})
+    first = StateValueObjectImmutable({"name": "sample", "count": 1}, BEHAVIOR)
+    second = StateValueObjectImmutable({"name": "sample", "count": 1}, BEHAVIOR)
 
     assert hash(first) == hash(second)
 
 
 def test_hashing_rejects_unhashable_state():
-    value = StateValueObjectImmutable({"values": [1, 2]})
+    value = StateValueObjectImmutable({"values": [1, 2]}, BEHAVIOR)
 
     with pytest.raises(TypeError, match="unhashable"):
         hash(value)
 
 
 def test_value_object_conforms_to_protocol():
-    value = StateValueObjectImmutable({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"}, BEHAVIOR)
 
     assert isinstance(value, ValueSemantics)
 
@@ -97,7 +101,7 @@ def test_value_object_conforms_to_protocol():
 def test_interface_and_stateful_implementation_are_separated():
     assert not hasattr(ValueObjectInterface, "_state")
 
-    value = StateValueObjectImmutable({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"}, BEHAVIOR)
 
     assert value.state == {"name": "sample"}
     assert isinstance(value, ValueSemantics)
@@ -114,20 +118,20 @@ def test_interface_requires_equality_and_representation_implementations():
 
 
 def test_state_value_object_immutable_is_explicit_template():
-    value = StateValueObjectImmutable({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"}, BEHAVIOR)
 
     assert value.replace(name="updated") != value
 
 
 def test_state_value_object_immutable_is_immutable_template():
-    value = StateValueObjectImmutable({"name": "sample"})
+    value = StateValueObjectImmutable({"name": "sample"}, BEHAVIOR)
 
     assert value.replace(name="updated") != value
     assert not hasattr(value, "update")
 
 
 def test_state_value_object_mutable_updates_state():
-    value = StateValueObjectMutable({"name": "before", "count": 1})
+    value = StateValueObjectMutable({"name": "before", "count": 1}, BEHAVIOR)
 
     value.update(name="after")
 
@@ -135,7 +139,7 @@ def test_state_value_object_mutable_updates_state():
 
 
 def test_state_value_object_mutable_update_is_atomic_when_validation_fails():
-    value = PositiveValue({"amount": 2})
+    value = PositiveValue({"amount": 2}, BEHAVIOR)
 
     with pytest.raises(ValueValidationError, match="positive"):
         value.update(amount=0)
@@ -145,4 +149,64 @@ def test_state_value_object_mutable_update_is_atomic_when_validation_fails():
 
 def test_state_value_object_mutable_is_not_hashable():
     with pytest.raises(TypeError):
-        hash(StateValueObjectMutable({"name": "sample"}))
+        hash(StateValueObjectMutable({"name": "sample"}, BEHAVIOR))
+
+
+def test_placeholder_behavior_is_shared_by_value_object_templates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[dict[str, Any], tuple[Any, ...], dict[str, Any]]] = []
+
+    def shared_dummy_method(
+        behavior: StateValueBehavior,
+        owned_object: Any,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        calls.append((owned_object, args, kwargs))
+        return "handled"
+
+    monkeypatch.setattr(StateValueBehavior, "dummy_method", shared_dummy_method)
+
+    mutable_value = StateValueObjectMutable({"name": "mutable"}, BEHAVIOR)
+    immutable_value = StateValueObjectImmutable({"name": "immutable"}, BEHAVIOR)
+
+    assert mutable_value.dummy_method(1, mode="mutable") == "handled"
+    assert immutable_value.dummy_method(2, mode="immutable") == "handled"
+    assert calls == [
+        ({"name": "mutable"}, (1,), {"mode": "mutable"}),
+        ({"name": "immutable"}, (2,), {"mode": "immutable"}),
+    ]
+
+
+def test_value_object_supports_non_mapping_state_with_custom_behavior() -> None:
+    class IntegerBehavior(StateValueBehavior):
+        def replace_state(
+            self,
+            state: Any,
+            changes: Mapping[str, Any],
+        ) -> int:
+            return state + changes["increment"]
+
+        def update_state(
+            self,
+            state: Any,
+            changes: Mapping[str, Any],
+        ) -> int:
+            return state + changes["increment"]
+
+    behavior = IntegerBehavior()
+    immutable_value = StateValueObjectImmutable(10, behavior)
+    mutable_value = StateValueObjectMutable(10, behavior)
+
+    assert immutable_value.replace(increment=2).state == 12
+    mutable_value.update(increment=3)
+    assert mutable_value.state == 13
+
+
+def test_concrete_state_implementation_is_an_independent_owned_object() -> None:
+    owned_object = ConcreteStateImplementation("sample message")
+
+    assert owned_object.message == "sample message"
+    assert not isinstance(owned_object, StateValueObjectMutable)
+    assert not isinstance(owned_object, StateValueObjectImmutable)

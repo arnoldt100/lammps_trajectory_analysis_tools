@@ -88,13 +88,12 @@ Small helpers or protocols for validating invariants without imposing domain-spe
 
 Examples of reusable concerns:
 
-- required fields;
 - valid ranges;
 - compatible shapes or dimensions;
 - normalized names or identifiers;
 - validation of nested value objects.
 
-Validation helpers should return clear errors and avoid silently coercing invalid input.
+Validation helpers should return clear errors and avoid silently coercing invalid input. `validate_state` accepts arbitrary state and delegates all state-specific validation to whole-state validators or the supplied behavior.
 
 ### Value-object protocol
 
@@ -232,3 +231,19 @@ and avoids circular imports.
 
 Standardize the class spelling as `ConcreteStateImplementation` with a capital
 `I`; the filename can remain `concrete_state_implementation.py`.
+
+### Finalized Package-Wide Behavior Decision
+
+When behavior is truly identical for every owned object in a package, use one
+stateless package behavior type and pass a behavior instance explicitly to
+each mutable or immutable state-value template. This keeps the dependency
+visible at construction while allowing callers to provide a configured or
+test-specific implementation. Do not require concrete owned objects to
+inherit from either template.
+
+The templates own their state and delegate the illustrative `dummy_method`
+hook to the supplied behavior object. `dummy_method` is an example extension
+point for users adapting the template; it is not a required domain behavior.
+Concrete owned-object types must satisfy the package's behavior contract but
+do not need explicit helper-module imports. Replacement operations preserve
+the behavior instance used by the original value object.
