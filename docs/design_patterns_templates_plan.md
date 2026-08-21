@@ -253,3 +253,8 @@ private `_message` value and implements `dummy_method` by printing that
 message. The default `StateValueBehavior` delegates its placeholder method to
 the owned object's `dummy_method`, demonstrating the ownership and delegation
 relationship without requiring inheritance from a value-object template.
+
+Phase 5 adds `NumericStateImplementation` as a second owned-object example.
+It owns a private integer value and uses the same behavior and wrapper types,
+demonstrating that the package boundary is reusable without per-type helper
+modules or inheritance.

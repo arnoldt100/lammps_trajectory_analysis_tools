@@ -6,6 +6,7 @@ import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
     ConcreteStateImplementation,
+    NumericStateImplementation,
     StateValueBehavior,
     StateValueObjectImmutable,
     StateValueObjectMutable,
@@ -238,3 +239,22 @@ def test_immutable_value_object_delegates_dummy_method_to_owned_object(
     value.dummy_method()
 
     assert capsys.readouterr().out == "immutable message\n"
+
+
+@pytest.mark.parametrize(
+    ("wrapper_type", "expected_output"),
+    [
+        (StateValueObjectMutable, "42\n"),
+        (StateValueObjectImmutable, "42\n"),
+    ],
+)
+def test_shared_behavior_supports_a_second_owned_object_type(
+    wrapper_type: type[StateValueObjectMutable] | type[StateValueObjectImmutable],
+    expected_output: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    value = wrapper_type(NumericStateImplementation(42), BEHAVIOR)
+
+    value.dummy_method()
+
+    assert capsys.readouterr().out == expected_output
