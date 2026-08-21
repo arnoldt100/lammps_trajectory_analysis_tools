@@ -258,3 +258,29 @@ Phase 5 adds `NumericStateImplementation` as a second owned-object example.
 It owns a private integer value and uses the same behavior and wrapper types,
 demonstrating that the package boundary is reusable without per-type helper
 modules or inheritance.
+
+### Phase 5 Evaluation Outcome
+
+The shared `StateValueBehavior` is reusable for operations that have a
+universal meaning for arbitrary state: copying, validation dispatch, equality,
+representation, hashing, and the illustrative `dummy_method` delegation.
+Replacement and update operations cannot be defined safely for every `Any`
+state. The default behavior therefore retains mapping replacement/update as
+its compatibility example and raises a clear error for other state types.
+Concrete packages must provide a behavior implementation for their own
+validation, replacement, and update semantics; the supplied behavior is the
+single validation owner. This is the intended extension boundary, not a
+reason to add type checks or a global dispatch registry.
+
+Replacement and update payloads are typed as `Any`. The owned state object
+understands its own change representation and invariants through `replace()`
+and `update()` methods. The shared behavior delegates those operations rather
+than interpreting a universal mapping shape; the original mapping examples
+remain supported as a compatibility fallback.
+
+For concrete owned objects, validation is owned by the object itself through
+`validate_state()`. `StateValueBehavior.validate_state()` delegates to that
+method, so the wrapper does not duplicate the object's invariant checks. The
+default behavior retains a mapping field-name fallback for the original
+dictionary-based examples; new owned-object types should implement
+`validate_state()` directly.

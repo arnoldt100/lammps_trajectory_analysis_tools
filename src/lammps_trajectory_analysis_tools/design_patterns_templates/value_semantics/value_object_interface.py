@@ -24,7 +24,7 @@ class ValueObjectInterface(ABC):
         ...
 
     @abstractmethod
-    def replace(self, **changes: Any) -> Self:
+    def replace(self, changes: Any) -> Self:
         """Return a new value object with state changes applied."""
         ...
 

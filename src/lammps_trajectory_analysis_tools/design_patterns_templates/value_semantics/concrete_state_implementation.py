@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, Self
+
 
 class ConcreteStateImplementation:
     """Concrete owned object with a private message value."""
@@ -19,3 +21,16 @@ class ConcreteStateImplementation:
     def dummy_method(self) -> None:
         """Print the object's message as an example behavior."""
         print(self._message)
+
+    def validate_state(self) -> None:
+        """Validate that the message is a non-empty string."""
+        if not isinstance(self._message, str) or not self._message:
+            raise ValueError("message must be a non-empty string")
+
+    def replace(self, changes: Any) -> Self:
+        """Return a new object with a replacement message."""
+        return type(self)(changes)
+
+    def update(self, changes: Any) -> None:
+        """Replace the message in place."""
+        self._message = changes

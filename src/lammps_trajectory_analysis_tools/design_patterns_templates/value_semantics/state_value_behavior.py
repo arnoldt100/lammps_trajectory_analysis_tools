@@ -21,21 +21,34 @@ class StateValueBehavior:
         return deepcopy(state)
 
     def validate_state(self, state: Any) -> None:
-        """Validate mapping field names and accept other state types."""
-        if isinstance(state, Mapping):
-            if any(not isinstance(name, str) or not name for name in state):
-                raise ValueError("state field names must be non-empty strings")
+        """Delegate validation to an owned object when it provides it."""
+        validator = getattr(state, "validate_state", None)
+        if validator is not None:
+            validator()
+            return
+        if isinstance(state, Mapping) and any(
+            not isinstance(name, str) or not name for name in state
+        ):
+            raise ValueError("state field names must be non-empty strings")
 
-    def replace_state(self, state: Any, changes: Mapping[str, Any]) -> Any:
-        """Return a mapping state with changes applied."""
-        if not isinstance(state, Mapping):
-            raise TypeError("default behavior requires mapping state for replacement")
+    def replace_state(self, state: Any, changes: Any) -> Any:
+        """Delegate replacement to an owned object or update a mapping."""
+        replacer = getattr(state, "replace", None)
+        if replacer is not None:
+            return replacer(changes)
+        if not isinstance(state, Mapping) or not isinstance(changes, Mapping):
+            raise TypeError("default behavior requires mapping state and changes")
         updated_state = dict(state)
         updated_state.update(changes)
         return updated_state
 
-    def update_state(self, state: Any, changes: Mapping[str, Any]) -> Any:
-        """Return a mapping state with changes applied."""
+    def update_state(self, state: Any, changes: Any) -> Any:
+        """Delegate in-place update to an owned object or update a mapping."""
+        updater = getattr(state, "update", None)
+        if updater is not None and not isinstance(state, Mapping):
+            updated_state = self.copy_state(state)
+            updated_state.update(changes)
+            return updated_state
         return self.replace_state(state, changes)
 
     def states_equal(self, left: Any, right: Any) -> bool:

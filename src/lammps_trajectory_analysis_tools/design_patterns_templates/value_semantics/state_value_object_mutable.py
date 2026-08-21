@@ -7,9 +7,6 @@ from typing import Any, Self
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.protocols import (
     StateValueBehaviorProtocol,
 )
-from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.validation import (
-    validate_state,
-)
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.value_object_interface import (
     ValueObjectInterface,
 )
@@ -29,13 +26,7 @@ class StateValueObjectMutable(ValueObjectInterface):
         self._behavior = behavior
         copied_state = behavior.copy_state(state)
         behavior.validate_state(copied_state)
-        self._validate(copied_state)
         self._state_implementations = copied_state
-
-    @classmethod
-    def _validate(cls, state: Any) -> None:
-        """Validate state before it becomes part of a value object."""
-        validate_state(state)
 
     @property
     def state_implementations(self) -> Any:
@@ -47,7 +38,7 @@ class StateValueObjectMutable(ValueObjectInterface):
         """Return a defensive copy of the value state."""
         return self.state_implementations
 
-    def replace(self, **changes: Any) -> Self:
+    def replace(self, changes: Any) -> Self:
         """Return a new instance with ``changes`` applied to its state."""
         updated_state = self._behavior.replace_state(
             self._state_implementations,
@@ -79,12 +70,11 @@ class StateValueObjectMutable(ValueObjectInterface):
             f"{self._behavior.state_repr(self._state_implementations)})"
         )
 
-    def update(self, **changes: Any) -> None:
+    def update(self, changes: Any) -> None:
         """Apply state changes only if the resulting state is valid."""
         updated_state = self._behavior.update_state(
             self._state_implementations,
             changes,
         )
         self._behavior.validate_state(updated_state)
-        self._validate(updated_state)
         self._state_implementations = updated_state

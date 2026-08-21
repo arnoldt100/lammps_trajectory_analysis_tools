@@ -1,6 +1,5 @@
 """Protocols describing the common value-semantics surface."""
 
-from collections.abc import Mapping
 from typing import Any, Protocol, Self, runtime_checkable
 
 
@@ -19,12 +18,12 @@ class StateValueBehaviorProtocol(Protocol):
         """Validate state before it is stored."""
         ...
 
-    def replace_state(self, state: Any, changes: Mapping[str, Any]) -> Any:
-        """Return state with changes applied for immutable replacement."""
+    def replace_state(self, state: Any, changes: Any) -> Any:
+        """Return a replacement state after applying changes."""
         ...
 
-    def update_state(self, state: Any, changes: Mapping[str, Any]) -> Any:
-        """Return updated state for an atomic mutable update."""
+    def update_state(self, state: Any, changes: Any) -> Any:
+        """Return an updated state after applying changes."""
         ...
 
     def states_equal(self, left: Any, right: Any) -> bool:
@@ -45,9 +44,24 @@ class StateValueBehaviorProtocol(Protocol):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """Demonstrate where behavior for an owned object is delegated."""
+        """Demonstrate behavior delegated for an owned object."""
         ...
 
+
+class OwnedObjectProtocol(Protocol):
+    """Contract for an owned object that validates its own state."""
+
+    def validate_state(self) -> None:
+        """Validate the object's internal state."""
+        ...
+
+    def replace(self, changes: Any) -> Self:
+        """Return a new object with changes applied."""
+        ...
+
+    def update(self, changes: Any) -> None:
+        """Apply changes to the object in place."""
+        ...
 
 @runtime_checkable
 class ValueSemantics(Protocol):
@@ -58,6 +72,6 @@ class ValueSemantics(Protocol):
         """Return the object's named value state."""
         ...
 
-    def replace(self, **changes: Any) -> Self:
+    def replace(self, changes: Any) -> Self:
         """Return a new value with the requested state changes."""
         ...
