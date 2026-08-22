@@ -33,6 +33,7 @@ This document contains requirements that apply to the entire repository. Package
 
 ## Testing Rules
 
+- Keep `src` limited to production code. Do not add functions, classes, modules, fixtures, input files, or other artifacts to `src` solely to support testing; test-only code and data belong under `tests`.
 - Use pytest for tests and fixtures; test functions must use the `test_` prefix.
 - Use plain `assert` statements and pytest assertions rather than `unittest.TestCase` methods.
 - Test observable behavior and public contracts rather than implementation details.

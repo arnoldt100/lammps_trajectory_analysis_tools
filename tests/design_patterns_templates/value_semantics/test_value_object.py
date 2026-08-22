@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from copy import deepcopy
 from inspect import getmro
 from typing import Any, Self
 
@@ -7,7 +8,6 @@ import pytest
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics import (
     ConcreteStateImplementation,
     NumericStateImplementation,
-    StateValueBehavior,
     StateValueObjectImmutable,
     StateValueObjectMutable,
     ValueObjectInterface,
@@ -15,10 +15,60 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics 
     ValueValidationError,
 )
 
-BEHAVIOR = StateValueBehavior()
+
+class DefaultStateBehavior:
+    """Test-only default behavior implementing ``StateValueBehaviorProtocol``."""
+
+    def copy_state(self, state: Any) -> Any:
+        return deepcopy(state)
+
+    def validate_state(self, state: Any) -> None:
+        validator = getattr(state, "validate_state", None)
+        if validator is not None:
+            validator()
+            return
+        if isinstance(state, Mapping) and any(
+            not isinstance(name, str) or not name for name in state
+        ):
+            raise ValueError("state field names must be non-empty strings")
+
+    def replace_state(self, state: Any, changes: Any) -> Any:
+        replacer = getattr(state, "replace", None)
+        if replacer is not None:
+            return replacer(changes)
+        if not isinstance(state, Mapping) or not isinstance(changes, Mapping):
+            raise TypeError("default behavior requires mapping state and changes")
+        updated_state = dict(state)
+        updated_state.update(changes)
+        return updated_state
+
+    def update_state(self, state: Any, changes: Any) -> Any:
+        updater = getattr(state, "update", None)
+        if updater is not None and not isinstance(state, Mapping):
+            updated_state = self.copy_state(state)
+            updated_state.update(changes)
+            return updated_state
+        return self.replace_state(state, changes)
+
+    def states_equal(self, left: Any, right: Any) -> bool:
+        return left == right
+
+    def state_repr(self, state: Any) -> str:
+        return repr(state)
+
+    def hash_state(self, state: Any) -> int:
+        if isinstance(state, dict):
+            return hash(tuple(sorted(state.items())))
+        return hash(state)
+
+    def dummy_method(self, owned_object: Any, *args: Any, **kwargs: Any) -> Any:
+        return owned_object.dummy_method(*args, **kwargs)
 
 
-class PositiveBehavior(StateValueBehavior):
+BEHAVIOR = DefaultStateBehavior()
+
+
+class PositiveBehavior(DefaultStateBehavior):
     def validate_state(self, state: Any) -> None:
         if state.get("amount", 0) <= 0:
             raise ValueValidationError("amount must be positive")
@@ -158,7 +208,7 @@ def test_placeholder_behavior_is_shared_by_value_object_templates(
     calls: list[tuple[dict[str, Any], tuple[Any, ...], dict[str, Any]]] = []
 
     def shared_dummy_method(
-        behavior: StateValueBehavior,
+        behavior: DefaultStateBehavior,
         owned_object: Any,
         *args: Any,
         **kwargs: Any,
@@ -166,7 +216,7 @@ def test_placeholder_behavior_is_shared_by_value_object_templates(
         calls.append((owned_object, args, kwargs))
         return "handled"
 
-    monkeypatch.setattr(StateValueBehavior, "dummy_method", shared_dummy_method)
+    monkeypatch.setattr(DefaultStateBehavior, "dummy_method", shared_dummy_method)
 
     mutable_value = StateValueObjectMutable({"name": "mutable"}, BEHAVIOR)
     immutable_value = StateValueObjectImmutable({"name": "immutable"}, BEHAVIOR)
@@ -180,7 +230,7 @@ def test_placeholder_behavior_is_shared_by_value_object_templates(
 
 
 def test_value_object_supports_non_mapping_state_with_custom_behavior() -> None:
-    class IntegerBehavior(StateValueBehavior):
+    class IntegerBehavior(DefaultStateBehavior):
         def replace_state(self, state: Any, changes: Any) -> int:
             return state + changes
 

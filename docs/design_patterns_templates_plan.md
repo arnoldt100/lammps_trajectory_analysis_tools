@@ -250,9 +250,9 @@ the behavior instance used by the original value object.
 
 The initial concrete example is `ConcreteStateImplementation`, which owns a
 private `_message` value and implements `dummy_method` by printing that
-message. The default `StateValueBehavior` delegates its placeholder method to
-the owned object's `dummy_method`, demonstrating the ownership and delegation
-relationship without requiring inheritance from a value-object template.
+message. `StateValueBehavior` was the default shared behavior; it was removed
+from `src` because no production code constructed it, and each caller now
+supplies its own `StateValueBehaviorProtocol` implementation directly.
 
 Phase 5 adds `NumericStateImplementation` as a second owned-object example.
 It owns a private integer value and uses the same behavior and wrapper types,
@@ -261,9 +261,10 @@ modules or inheritance.
 
 ### Phase 5 Evaluation Outcome
 
-The shared `StateValueBehavior` is reusable for operations that have a
-universal meaning for arbitrary state: copying, validation dispatch, equality,
-representation, hashing, and the illustrative `dummy_method` delegation.
+The former shared `StateValueBehavior` example (now removed) was reusable for
+operations that have a universal meaning for arbitrary state: copying,
+validation dispatch, equality, representation, hashing, and the illustrative
+`dummy_method` delegation.
 Replacement and update operations cannot be defined safely for every `Any`
 state. The default behavior therefore retains mapping replacement/update as
 its compatibility example and raises a clear error for other state types.
@@ -279,8 +280,9 @@ than interpreting a universal mapping shape; the original mapping examples
 remain supported as a compatibility fallback.
 
 For concrete owned objects, validation is owned by the object itself through
-`validate_state()`. `StateValueBehavior.validate_state()` delegates to that
-method, so the wrapper does not duplicate the object's invariant checks. The
+`validate_state()`. A `StateValueBehaviorProtocol` implementation's
+`validate_state()` delegates to that method, so the wrapper does not
+duplicate the object's invariant checks. The
 default behavior retains a mapping field-name fallback for the original
 dictionary-based examples; new owned-object types should implement
 `validate_state()` directly.
