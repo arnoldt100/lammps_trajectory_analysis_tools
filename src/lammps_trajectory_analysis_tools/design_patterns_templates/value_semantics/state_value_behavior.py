@@ -14,6 +14,11 @@ class StateValueBehavior:
 
     ``dummy_method`` is an illustrative placeholder that users can replace
     when adapting the template to their own domain behavior.
+
+    No production module currently constructs this class; it is exercised only
+    by tests/design_patterns_templates/value_semantics/test_value_object.py,
+    which instantiates, subclasses, and monkeypatches it as the default
+    behavior template.
     """
 
     def copy_state(self, state: Any) -> Any:
