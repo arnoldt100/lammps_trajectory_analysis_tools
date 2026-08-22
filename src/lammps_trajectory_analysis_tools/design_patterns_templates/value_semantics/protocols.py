@@ -48,21 +48,6 @@ class StateValueBehaviorProtocol(Protocol):
         ...
 
 
-class OwnedObjectProtocol(Protocol):
-    """Contract for an owned object that validates its own state."""
-
-    def validate_state(self) -> None:
-        """Validate the object's internal state."""
-        ...
-
-    def replace(self, changes: Any) -> Self:
-        """Return a new object with changes applied."""
-        ...
-
-    def update(self, changes: Any) -> None:
-        """Apply changes to the object in place."""
-        ...
-
 @runtime_checkable
 class ValueSemantics(Protocol):
     """Minimal protocol for an object whose identity is its value state."""
