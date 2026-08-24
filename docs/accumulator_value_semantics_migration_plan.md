@@ -131,7 +131,10 @@ Repeated accumulation at one index remains additive.
 finalize(state) -> np.ndarray
 ```
 
-`finalize()` returns the accumulated values in public form. The migration should use a defensive copy so callers cannot modify live worker state accidentally.
+`finalize()` returns a read-only view of the accumulated values. This keeps
+finalization zero-copy while preventing callers from modifying live worker
+state accidentally. `to_value()` remains the ownership boundary for an
+independent immutable snapshot.
 
 `finalize()` does not replace `to_value()`. Finalization returns values for existing call sites; `to_value()` creates a complete immutable snapshot containing values and counters.
 
@@ -298,25 +301,65 @@ Create `ArrayAccumulatorState` and move the existing dtype, capacity, buffer, co
 
 Keep the existing `ArrayAccumulator` constructor and public methods working.
 
+The initial extraction is complete. `ArrayAccumulator` now owns an
+`ArrayAccumulatorState` instance, and state owns initialization, coercion,
+index validation, accumulation, reset, and value-buffer finalization. The
+mutable arrays remain private to the state and are not exposed as public
+properties. State extraction is intentionally separate from behavior
+extraction, which remains Phase 3 work.
+
 ### Phase 3: Extract accumulator behavior
 
 Create the accumulator-specific behavior protocol and implementation. Move numerical operations and state validation into that layer while keeping domain-neutral value-semantics templates unchanged.
+
+The behavior extraction is complete for the current mutable accumulator
+contract. `ArrayAccumulatorBehaviorProtocol` defines `accumulate`, `finalize`,
+and `reset`, while `ArrayAccumulatorBehavior` implements those operations,
+value coercion, and index validation. `ArrayAccumulator` delegates numerical
+operations to the behavior object. Generic copy, replacement, equality, and
+representation behavior remains deferred until the immutable value work.
 
 ### Phase 4: Adapt the mutable wrapper
 
 Make `ArrayAccumulator` delegate to the state and behavior objects. Add `to_value()` and ensure `finalize()` cannot expose writable internal storage.
 
+The wrapper adaptation is complete. `ArrayAccumulator.to_value()` now creates
+an independent `ArrayAccumulatorValue` containing copied values and counters,
+while `finalize()` returns a read-only view for zero-copy compatibility. The
+snapshot type is read-only and unhashable; richer replacement semantics and
+immutable-value reduction remain Phase 5 and Phase 6 work.
+
 ### Phase 5: Implement immutable values
 
 Create `ArrayAccumulatorValue` and its snapshot state. Add exports, protocol support, and focused tests for defensive copying, read-only arrays, equality, replacement, counters, and hashing.
+
+The initial immutable value implementation is complete. `ArrayAccumulatorValue`
+implements the shared `ValueSemantics` protocol, returns a defensive read-only
+state, supports validated copy-on-write replacement, compares NumPy arrays
+with `np.array_equal`, and remains unhashable. Focused tests cover snapshot
+independence, read-only arrays, equality, replacement, protocol conformance,
+and rejection of unknown replacement fields.
 
 ### Phase 6: Migrate reduction
 
 Add immutable-value reduction, define counter merge behavior, and retain the current reducer as a compatibility layer until callers have migrated.
 
+The initial immutable reduction path is complete. `AccumulatorValueProtocol`
+defines the read-only value contract, and `merge_accumulator_values` validates
+dtype and capacity compatibility before returning a new immutable value. The
+reducer sums both accumulated values and contribution counters without
+mutating either input. The legacy `merge_array_accumulators` API remains in
+place as the compatibility path and is intentionally not changed yet.
+
 ### Phase 7: Migrate builders and documentation
 
 Update builders to construct independent mutable accumulators and immutable values. Update package exports and accumulator documentation to describe the new ownership boundaries.
+
+The builder migration is complete. The existing mutable accumulator builder and
+registry remain unchanged, and `ArrayAccumulatorValueBuilder` now constructs
+independent immutable values through a separate registered builder registry.
+The new protocol, value, reducer, state, behavior, and builder APIs are
+exported from the accumulator package.
 
 ## Testing Plan
 
@@ -345,7 +388,7 @@ The following decisions should be finalized before implementation begins:
 
 - Should `finalize()` return a defensive copy or a read-only view? The recommended choice is a defensive copy for maximum compatibility safety.
 - Should `ArrayAccumulatorValue` use a separate immutable state class? The recommended choice is yes if mutable and immutable invariants differ; otherwise a shared state representation may be sufficient.
-- Should `replace()` accept a mapping of field changes or a domain-specific typed value? A mapping matches the current generic template, but a typed replacement API may provide stronger validation.
+- `replace()` accepts the domain-specific `ArrayAccumulatorValueState` type rather than a generic mapping. This gives replacement a complete, validated accumulator state and avoids weakening the accumulator contract to arbitrary field dictionaries.
 - Should counters be included in equality and reduction? The recommended choice is yes because they describe the accumulation state and are needed for later normalization.
 - Should legacy `merge_array_accumulators` return a mutable accumulator during transition? This can preserve compatibility, while the new immutable reducer becomes the long-term API.
 - Should `name` be part of value equality? The recommended choice is no if it is descriptive metadata rather than numerical state.

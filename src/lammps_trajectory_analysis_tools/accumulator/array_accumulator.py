@@ -1,12 +1,19 @@
 #! /usr/bin/env python3
 """Defines a bounded accumulator designed for a fixed sequence of elements."""
 
+from __future__ import annotations
+
 # Python standard library imports
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from .accumulator_protocol import AccumulatorProtocol
+from .array_accumulator_behavior import ArrayAccumulatorBehavior
+from .array_accumulator_state import ArrayAccumulatorState
+
+if TYPE_CHECKING:
+    from .array_accumulator_value import ArrayAccumulatorValue
 
 class ArrayAccumulator[T](AccumulatorProtocol[T]):
     """ A bounded accumulator for a fixed sequence of elements. """
@@ -25,52 +32,20 @@ class ArrayAccumulator[T](AccumulatorProtocol[T]):
             initial_value: The initial value for all elements in the accumulator.
             name: A descriptive name for the accumulator.
         """
-        self._dtype: np.dtype = self._coerce_dtype(dtype)
-        self._capacity: np.int32 = self._validate_capacity(capacity)
         self._name = name
-
-        # Pre-allocate memory block
-        self._buffer: np.ndarray = np.empty(self._capacity, dtype=self._dtype)
-        self._intial_value = self._coerce_value(initial_value)
-        self._buffer[:] = self._intial_value
-        self._counters : np.ndarray = np.zeros(self._capacity, dtype=np.int32)
- 
-
-    @staticmethod
-    def _coerce_dtype(dtype: np.dtype | type) -> np.dtype:
-        """Normalize incoming dtype to a NumPy dtype instance."""
-        return np.dtype(dtype)
-
-    @staticmethod
-    def _validate_capacity(capacity: int) -> np.int32:
-        """Validate and normalize storage capacity."""
-        normalized_capacity = np.int32(capacity)
-        if normalized_capacity <= 0:
-            raise ValueError("capacity must be a positive integer")
-        return normalized_capacity
-
-    def _coerce_value(self, value: Any) -> T:
-        """Coerce values to the configured dtype."""
-        return self._dtype.type(value)
-
-    def _validate_index(self, index: int) -> np.int32:
-        """Validate and normalize an index into the backing array."""
-        normalized_index = np.int32(index)
-        if normalized_index < 0:
-            raise IndexError("index must be non-negative")
-        if normalized_index >= self._capacity:
-            raise IndexError("index exceeds accumulator capacity")
-        return normalized_index
+        self._state = ArrayAccumulatorState(dtype, capacity, initial_value)
+        self._behavior = ArrayAccumulatorBehavior()
 
     def _active_view(self) -> np.ndarray:
         """Return the region of the buffer."""
-        return self._buffer[: self._capacity]
+        return self._behavior.finalize(self._state)
 
     def __str__(self) -> str:
         message = f"\n{self._name}\n"
-        for counter in range(self._capacity):
-            message += f"{self._name}[{counter}] = {self._buffer[counter]}\n"
-        message += f"accumulator sum, = {np.sum(self._buffer)}\n"
+        values = self._active_view()
+        for counter in range(self.capacity):
+            message += f"{self._name}[{counter}] = {values[counter]}\n"
+        message += f"accumulator sum, = {np.sum(values)}\n"
         return message
 
     def accumulate(self, index: int, value: T) -> None:
@@ -80,11 +55,9 @@ class ArrayAccumulator[T](AccumulatorProtocol[T]):
             index: The index at which to accumulate the value.
             value: The value to accumulate at the specified index.
         """
-        validated_index = self._validate_index(index)
-        self._buffer[validated_index] += self._coerce_value(value)
-        self._counters[validated_index] += 1
+        self._behavior.accumulate(self._state, index, value)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the accumulator in place.
 
         Sets every entry in the internal buffer to the configured initial value and
@@ -93,18 +66,17 @@ class ArrayAccumulator[T](AccumulatorProtocol[T]):
         Returns:
             None.
         """
-        self._buffer[:] = self._intial_value
-        self._counters[:] = 0
+        self._behavior.reset(self._state)
 
     @property
     def dtype(self) -> np.dtype:
         """The NumPy dtype of the accumulator elements."""
-        return self._dtype
+        return self._state.dtype
 
     @property
     def capacity(self) -> int:
         """The maximum number of elements the accumulator can hold."""
-        return int(self._capacity)
+        return self._state.capacity
 
     @property
     def name(self) -> str:
@@ -119,3 +91,7 @@ class ArrayAccumulator[T](AccumulatorProtocol[T]):
             region.
         """
         return self._active_view()
+
+    def to_value(self) -> ArrayAccumulatorValue:
+        """Return an independent immutable snapshot of accumulated state."""
+        return self._behavior.to_value(self._state, name=self._name)
