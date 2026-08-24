@@ -95,6 +95,25 @@ def test_accumulator_value_counters_participate_in_equality() -> None:
     assert first != second
 
 
+def test_accumulator_value_name_is_metadata_not_value_state() -> None:
+    values = np.array([2.0, 0.0])
+    counters = np.array([1, 0], dtype=np.int32)
+    first = ArrayAccumulatorValue(
+        dtype=np.float64,
+        values=values,
+        counters=counters,
+        name="first",
+    )
+    second = ArrayAccumulatorValue(
+        dtype=np.float64,
+        values=values,
+        counters=counters,
+        name="second",
+    )
+
+    assert first == second
+
+
 def test_immutable_value_reducer_preserves_values_and_counters() -> None:
     left = ArrayAccumulator(dtype=np.float64, capacity=2)
     right = ArrayAccumulator(dtype=np.float64, capacity=2)
@@ -185,6 +204,8 @@ def test_merge_does_not_mutate_inputs() -> None:
 
     merged = merge_array_accumulators(left, right)
 
-    np.testing.assert_array_equal(merged.finalize(), [2.0, 3.0])
+    assert isinstance(merged, ArrayAccumulatorValue)
+    np.testing.assert_array_equal(merged.values, [2.0, 3.0])
+    np.testing.assert_array_equal(merged.counters, [1, 1])
     np.testing.assert_array_equal(left.finalize(), [2.0, 0.0])
     np.testing.assert_array_equal(right.finalize(), [0.0, 3.0])

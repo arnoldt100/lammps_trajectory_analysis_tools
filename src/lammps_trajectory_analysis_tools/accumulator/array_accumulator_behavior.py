@@ -140,14 +140,14 @@ def merge_accumulator_values(
 
 
 def merge_array_accumulators(
-    lhs: AccumulatorProtocol[T],
-    rhs: AccumulatorProtocol[T],
+    lhs: ArrayAccumulator[T],
+    rhs: ArrayAccumulator[T],
     name: str = "Merged Accumulator",
-) -> ArrayAccumulator[T]:
-    """Merge mutable accumulators by element-wise summation.
+) -> ArrayAccumulatorValue:
+    """Merge accumulators into an immutable value.
 
     The inputs are not mutated and the returned accumulator is a new dense
-    accumulator. Inputs must have matching dtypes and capacities.
+    value. Inputs must have matching dtypes and capacities.
     """
     if lhs.dtype != rhs.dtype:
         raise TypeError(
@@ -160,10 +160,8 @@ def merge_array_accumulators(
             f"{lhs.capacity} vs {rhs.capacity}"
         )
 
-    from .array_accumulator import ArrayAccumulator as AccumulatorType
-
-    combined = np.asarray(lhs.finalize()) + np.asarray(rhs.finalize())
-    merged = AccumulatorType(dtype=lhs.dtype, capacity=lhs.capacity, name=name)
-    for index in range(lhs.capacity):
-        merged.accumulate(index, combined[index])
-    return merged
+    return merge_accumulator_values(
+        lhs.to_value(),
+        rhs.to_value(),
+        name=name,
+    )

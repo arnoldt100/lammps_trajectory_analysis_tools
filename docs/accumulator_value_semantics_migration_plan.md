@@ -223,7 +223,8 @@ Hashing is disabled initially:
 __hash__ = None
 ```
 
-`replace(changes)` may be provided to satisfy the shared `ValueSemantics` protocol. Replacement must create a new validated value and leave the original unchanged.
+`replace(state)` accepts an `ArrayAccumulatorValueState` and creates a new
+validated value without changing the original.
 
 ## Reduction
 
@@ -248,7 +249,9 @@ The reducer must:
 - add counters element-wise;
 - use a deterministic merge order when merging more than two values.
 
-Whether legacy merging returns a mutable accumulator or an immutable value should be decided during the reducer migration phase. The long-term result should be immutable.
+`merge_array_accumulators` returns an immutable `ArrayAccumulatorValue`. Its
+name remains for source compatibility, but callers must use the returned
+value's read-only observation API.
 
 ## Proposed Module Layout
 
@@ -264,7 +267,6 @@ accumulator/
     array_accumulator_value_state.py
     array_accumulator_builder.py
     array_accumulator_value_builder.py
-    merge_accumulators.py
 ```
 
 The behavior and state modules may be combined if they remain small and focused. The required architectural boundary is the separation between state storage, value-object wrappers, and reduction policy.
@@ -342,14 +344,15 @@ and rejection of unknown replacement fields.
 
 ### Phase 6: Migrate reduction
 
-Add immutable-value reduction, define counter merge behavior, and retain the current reducer as a compatibility layer until callers have migrated.
+Add immutable-value reduction and define counter merge behavior.
 
 The initial immutable reduction path is complete. `AccumulatorValueProtocol`
 defines the read-only value contract, and `merge_accumulator_values` validates
 dtype and capacity compatibility before returning a new immutable value. The
 reducer sums both accumulated values and contribution counters without
-mutating either input. The legacy `merge_array_accumulators` API remains in
-place as the compatibility path and is intentionally not changed yet.
+mutating either input. The legacy `merge_array_accumulators` name remains as a
+compatibility path, but it now delegates to immutable snapshots and returns an
+`ArrayAccumulatorValue`.
 
 ### Phase 7: Migrate builders and documentation
 
@@ -382,16 +385,16 @@ Add focused accumulator tests for:
 
 Run focused accumulator tests first, followed by the complete pytest suite.
 
-## Open Decisions
+## Settled Decisions
 
-The following decisions should be finalized before implementation begins:
-
-- Should `finalize()` return a defensive copy or a read-only view? The recommended choice is a defensive copy for maximum compatibility safety.
-- Should `ArrayAccumulatorValue` use a separate immutable state class? The recommended choice is yes if mutable and immutable invariants differ; otherwise a shared state representation may be sufficient.
-- `replace()` accepts the domain-specific `ArrayAccumulatorValueState` type rather than a generic mapping. This gives replacement a complete, validated accumulator state and avoids weakening the accumulator contract to arbitrary field dictionaries.
-- Should counters be included in equality and reduction? The recommended choice is yes because they describe the accumulation state and are needed for later normalization.
-- Should legacy `merge_array_accumulators` return a mutable accumulator during transition? This can preserve compatibility, while the new immutable reducer becomes the long-term API.
-- Should `name` be part of value equality? The recommended choice is no if it is descriptive metadata rather than numerical state.
+- `finalize()` returns a read-only view to preserve zero-copy behavior.
+- `ArrayAccumulatorValue` owns a separate `ArrayAccumulatorValueState`.
+- `replace()` accepts the domain-specific `ArrayAccumulatorValueState` type
+    rather than a generic mapping.
+- `name` is descriptive metadata and is excluded from value equality and
+    reduction compatibility.
+- Counters participate in equality and are summed during reduction.
+- `merge_array_accumulators` returns an immutable `ArrayAccumulatorValue`.
 
 ## Non-Goals
 
