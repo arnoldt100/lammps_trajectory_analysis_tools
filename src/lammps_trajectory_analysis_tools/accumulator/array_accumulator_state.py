@@ -1,4 +1,12 @@
-"""Concrete mutable state for array-backed accumulators."""
+"""Concrete mutable state for array-backed accumulators.
+
+Value-semantics counterpart:
+    Module: ``design_patterns_templates.value_semantics.concrete_state_implementation``
+    Class: ``ConcreteStateImplementation``
+
+This accumulator-specific state owns the numerical fields used by the mutable
+value wrapper and follows the concrete-state implementation pattern.
+"""
 
 from typing import Any, Generic, TypeVar
 

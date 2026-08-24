@@ -24,6 +24,26 @@ FCC parallelization is outside the scope of this plan. The accumulator package m
 - Merging remains a separate reducer operation.
 - Existing public accumulator behavior should remain compatible during migration.
 
+## Protocol And Storage Scope
+
+The accumulator contract is domain-neutral. It stores calculated values and
+their contribution counters, not coordinates, velocities, forces, topology,
+trajectory objects, or worker scheduling state. A calculation layer may give
+each worker replicated input data and assign global indices, but each worker
+must own an independent mutable accumulator.
+
+The initial implementation uses dense, globally indexed storage because it
+provides predictable memory layout, direct indexing, and straightforward
+deterministic reduction. Sparse storage remains a future option for workloads
+where the configured domain is large but only a small number of indices are
+touched. It should be introduced only after profiling demonstrates a memory
+benefit and its merge and determinism rules are specified.
+
+Metadata such as frame, timestep, units, operation identity, and global shape
+is intentionally outside the initial accumulator value protocol. Add a
+separate metadata contract only when a concrete calculation requires
+compatibility validation for those fields.
+
 ## Class Correspondence
 
 | Value-semantics class or protocol | Accumulator counterpart | Role |

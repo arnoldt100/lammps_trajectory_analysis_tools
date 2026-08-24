@@ -1,5 +1,13 @@
 #! /usr/bin/env python3
-"""Defines a bounded accumulator designed for a fixed sequence of elements."""
+"""Defines a bounded accumulator designed for a fixed sequence of elements.
+
+Value-semantics counterpart:
+    Module: ``design_patterns_templates.value_semantics.state_value_object_mutable``
+    Class: ``StateValueObjectMutable``
+
+The accumulator-specific concrete state and behavior correspond to the
+value-semantics pattern's concrete state implementation and behavior protocol.
+"""
 
 from __future__ import annotations
 

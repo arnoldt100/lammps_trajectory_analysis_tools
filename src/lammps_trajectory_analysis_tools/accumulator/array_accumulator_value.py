@@ -1,4 +1,13 @@
-"""Immutable snapshots of array-backed accumulator state."""
+"""Immutable snapshots of array-backed accumulator state.
+
+Value-semantics counterpart:
+    Module: ``design_patterns_templates.value_semantics.state_value_object_immutable``
+    Class: ``StateValueObjectImmutable``
+
+The immutable accumulator state corresponds to the value-semantics pattern's
+concrete state implementation, and ``ValueSemantics`` is the shared protocol
+implemented by this snapshot value.
+"""
 
 from typing import Self
 

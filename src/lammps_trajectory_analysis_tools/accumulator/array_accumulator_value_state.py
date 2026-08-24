@@ -1,4 +1,13 @@
-"""Immutable concrete state for array accumulator values."""
+"""Immutable concrete state for array accumulator values.
+
+Value-semantics counterpart:
+    Module: ``design_patterns_templates.value_semantics.concrete_state_implementation``
+    Class: ``ConcreteStateImplementation``
+
+This accumulator-specific state owns the validated read-only snapshot data
+used by the immutable value wrapper and follows the concrete-state
+implementation pattern.
+"""
 
 from __future__ import annotations
 
