@@ -1,15 +1,11 @@
-"""Provide immutable snapshots of mutable array accumulators.
+"""Provide the immutable snapshot wrapper produced by an array accumulator.
 
-``ArrayAccumulatorValue`` is created by ``ArrayAccumulator.to_value()``. The
-constructor defensively copies the mutable accumulator's values and counters
-into a separate ``ArrayAccumulatorValueState`` and makes those arrays
-read-only. Later accumulation or reset operations on the original
-``ArrayAccumulator`` cannot change this snapshot.
+``ArrayAccumulatorValue`` owns an ``ArrayAccumulatorValueState`` containing
+defensive, read-only copies of the producer's values and counters. The
+snapshot is independent of the original ``ArrayAccumulator`` and is suitable
+for stable observation and reduction.
 
-This module is the value side of the pair: snapshots are used for stable
-observation, transfer, equality, and reduction. It does not perform mutable
-accumulation and does not share the worker accumulator's storage. The value
-class corresponds to the value-semantics template
+The immutable wrapper corresponds to the value-semantics template
 ``StateValueObjectImmutable`` and implements the shared ``ValueSemantics``
 protocol.
 """
@@ -27,7 +23,7 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics 
 
 
 class ArrayAccumulatorValue(ValueSemantics):
-    """Store an independent, read-only accumulator snapshot."""
+    """Wrap immutable snapshot state for read-only accumulator values."""
 
     __hash__ = None
 

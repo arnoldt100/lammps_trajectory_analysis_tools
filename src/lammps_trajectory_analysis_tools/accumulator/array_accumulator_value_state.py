@@ -15,7 +15,7 @@ import numpy as np
 
 
 class ArrayAccumulatorValueState:
-    """Own a validated, read-only accumulator snapshot."""
+    """Represent immutable buffer and counter state for one accumulator snapshot."""
 
     def __init__(
         self,

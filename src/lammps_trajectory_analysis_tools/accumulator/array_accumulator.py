@@ -1,18 +1,10 @@
-#! /usr/bin/env python3
-"""Provide the mutable, worker-local array accumulator.
 
-``ArrayAccumulator`` is the working object: it accepts contributions through
-``accumulate()``, can be cleared with ``reset()``, and exposes the current
-values through ``finalize()``. Its private
-``ArrayAccumulatorState`` owns the mutable arrays, while
-``ArrayAccumulatorBehavior`` performs the accumulator-specific operations.
+"""Provide the mutable producer wrapper for array accumulation.
 
-Calling ``to_value()`` creates an independent ``ArrayAccumulatorValue``
-snapshot. That value is defined in the companion
-``array_accumulator_value`` module and owns separate read-only copies for
-observation and reduction. The two classes are therefore a mutable producer
-and an immutable snapshot, not two interchangeable accumulator
-implementations.
+``ArrayAccumulator`` owns an ``ArrayAccumulatorState`` containing mutable
+buffer and counter data. It accepts contributions during a worker-local
+calculation and creates an independent ``ArrayAccumulatorValue`` through
+``to_value()``.
 
 The mutable wrapper corresponds to the value-semantics template
 ``StateValueObjectMutable``; the concrete state and behavior remain specific
@@ -34,7 +26,7 @@ if TYPE_CHECKING:
     from .array_accumulator_value import ArrayAccumulatorValue
 
 class ArrayAccumulator[T](AccumulatorProtocol[T]):
-    """ A bounded accumulator for a fixed sequence of elements. """
+    """Wrap mutable accumulator state for worker-local accumulation."""
     def __init__(
         self,
         dtype: np.dtype | type,

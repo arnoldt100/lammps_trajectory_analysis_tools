@@ -17,7 +17,7 @@ T = TypeVar("T")
 
 
 class ArrayAccumulatorState(Generic[T]):
-    """Own the numerical state used by one mutable array accumulator."""
+    """Represent mutable buffer and counter state for one array accumulator."""
 
     def __init__(
         self,
