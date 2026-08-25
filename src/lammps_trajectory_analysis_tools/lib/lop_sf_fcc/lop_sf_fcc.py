@@ -19,6 +19,10 @@ from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
     calculate_atom_pairs_vectors,
     load_universe,
 )
+from lammps_trajectory_analysis_tools.accumulator import (
+    array_accumulator_builder_key,
+    array_accumulator_builder_registry,
+)
 from lammps_trajectory_analysis_tools.accumulator.array_accumulator import (
     ArrayAccumulator,
 )
@@ -267,13 +271,17 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
     accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
     accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
  
+    accumulator_exp_x = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.complex64,
+        capacity=np.int32(nm_wavevectors),
+        initial_value=np.complex64(0.00),
+        name="wavevector_exp_accumulator",
+    )
+
     (nm_pairs,_) = pairs.shape
     for counter in range(nm_pairs):
-        accumulator_exp_x = (
-            ArrayAccumulator(dtype=np.complex64,
-                             capacity=np.int32(nm_wavevectors),
-                             initial_value=np.complex64(0.00),
-                             name="wavevector_exp_accumulator"))
+        accumulator_exp_x.reset()
         atom_index1 = pairs[counter,0]
         atom_index2 = pairs[counter,1]
         dr = atom_pairs_vectors[counter]

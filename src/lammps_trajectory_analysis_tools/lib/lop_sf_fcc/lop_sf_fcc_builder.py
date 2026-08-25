@@ -23,7 +23,7 @@ or undefined behavior may occur.
 key_lop_sf_fcc_factory = "LopSfFccFactory"
 
 class LopSfFccFactory:
-    def __init__(self,*args,**kwargs)->None:
+    def __init__(self)->None:
         return
 
     def __call__(self,*kargs,**kwargs)->LopSfFcc:
