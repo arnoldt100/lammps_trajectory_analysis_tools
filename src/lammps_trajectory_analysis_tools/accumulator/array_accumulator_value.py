@@ -1,12 +1,17 @@
-"""Immutable snapshots of array-backed accumulator state.
+"""Provide immutable snapshots of mutable array accumulators.
 
-Value-semantics counterpart:
-    Module: ``design_patterns_templates.value_semantics.state_value_object_immutable``
-    Class: ``StateValueObjectImmutable``
+``ArrayAccumulatorValue`` is created by ``ArrayAccumulator.to_value()``. The
+constructor defensively copies the mutable accumulator's values and counters
+into a separate ``ArrayAccumulatorValueState`` and makes those arrays
+read-only. Later accumulation or reset operations on the original
+``ArrayAccumulator`` cannot change this snapshot.
 
-The immutable accumulator state corresponds to the value-semantics pattern's
-concrete state implementation, and ``ValueSemantics`` is the shared protocol
-implemented by this snapshot value.
+This module is the value side of the pair: snapshots are used for stable
+observation, transfer, equality, and reduction. It does not perform mutable
+accumulation and does not share the worker accumulator's storage. The value
+class corresponds to the value-semantics template
+``StateValueObjectImmutable`` and implements the shared ``ValueSemantics``
+protocol.
 """
 
 from typing import Self

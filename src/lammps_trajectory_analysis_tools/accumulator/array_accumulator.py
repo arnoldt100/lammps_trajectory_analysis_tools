@@ -1,12 +1,22 @@
 #! /usr/bin/env python3
-"""Defines a bounded accumulator designed for a fixed sequence of elements.
+"""Provide the mutable, worker-local array accumulator.
 
-Value-semantics counterpart:
-    Module: ``design_patterns_templates.value_semantics.state_value_object_mutable``
-    Class: ``StateValueObjectMutable``
+``ArrayAccumulator`` is the working object: it accepts contributions through
+``accumulate()``, can be cleared with ``reset()``, and exposes the current
+values through ``finalize()``. Its private
+``ArrayAccumulatorState`` owns the mutable arrays, while
+``ArrayAccumulatorBehavior`` performs the accumulator-specific operations.
 
-The accumulator-specific concrete state and behavior correspond to the
-value-semantics pattern's concrete state implementation and behavior protocol.
+Calling ``to_value()`` creates an independent ``ArrayAccumulatorValue``
+snapshot. That value is defined in the companion
+``array_accumulator_value`` module and owns separate read-only copies for
+observation and reduction. The two classes are therefore a mutable producer
+and an immutable snapshot, not two interchangeable accumulator
+implementations.
+
+The mutable wrapper corresponds to the value-semantics template
+``StateValueObjectMutable``; the concrete state and behavior remain specific
+to array accumulation.
 """
 
 from __future__ import annotations
