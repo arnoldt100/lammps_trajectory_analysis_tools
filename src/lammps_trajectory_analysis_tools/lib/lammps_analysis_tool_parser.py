@@ -45,7 +45,7 @@ CLI_ID: TypeAlias = CLILopSfFcc
 # Register the concrete builder LopSfFccSuparserFactory.
 # Each builder key must unique or the undefined behavoir will occur.
 # The buider must be name of the subcommand name specified on the command line.
-_lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name()
+
 
 def process_command_line_arguments()->CLI_ID:
     """Processes the command line arguments. """
@@ -58,11 +58,12 @@ def process_command_line_arguments()->CLI_ID:
         my_top_level_parser.add_subparsers(dest="subcommand_name",
                                            help="subcommand help"))
 
-    parse_subcommand_args = { _lop_sf_fcc_builder_key : process_lop_sf_fcc_cli_args }
+    lop_sf_fcc_builder_key = lop_sf_fcc_subcommand_name()
+    parse_subcommand_args = { lop_sf_fcc_builder_key : process_lop_sf_fcc_cli_args }
 
     # Invoke the add_subparser method to add the subparser
     # to the top level parser.
-    subparser_builder_registry.build(_lop_sf_fcc_builder_key,my_subparsers)
+    subparser_builder_registry.build(lop_sf_fcc_builder_key,my_subparsers)
 
     # Now parse the command line args for the subcommand.
     my_args = my_top_level_parser.parse_args()
