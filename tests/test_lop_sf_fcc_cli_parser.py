@@ -2,16 +2,18 @@ import argparse
 
 import pytest
 
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import (
+    subparser_builder_registry,
+)
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import (
     CLILopSfFcc,
-    LopSfFccSubparserFactory,
 )
 
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="subcommand_name")
-    LopSfFccSubparserFactory()(subparsers)
+    subparser_builder_registry.build("lop_sf_fcc", subparsers)
     return parser
 
 

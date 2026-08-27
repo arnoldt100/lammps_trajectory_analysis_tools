@@ -24,7 +24,6 @@ Use one package root for all importable code:
 ### Library package
 - `src/lib/__init__.py` -> `src/lammps_trajectory_analysis_tools/lib/__init__.py`
 - `src/lib/data_types.py` -> `src/lammps_trajectory_analysis_tools/lib/data_types.py`
-- `src/lib/lammps_analysis_tool_builder.py` -> `src/lammps_trajectory_analysis_tools/lib/lammps_analysis_tool_builder.py`
 - `src/lib/lammps_analysis_tool_parser.py` -> `src/lammps_trajectory_analysis_tools/lib/lammps_analysis_tool_parser.py`
 
 ### Accumulator subpackage

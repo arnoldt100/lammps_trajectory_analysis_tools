@@ -29,8 +29,7 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser impor
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import(
      subparser_builder_registry,
      process_lop_sf_fcc_cli_args,
-     lop_sf_fcc_subcommand_name,
-     )
+     lop_sf_fcc_subcommand_name,)
 
 
 """ Define a type alias that is the union of all subcommand command line interface types. """

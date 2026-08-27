@@ -4,7 +4,7 @@
 
 Create a reusable, domain-neutral builder/registry template under
 `design_patterns_templates/`, generalizing the registry-based builder pattern
-already used by `lop_sf_fcc_builder.py` and `lammps_analysis_tool_builder.py`.
+already used by `lop_sf_fcc_builder.py` and other domain builders.
 
 The pattern being generalized:
 
@@ -48,8 +48,7 @@ tests/
   arguments to produce a product: `builder(*args, **kwargs) -> Product`. It
   does **not** require zero-arg instantiation followed by a separate call.
 - Registry instances hold no hidden global state; a domain module is
-  responsible for instantiating and populating its own registry (as
-  `lammps_analysis_tool_builder.py` does today).
+  responsible for instantiating and populating its own registry.
 - Every domain builder migration must include registry integration. This is a
   required step even when only one concrete builder currently exists; deferring
   registry integration until a second implementation appears is not supported.
@@ -214,14 +213,6 @@ registered keys contain exactly `LoopTimerBuilderKey`, and builds a
 
 - Add the tests described above under
   `tests/design_patterns_templates/builder/`.
-
-### Phase 5: Migrate `lammps_analysis_tool_builder.py`
-
-- After the template is reviewed and tested, update
-  `lammps_analysis_tool_builder.py` to use `BuilderRegistry` instead of its
-  local `GeneralLammpsAnalysisToolFactory`.
-- Registry integration is mandatory for this migration and must not remain an
-  optional follow-up.
 
 ## Non-Goals
 
