@@ -20,36 +20,31 @@ an example.
 import argparse
 from typing import TypeAlias
 
-
 # Local library import
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import (
+from lam's_trajectory_analysis_tools.lib.lop_sf_fcc import (
     lop_sf_fcc_subcommand_name,
     process_lop_sf_fcc_cli_args,
-    subparser_builder_registry)
+    subparser_builder_registry,
+)
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import (
-    CLILopSfFcc)
+    CLILopSfFcc,
+)
 
 """ Define a type alias that is the union of all subcommand command line interface types. """
-CLI_ID: TypeAlias = CLILopSfFcc
+type CLI_ID = CLILopSfFcc
 
 
 # ----------
 # This section adds the subparser for the calculating
 # LOP Structure FCC.
 # ----------
-
-# Register the concrete builder LopSfFccSuparserFactory.
-# Each builder key must unique or the undefined behavoir will occur.
-# The buider must be name of the subcommand name specified on the command line.
-
-
 def process_command_line_arguments()->CLI_ID:
     """Processes the command line arguments. """
 
     my_top_level_parser = (
-        argparse.ArgumentParser(prog="lammps_analysis_tool_parser",
+        argparse.ArgumentParser(prog="lamps_analysis_tool_parser",
         description="Calculates various physical properties of LAMMPS simulations"))
 
     my_subparsers = (
