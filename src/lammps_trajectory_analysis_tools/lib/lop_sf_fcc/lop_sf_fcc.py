@@ -316,8 +316,7 @@ class LopSfFcc:
         self._lop_sf_fcc = None
         return
 
-    def __call__(self, command_line_arguments:CLILopSfFcc,
-                 *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
         self._parallel_threads = command_line_arguments.parallel_threads
 

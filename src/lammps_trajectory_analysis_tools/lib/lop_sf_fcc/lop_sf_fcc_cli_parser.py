@@ -124,8 +124,8 @@ class CLILopSfFcc:
         """Return the configured analysis callable."""
         return self._do_data_analysis
 
-class LopSfFccSubparserFactory:
-    """ The concrete builder for LOP Structure FCC order parameter. 
+class LopSfFccSubparserBuilder:
+    """ The concrete builder for LOP Structure FCC order parameter . 
 
     This a callable object. When called it adds the subparser
     for LOP Structure FCC order parameter.
@@ -149,11 +149,10 @@ class LopSfFccSubparserFactory:
 
     _hdf5_data_file_help = "The hdf5 file where the data is stored."
 
-    def __init__(self, *args, **kwargs)->None:
+    def __init__(self)->None:
         return
 
-    def __call__(self, top_level_subparsers,
-                 *kargs, **kwargs)->None:
+    def __call__(self, top_level_subparsers)->None:
 
         parser1 = top_level_subparsers.add_parser("lop_sf_fcc",
                                                   help=self._subcommand_help)

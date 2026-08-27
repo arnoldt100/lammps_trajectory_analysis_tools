@@ -21,17 +21,17 @@ import argparse
 from typing import Any
 from typing import TypeAlias
 
-from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (
-    BuilderRegistry,
-)
 
 # Local library import
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import LopSfFccSubparserFactory
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import process_lop_sf_fcc_cli_args
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import lop_sf_fcc_subcommand_name
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import(
+     subparser_builder_registry,
+     process_lop_sf_fcc_cli_args,
+     lop_sf_fcc_subcommand_name,
+     )
+
 
 """ Define a type alias that is the union of all subcommand command line interface types. """
 CLI_ID: TypeAlias = CLILopSfFcc
@@ -58,20 +58,11 @@ def process_command_line_arguments()->CLI_ID:
         my_top_level_parser.add_subparsers(dest="subcommand_name",
                                            help="subcommand help"))
 
-    # Create the domain-owned registry for subparser builders.
-    my_subparser_factory: BuilderRegistry[Any] = BuilderRegistry()
-
-    # Register the builder and the function to process the command line arguments
-    # for the LOP FCC fcc structure factor.
-    my_subparser_factory.register_builder(_lop_sf_fcc_builder_key,
-        LopSfFccSubparserFactory())
-
     parse_subcommand_args = { _lop_sf_fcc_builder_key : process_lop_sf_fcc_cli_args }
 
     # Invoke the add_subparser method to add the subparser
     # to the top level parser.
-    my_subparser_builder = my_subparser_factory.build(_lop_sf_fcc_builder_key)
-    my_subparser_builder(my_subparsers)
+    subparser_builder_registry.build(_lop_sf_fcc_builder_key,my_subparsers)
 
     # Now parse the command line args for the subcommand.
     my_args = my_top_level_parser.parse_args()
