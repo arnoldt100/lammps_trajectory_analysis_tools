@@ -199,9 +199,11 @@ class LopSfFccSubparserBuilder:
 
         # Add the callable object for calculating the local structure factor
         # fcc order parameter as an the callable attribute  'do_data_analysis'.
-        from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import lop_sf_fcc_builder_key
-        from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import analysis_tool_builder_registery
-        my_analysis_tool = analysis_tool_builder_registery.build(lop_sf_fcc_builder_key)
+        from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import (
+            analysis_tool_builder_registry,
+            lop_sf_fcc_builder_key,
+        )
+        my_analysis_tool = analysis_tool_builder_registry.build(lop_sf_fcc_builder_key)
         parser1.set_defaults(do_data_analysis=my_analysis_tool)
 
 def process_lop_sf_fcc_cli_args(my_arg_parser : argparse.ArgumentParser)->CLILopSfFcc:

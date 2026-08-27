@@ -18,19 +18,18 @@ an example.
 """
 
 import argparse
-from typing import Any
 from typing import TypeAlias
 
 
 # Local library import
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import (
+    lop_sf_fcc_subcommand_name,
+    process_lop_sf_fcc_cli_args,
+    subparser_builder_registry)
 
 # Import all definitions needed for the LOP FCC Structure subcommand.
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import CLILopSfFcc
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import(
-     subparser_builder_registry,
-     process_lop_sf_fcc_cli_args,
-     lop_sf_fcc_subcommand_name,)
-
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_cli_parser import (
+    CLILopSfFcc)
 
 """ Define a type alias that is the union of all subcommand command line interface types. """
 CLI_ID: TypeAlias = CLILopSfFcc
