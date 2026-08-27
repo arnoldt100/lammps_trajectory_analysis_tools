@@ -306,7 +306,7 @@ class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
 
 
-    def __init__(self,*args,**kwargs)->None:
+    def __init__(self)->None:
         self._accumulator = []
         self._normalized_wave_vectors = None
         self._parallel_threads = 1
