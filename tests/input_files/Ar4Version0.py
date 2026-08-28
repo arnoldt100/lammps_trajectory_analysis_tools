@@ -389,7 +389,7 @@ def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerm
                                                           name="Reference Accumulated Atom exp Terms"))
 
     accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
-    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
+    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int32)
     (nm_wavevectors,_) = wavevectors.shape
     for key,value in atom_pairs_exp_terms.items():
         sum1 = np.sum(value)
@@ -399,7 +399,7 @@ def _create_accum_atom_exp_terms_with_coeffs(atom_pairs_exp_terms: AtomPairsTerm
         accum_lop_nm_neighbors[np.int32(atom_index1)] += 1
         accum_lop_nm_neighbors[np.int32(atom_index2)] += 1
 
-    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop = np.zeros(nm_atoms,dtype=np.float64)
     for atom_index in range(nm_atoms):
         if accum_lop_nm_neighbors[atom_index] > 0:
             x = accum_lop_terms[atom_index]

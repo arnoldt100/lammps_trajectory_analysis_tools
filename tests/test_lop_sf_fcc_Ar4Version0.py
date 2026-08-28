@@ -19,8 +19,8 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
     calculate_lop_fcc_atom_pair_exp_terms,
     create_atom_pair_key)
 
-from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
 from lammps_trajectory_analysis_tools.accumulator import (
+    ArrayAccumulator,
     array_accumulator_builder_key,
     array_accumulator_builder_registry,
 )
@@ -81,13 +81,22 @@ def test_lop_sf_fcc_atom_order_parameter_with_coeffs(ar4_version0):
     accum_lop_nm_neighbors = my_test_configuration.accum_lop_nm_neighbors
     nm_atoms = my_test_configuration.nm_atoms
 
+    accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.float64,
+        capacity=np.int32(nm_atoms),
+        initial_value=np.float64(0.00),
+        name="atom_exp_terms_accumulator",
+    )
+
     programatic_values = calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
                                                                            nm_wavevectors,
                                                                            atom_accum_exp_terms_nocoeffs.finalize(),
-                                                                           accum_lop_nm_neighbors)
+                                                                           accum_lop_nm_neighbors,
+                                                                           accum_lop_terms_with_coeffs)
 
     reference_values = my_test_configuration.atom_accum_exp_terms_with_coeffs
-    np.testing.assert_allclose(programatic_values,
+    np.testing.assert_allclose(programatic_values.finalize(),
                                reference_values,
                                rtol=rtolerance,
                                atol=atolerance,

@@ -208,7 +208,8 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
 def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
         nm_wavevectors: np.int32,
         accum_lop_terms_no_coeffs: np.ndarray[tuple[int],np.dtype[np.complex64]],
-        accum_lop_nm_neighbors: np.ndarray[tuple[int],np.dtype[np.int32]])->np.ndarray[tuple[int],np.dtype[np.float64]]:
+        accum_lop_nm_neighbors: np.ndarray[tuple[int],np.dtype[np.int32]],
+        temp_accum_lop_terms_with_coeffs: ArrayAccumulator)->ArrayAccumulator:
     """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
     coordinates.
 
@@ -220,20 +221,21 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
         nm_wavevectors: The number of wave vectors.
         accum_lop_terms_no_coeffs: The struture factor terms for each atom.
         accum_lop_nm_neighbors: The number of neighbors atoms in calculating the structure factor.
+        temp_accum_lop_terms_with_coeffs: The values of lop sf FCC for each atom.
 
     Returns:
         accum_lop_terms_with_coeffs: The struture factor terms for each atom
         adjusted for coefficients.
 
     """
-    accum_lop_terms_with_coeffs = np.zeros(nm_atoms,dtype=np.complex64)
+    accum_lop_terms_with_coeffs = np.zeros(nm_atoms,dtype=np.float64)
     for atom_index in range(nm_atoms):
         x = np.complex64(0.00)
         if accum_lop_nm_neighbors[atom_index] > 0:
             x = accum_lop_terms_no_coeffs[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
             y = np.abs(x)**2
-            accum_lop_terms_with_coeffs[atom_index] = y
-    return accum_lop_terms_with_coeffs
+            temp_accum_lop_terms_with_coeffs.accumulate(atom_index,y)
+    return temp_accum_lop_terms_with_coeffs
 
 def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
@@ -368,12 +370,22 @@ class LopSfFcc:
             name="atom_exp_terms_accumulator",
         )
 
+        accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
+            array_accumulator_builder_key,
+            dtype=np.float64,
+            capacity=np.int32(nm_atoms),
+            initial_value=np.float64(0.00),
+            name="atom_exp_terms_accumulator",
+        )
+
         for ts in my_universe.trajectory:
             frame_index = ts.frame
             frame_time = ts.time
 
             accumulator_nm_neighbors.reset()
             accumulator_lop_terms0.reset()
+            accum_lop_terms_with_coeffs.reset()
+
             (accum_lop_terms0,accum_nm_neighbors) = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
                     self._wavevectors,
@@ -386,7 +398,8 @@ class LopSfFcc:
                 calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
                     nm_wavevectors,
                     accum_lop_terms0,
-                    accum_nm_neighbors))
+                    accum_nm_neighbors,
+                    accum_lop_terms_with_coeffs))
 
 
             counter += 1
