@@ -21,7 +21,7 @@ import argparse
 from typing import TypeAlias
 
 # Local library import
-from lam's_trajectory_analysis_tools.lib.lop_sf_fcc import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import (
     lop_sf_fcc_subcommand_name,
     process_lop_sf_fcc_cli_args,
     subparser_builder_registry,

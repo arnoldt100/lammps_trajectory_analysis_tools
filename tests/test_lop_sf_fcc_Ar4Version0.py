@@ -20,6 +20,10 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
     create_atom_pair_key)
 
 from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator
+from lammps_trajectory_analysis_tools.accumulator import (
+    array_accumulator_builder_key,
+    array_accumulator_builder_registry,
+)
 
 @pytest.fixture
 def ar4_version0():
@@ -96,10 +100,28 @@ def test_lop_sf_fcc_atom_order_parameter_no_coeffs(ar4_version0):
 
     [my_test_configuration,my_test_configuration_universe] = ar4_version0
 
+    n_atoms = my_test_configuration_universe.atoms.n_atoms
+    accumulator_nm_neighbors = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.int32,
+        capacity=np.int32(n_atoms),
+        initial_value=np.int32(0),
+        name="atom_neighbor_accumulator",
+    )
+    accumulator_lop_terms0 = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.complex64,
+        capacity=np.int32(n_atoms),
+        initial_value=np.complex64(0.00),
+        name="atom_exp_terms_accumulator",
+    )
+
     (programatic_values,programatic_nm_neighbors) = (
         calculate_sf_fcc_atom_order_parameter_no_coeffs(my_test_configuration_universe,
         my_test_configuration.wave_vectors,
-        my_test_configuration.cutoff) )
+        my_test_configuration.cutoff,
+        accumulator_nm_neighbors,
+        accumulator_lop_terms0) )
 
     reference_values = my_test_configuration.atom_accum_exp_terms_nocoeffs
 

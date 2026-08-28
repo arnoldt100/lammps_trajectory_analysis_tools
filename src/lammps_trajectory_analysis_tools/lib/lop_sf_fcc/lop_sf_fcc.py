@@ -237,7 +237,9 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
 
 def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
-                                     cutoff: float)->tuple[np.ndarray,np.ndarray]:
+                                     cutoff: float,
+                                     accumulator_nm_neighbors: ArrayAccumulator,
+                                     accumulator_lop_terms0: ArrayAccumulator)->tuple[np.ndarray,np.ndarray]:
     """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
     coordinates.
 
@@ -252,9 +254,15 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
 
         cutoff: The cutoff to search for neighboring atoms.
 
+        accumulator_nm_neighbors: Caller-owned accumulator of neighbor counts
+        per atom. The caller must reset it before each call.
+
+        accumulator_lop_terms0: Caller-owned accumulator of exp(iq*r) terms
+        per atom. The caller must reset it before each call.
+
     Returns:
-        A tuple of the accumulated exp(q*r) terms and the number of neighbors
-        of each atom.
+        A tuple of a read-only view of the accumulated exp(q*r) terms and a
+        read-only view of the number of neighbors of each atom.
     """
 
     ar_atoms = universe.select_atoms("all")
@@ -265,13 +273,8 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
 
     # Create an accumulator over for each atom. For each atom we accumulate 
     # the number of neighbors and the exp(q*r) terms.
-    nm_atoms = universe.atoms.n_atoms
     (nm_wavevectors,_) = wave_vectors.shape
-    accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
-    accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
 
-    accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
- 
     accumulator_exp_x = array_accumulator_builder_registry.build(
         array_accumulator_builder_key,
         dtype=np.complex64,
@@ -286,14 +289,14 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
         atom_index1 = pairs[counter,0]
         atom_index2 = pairs[counter,1]
         dr = atom_pairs_vectors[counter]
-        accum_lop_nm_neighbors[atom_index1] += 1
-        accum_lop_nm_neighbors[atom_index2] += 1
+        accumulator_nm_neighbors.accumulate(atom_index1, 1)
+        accumulator_nm_neighbors.accumulate(atom_index2, 1)
         accum1 = calculate_lop_fcc_atom_pair_exp_terms(dr,
                     wave_vectors,
                     accumulator_exp_x)
-        accum_lop_terms[atom_index1] += accum1
-        accum_lop_terms[atom_index2] += accum1
-    return (accum_lop_terms,accum_lop_nm_neighbors)
+        accumulator_lop_terms0.accumulate(atom_index1, accum1)
+        accumulator_lop_terms0.accumulate(atom_index2, accum1)
+    return (accumulator_lop_terms0.finalize(),accumulator_nm_neighbors.finalize())
 
 def create_atom_pair_key(atom1: np.int32,
                          atom2: np.int32):
@@ -349,17 +352,34 @@ class LopSfFcc:
         trajectory_loop_timer.start()
         counter = 0
 
-        # Declare here the mutable array_accumulator the number of neighbors
-        # of each atom.
+        # One accumulator reused and reset every frame.
+        accumulator_nm_neighbors = array_accumulator_builder_registry.build(
+            array_accumulator_builder_key,
+            dtype=np.int32,
+            capacity=np.int32(nm_atoms),
+            initial_value=np.int32(0),
+            name="atom_neighbor_accumulator",
+        )
+        accumulator_lop_terms0 = array_accumulator_builder_registry.build(
+            array_accumulator_builder_key,
+            dtype=np.complex64,
+            capacity=np.int32(nm_atoms),
+            initial_value=np.complex64(0.00),
+            name="atom_exp_terms_accumulator",
+        )
 
         for ts in my_universe.trajectory:
             frame_index = ts.frame
             frame_time = ts.time
 
+            accumulator_nm_neighbors.reset()
+            accumulator_lop_terms0.reset()
             (accum_lop_terms0,accum_nm_neighbors) = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
                     self._wavevectors,
-                    np.float32(command_line_arguments.cutoff))
+                    np.float32(command_line_arguments.cutoff),
+                    accumulator_nm_neighbors,
+                    accumulator_lop_terms0)
             )
 
             accum_lop_terms1 = (
