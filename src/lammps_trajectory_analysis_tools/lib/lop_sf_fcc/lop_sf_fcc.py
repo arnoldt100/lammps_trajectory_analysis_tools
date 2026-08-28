@@ -269,6 +269,7 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
     (nm_wavevectors,_) = wave_vectors.shape
     accum_lop = np.zeros(nm_atoms,dtype=np.complex64)
     accum_lop_terms = np.zeros(nm_atoms,dtype=np.complex64)
+
     accum_lop_nm_neighbors = np.zeros(nm_atoms,dtype=np.int64)
  
     accumulator_exp_x = array_accumulator_builder_registry.build(
@@ -347,6 +348,10 @@ class LopSfFcc:
         )
         trajectory_loop_timer.start()
         counter = 0
+
+        # Declare here the mutable array_accumulator the number of neighbors
+        # of each atom.
+
         for ts in my_universe.trajectory:
             frame_index = ts.frame
             frame_time = ts.time
