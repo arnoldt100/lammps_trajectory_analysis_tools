@@ -362,6 +362,8 @@ class LopSfFcc:
             initial_value=np.int32(0),
             name="atom_neighbor_accumulator",
         )
+
+        # Another accumulator reused and reset every frame.
         accumulator_lop_terms0 = array_accumulator_builder_registry.build(
             array_accumulator_builder_key,
             dtype=np.complex64,
@@ -370,6 +372,7 @@ class LopSfFcc:
             name="atom_exp_terms_accumulator",
         )
 
+        # Another accumulator reused and reset every frame.
         accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
             array_accumulator_builder_key,
             dtype=np.float64,
@@ -377,6 +380,8 @@ class LopSfFcc:
             initial_value=np.float64(0.00),
             name="atom_exp_terms_accumulator",
         )
+
+        neighbor_search_cutoff = np.float32(command_line_arguments.cutoff)
 
         for ts in my_universe.trajectory:
             frame_index = ts.frame
@@ -389,7 +394,7 @@ class LopSfFcc:
             (accum_lop_terms0,accum_nm_neighbors) = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
                     self._wavevectors,
-                    np.float32(command_line_arguments.cutoff),
+                    neighbor_search_cutoff,
                     accumulator_nm_neighbors,
                     accumulator_lop_terms0)
             )
