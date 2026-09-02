@@ -28,4 +28,8 @@ package-dir = {"" = "src"}
 where = ["src"]
 include = ["lammps_trajectory_analysis_tools*"]
 
+[tool.ruff]
+indent-width = 4
 
+[tool.ruff.format]
+indent-style = "space"

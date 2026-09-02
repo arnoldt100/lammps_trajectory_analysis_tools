@@ -2,7 +2,7 @@
 
 ## Objective
 
-Define a backend-neutral contract for writers that persist analysis data to an output target. Concrete writers may use HDF5, text, databases, or another storage format, but callers should depend on the same data and lifecycle semantics.
+Define a backend-neutral contract for writers that persist analysis data to an output target. Concrete writers may use HDF5, text, databases, or another storage format, but callers should depend on the same data and life cycle semantics.
 
 ## Scope
 
@@ -30,6 +30,7 @@ create()
 write_data(data)
 append_data(frames)
 close()
+``
 ```
 
 The concrete API may use backend-specific names or configuration, but adapters should preserve these semantics.

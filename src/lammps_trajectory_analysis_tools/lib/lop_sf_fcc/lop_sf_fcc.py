@@ -14,17 +14,17 @@ from typing import Any
 import numpy as np
 
 # Local imports
-from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
-    calculate_atom_pairs,
-    calculate_atom_pairs_vectors,
-    load_universe,
-)
 from lammps_trajectory_analysis_tools.accumulator import (
     array_accumulator_builder_key,
     array_accumulator_builder_registry,
 )
 from lammps_trajectory_analysis_tools.accumulator.array_accumulator import (
     ArrayAccumulator,
+)
+from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
+    calculate_atom_pairs,
+    calculate_atom_pairs_vectors,
+    load_universe,
 )
 from lammps_trajectory_analysis_tools.lib.data_types import (
     LatticeVectors,
