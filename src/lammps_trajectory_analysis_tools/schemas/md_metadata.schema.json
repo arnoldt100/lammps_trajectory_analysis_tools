@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "md_metadata.schema.json",
+  "title": "Generated MD Metadata",
+  "type": "object",
+  "required": ["simulation_metadata"],
+  "properties": {
+    "simulation_metadata": {
+      "type": "object",
+      "required": ["time", "build", "simulation_parameters", "generated"],
+      "properties": {
+        "time": {
+          "type": "object",
+          "required": ["units", "time_step"],
+          "properties": {
+            "units": {
+              "type": "string"
+            },
+            "time_step": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "build": {
+          "type": "object",
+          "required": [
+            "compiler_flags",
+            "compiled_on_machine",
+            "lmod_modules"
+          ],
+          "properties": {
+            "compiler_flags": {
+              "$ref": "compiler_flags.schema.json#/properties/compiler_flags"
+            },
+            "compiled_on_machine": {
+              "type": "string"
+            },
+            "lmod_modules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "simulation_parameters": {
+          "$ref": "md_params.schema.json"
+        },
+        "generated": {
+          "type": "object",
+          "required": ["timestamp"],
+          "properties": {
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

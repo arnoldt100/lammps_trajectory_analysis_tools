@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compiler_flags.schema.json",
+  "title": "Compiler Flags",
+  "type": "object",
+  "required": ["compiler_flags"],
+  "properties": {
+    "compiler_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

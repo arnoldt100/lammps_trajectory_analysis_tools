@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "md_params.schema.json",
+  "title": "MD Simulation Parameters",
+  "type": "object",
+  "required": ["time"],
+  "properties": {
+    "time": {
+      "type": "object",
+      "required": ["units", "time_step"],
+      "properties": {
+        "units": {
+          "type": "string",
+          "description": "Time units used in the MD simulation, e.g. fs, ps, ns"
+        },
+        "time_step": {
+          "type": "number",
+          "description": "MD time step value"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
