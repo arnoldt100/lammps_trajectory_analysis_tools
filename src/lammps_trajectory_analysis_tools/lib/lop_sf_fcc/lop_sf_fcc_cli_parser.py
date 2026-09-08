@@ -21,7 +21,6 @@ Each subcommand name must be unique.
 def lop_sf_fcc_subcommand_name()->str:
     return 'lop_sf_fcc'
 
-
 def positive_integer(value: str) -> int:
     """Parse a strictly positive integer command-line value."""
     try:
@@ -38,7 +37,13 @@ def positive_integer(value: str) -> int:
 
 def non_blank_string(value: str) -> str:
     """Parse a string to no leading or trailing whitespaces. """
+    if not isinstance(value,str):
+        raise argparse.ArgumentTypeError("value must be a string.")
 
+    parsed_value = value.strip()
+    if len(parsed_value) == 0:
+        raise argparse.ArgumentTypeError("string value must have a positve length.")
+    return parsed_value 
 
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
@@ -58,12 +63,18 @@ class CLILopSfFcc:
         do_data_analysis: Optional[Callable[..., None]] = None,
         md_params_json: Optional[str] = None,
     ) -> None:
+        # This can be rewritten as composite specification pattern.
+        # The set of if then tests will get extended to validate more
+        # function arguments.
         if isinstance(parallel_threads, bool) or not isinstance(parallel_threads, int):
             raise TypeError("parallel_threads must be a positive integer")
         if parallel_threads <= 0:
             raise ValueError("parallel_threads must be a positive integer")
-        if md_params_json is None or md_params_json.strip()="":
-            raise ValueError("md_params_json can't be None.")
+        print(f"Error value: {md_params_json}",flush=True)
+
+        if md_params_json is None or md_params_json.strip() == "a":
+            raise ValueError("md_params_json can't be None or a empty string.")
+
         self._subcommand_name = subcommand_name
         self._trajectory = trajectory
         self._psf = psf
@@ -75,7 +86,7 @@ class CLILopSfFcc:
         self._output_hdf5_file = output_hdf5_file
         self._parallel_threads = parallel_threads
         self._do_data_analysis = do_data_analysis
-        self.md_params_json = md_params_json
+        self._md_params_json = md_params_json
 
     @property
     def subcommand_name(self) -> Optional[str]:
@@ -135,7 +146,7 @@ class CLILopSfFcc:
     @property
     def md_params_json(self) -> Optional[str]:
         """ Return the json file name/path that contains the simulation parameters."""
-        return self.md_params_json
+        return self._md_params_json
 
 class LopSfFccSubparserBuilder:
     """ The concrete builder for LOP Structure FCC order parameter . 
@@ -208,7 +219,12 @@ class LopSfFccSubparserBuilder:
                      type=positive_integer,
                      required=False,
                      default=1,
-                             help="Number of parallel threads. If omitted, the default is 1.")
+                     help="Number of parallel threads. If omitted, the default is 1.")
+
+        parser1.add_argument("--md-params-json",
+                     type=non_blank_string,
+                     required=True,
+                     help="The name/file path to a JSON file that contains the simulation parameters.")
 
         # Add the callable object for calculating the local structure factor
         # fcc order parameter as an the callable attribute  'do_data_analysis'.

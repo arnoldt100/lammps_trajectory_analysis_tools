@@ -51,12 +51,11 @@ md_params_json = command_line_arguments.md_params_json
 Add tests to CLI contract
 
 1. Omitting the option produces raises an error.
-4. A file name of empty string or blanks must raise an error.
-2. If the JSON file doesn't exist an error is raised.
-2. If the JSON file isn't readable an error is raised.
-3. The JSON file adheres to `md_params.schema.json` or an error is raised.
+2. A file name of empty string or blanks must raise an error.
+3. A valid string value is accepted.
 
 ## Documentation Updates on Implementation of Plan
 
 
 ### In progress of adding `--md-params-json` to `CLILopSfFcc`.
+### Added tests 1,  2 and 3.
