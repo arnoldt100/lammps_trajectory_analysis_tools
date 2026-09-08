@@ -32,6 +32,8 @@ def required_arguments() -> list[str]:
         "0.01",
         "--cutoff",
         "4.5",
+        "--md-params-json",
+        "md.params.json",
     ]
 
 

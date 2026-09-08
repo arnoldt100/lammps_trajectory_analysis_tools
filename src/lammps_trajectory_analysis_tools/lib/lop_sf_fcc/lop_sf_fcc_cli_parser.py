@@ -36,6 +36,10 @@ def positive_integer(value: str) -> int:
         )
     return parsed_value
 
+def non_blank_string(value: str) -> str:
+    """Parse a string to no leading or trailing whitespaces. """
+
+
 class CLILopSfFcc:
     """ Stores the command line arguments for the lop_sf_fcc subcommand. """
 
@@ -52,11 +56,14 @@ class CLILopSfFcc:
         output_hdf5_file: Optional[str] = None,
         parallel_threads: int = 1,
         do_data_analysis: Optional[Callable[..., None]] = None,
+        md_params_json: Optional[str] = None,
     ) -> None:
         if isinstance(parallel_threads, bool) or not isinstance(parallel_threads, int):
             raise TypeError("parallel_threads must be a positive integer")
         if parallel_threads <= 0:
             raise ValueError("parallel_threads must be a positive integer")
+        if md_params_json is None or md_params_json.strip()="":
+            raise ValueError("md_params_json can't be None.")
         self._subcommand_name = subcommand_name
         self._trajectory = trajectory
         self._psf = psf
@@ -68,6 +75,7 @@ class CLILopSfFcc:
         self._output_hdf5_file = output_hdf5_file
         self._parallel_threads = parallel_threads
         self._do_data_analysis = do_data_analysis
+        self.md_params_json = md_params_json
 
     @property
     def subcommand_name(self) -> Optional[str]:
@@ -123,6 +131,11 @@ class CLILopSfFcc:
     def do_data_analysis(self) -> Optional[Callable[..., None]]:
         """Return the configured analysis callable."""
         return self._do_data_analysis
+
+    @property
+    def md_params_json(self) -> Optional[str]:
+        """ Return the json file name/path that contains the simulation parameters."""
+        return self.md_params_json
 
 class LopSfFccSubparserBuilder:
     """ The concrete builder for LOP Structure FCC order parameter . 
