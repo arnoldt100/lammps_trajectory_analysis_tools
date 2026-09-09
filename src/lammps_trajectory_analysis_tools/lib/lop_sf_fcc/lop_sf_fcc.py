@@ -319,25 +319,43 @@ class LopSfFcc:
 
 
     def __init__(self)->None:
-        self._accumulator = []
         self._normalized_wave_vectors = None
         self._parallel_threads = 1
+
+        # These attributes store the simulation parameters as a JSON
+        # file and the corresponding JSON schema file for validation.
+        self._md_params_json = None
+        self._md_params_jsonschema = None
 
         # This attribute stores the final FCC structure factor property for 
         # every time t.
         self._lop_sf_fcc = None
         return
 
+    def _set_attributes(self,command_line_arguments:CLILopSfFcc)->None:
+        """ Sets the attributes of this class. """
+
+        # Set the number of parallel threads.
+        self._parallel_threads = command_line_arguments.parallel_threads
+
+        # Set the wavevectors.
+        self._wavevectors = _set_attribute_wavevectors(command_line_arguments)
+
+        # Set the json atributes
+        self._md_params_json,self._md_params_jsonschema = (
+            _set_md_params_attributes(command_line_arguments)
+        )
+
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
-        self._parallel_threads = command_line_arguments.parallel_threads
+        self._set_attributes(command_line_arguments)
 
         # We get the edge length of the fcc lattice and define
         # reciprocal lattice vectors for this edge length.
-        edge_length = np.float64(command_line_arguments.edge_length)
+        # edge_length = np.float64(command_line_arguments.edge_length)
 
-        # Form the MDAnalysis universe:wavevectors
-        self._wavevectors = create_wavevectors(edge_length)
+        # Form the wavevectors
+        # self._wavevectors = create_wavevectors(edge_length)
 
         # Form the universse .
         my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
@@ -424,10 +442,27 @@ class LopSfFcc:
 # ----------
 # Private members
 # ----------
+def _set_attribute_wavevectors(
+        command_line_arguments:CLILopSfFcc)->LatticeVectors:
+    # We get the edge length of the fcc lattice and define
+    # reciprocal lattice vectors for this edge length.
+    edge_length = np.float64(command_line_arguments.edge_length)
 
-def _create_accumulator():
-    """ Returns a accumulator for storing"""
-    pass
+    # Form the wavevectors from the fcc edge length.
+    wavevectors = create_wavevectors(edge_length)
+    return wavevectors
+
+def _set_md_params_attributes(
+        command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
+    md_params_json = _load_json_file(command_line_arguments.md_params_json)
+    md_params_jsonschema = _load_jsonschema_file()
+    return md_params_json,md_params_jsonschema
+
+def _load_json_file(file_name:str)->None:
+    ...
+
+def _load_jsonschema_file()->None:
+    ...
 
 def _main()->None:
     pass
