@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 """Contains the fundamental types for typing """
 
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, Any
 import numpy as np
 
 import MDAnalysis as mda
@@ -87,3 +87,7 @@ TimeStep = TypeVar("TimeStep",
 
 # The type for the units of time step.
 type TimeUnits = str
+
+# The type for JSON abd JSON schema files.
+type JSON = dict[str,Any]
+

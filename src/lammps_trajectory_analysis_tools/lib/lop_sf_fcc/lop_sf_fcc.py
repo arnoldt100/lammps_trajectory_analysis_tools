@@ -8,6 +8,8 @@ The public members provided by this module are:
 """
 
 # Python standard library imports
+import os
+from pathlib import Path
 from typing import Any
 
 # Third party library imports
@@ -44,6 +46,8 @@ from lammps_trajectory_analysis_tools.schemas import (
     validate_json_file,
     read_jsonschema_file,
 )
+
+from lammps_trajectory_analysis_tools.lib.data_types import JSON
 
 # ----------
 # Public members
@@ -317,9 +321,12 @@ def create_atom_pair_key(atom1: np.int32,
 class LopSfFcc:
     """ A callable class that calculates a fcc local order parameter. """
 
+    md_params_schema_filepath = os.path.join(os.getenv("LTAT_TOP_LEVEL"),
+        "src","lammps_trajectory_analysis_tools","schemas",
+        "md_params.schema.json")
 
     def __init__(self)->None:
-        self._normalized_wave_vectors = None
+        self._wavevectors = None
         self._parallel_threads = 1
 
         # These attributes store the simulation parameters as a JSON
@@ -350,14 +357,7 @@ class LopSfFcc:
 
         self._set_attributes(command_line_arguments)
 
-        # We get the edge length of the fcc lattice and define
-        # reciprocal lattice vectors for this edge length.
-        # edge_length = np.float64(command_line_arguments.edge_length)
-
-        # Form the wavevectors
-        # self._wavevectors = create_wavevectors(edge_length)
-
-        # Form the universse .
+        # Form the universse.
         my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
         my_universe = load_universe(my_positional_args["topology_path"],
                                     my_positional_args["trajectory_source"],
@@ -455,14 +455,19 @@ def _set_attribute_wavevectors(
 def _set_md_params_attributes(
         command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
     md_params_json = _load_json_file(command_line_arguments.md_params_json)
-    md_params_jsonschema = _load_jsonschema_file()
+    md_params_jsonschema = _load_jsonschema_file(LopSfFcc.md_params_schema_filepath)
     return md_params_json,md_params_jsonschema
 
-def _load_json_file(file_name:str)->None:
-    ...
+def _load_json_file(file_name:str)->JSON:
+    file_path = Path(file_name)
+    json_file = read_json_file(file_path)
+    return json_file
 
-def _load_jsonschema_file()->None:
-    ...
+def _load_jsonschema_file(file_name:str)->JSON:
+    file_path = Path(file_name)
+    json_file = read_json_file(file_path)
+    return json_file
+
 
 def _main()->None:
     pass

@@ -1,0 +1,10 @@
+{
+  "time": {
+    "units": "fs",
+    "time_step": 2.0,
+    "total_steps": 500000
+  },
+  "ensemble": "NVT",
+  "temperature": 300,
+  "pressure": 1.0
+}

@@ -56,7 +56,7 @@ cutoff=10.4
 nm_threads=2
 
 # Define the json md parameter file.
-md_params_json="md_params.son"
+md_params_json="md_params.json"
 
 # Reform the original DCD file.
 cat argon_box_small_dcd_* >${dcd_file}
