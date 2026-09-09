@@ -3,11 +3,11 @@
   "$id": "md_params.schema.json",
   "title": "MD Simulation Parameters",
   "type": "object",
-  "required": ["time"],
+  "required": ["time","ensemble","pressure"],
   "properties": {
     "time": {
       "type": "object",
-      "required": ["units", "time_step"],
+      "required": ["units", "time_step","total_number_steps"],
       "properties": {
         "units": {
           "type": "string",
@@ -16,9 +16,21 @@
         "time_step": {
           "type": "number",
           "description": "MD time step value"
+        },
+        "total_number_steps": {
+          "type": "number",
+          "description": "Total number of steps."
         }
       },
       "additionalProperties": true
+    },
+    "ensemble": {
+      "type" : "string",
+      "description" : "The simuation ensemble"
+    },
+    "pressure": {
+      "type": "number",
+      "description": "The pressure of the ensemble"
     }
   },
   "additionalProperties": true
