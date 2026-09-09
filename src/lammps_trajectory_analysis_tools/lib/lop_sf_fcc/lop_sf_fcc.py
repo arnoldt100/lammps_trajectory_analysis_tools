@@ -334,9 +334,19 @@ class LopSfFcc:
         self._md_params_json = None
         self._md_params_jsonschema = None
 
-        # This attribute stores the final FCC structure factor property for 
-        # every time t.
-        self._lop_sf_fcc = None
+        # These attributes store universe related data.
+        self._universe = None
+        self._nm_frames = None
+        self._nm_atoms = None
+
+        # These attributes are related to the neigbor search radius.
+        self._neighbor_search_radius = None
+
+        # The attributes store the accumulators needed to calculate the FCC LOP.
+        self._accumulator_nm_neighbors = None
+        self._accumulator_lop_terms0 = None
+        self._accum_lop_terms_with_coeffs = None
+
         return
 
     def _set_attributes(self,command_line_arguments:CLILopSfFcc)->None:
@@ -349,27 +359,41 @@ class LopSfFcc:
         self._wavevectors = _set_attribute_wavevectors(command_line_arguments)
 
         # Set the json atributes
-        self._md_params_json,self._md_params_jsonschema = (
+        self._md_params_json, self._md_params_jsonschema = (
             _set_md_params_attributes(command_line_arguments)
         )
+
+        # Set the universe related attributes
+        self._universe, self._nm_frames, self._nm_atoms = (
+            _set_universe_attributes(command_line_arguments)
+        )
+
+        # Set the neighbor search radius.
+        self._neighbor_search_radius = np.float32(command_line_arguments.cutoff)
+
+        #Set the accumulators.
+        (self._accum_lop_terms_with_coeffs, 
+        self._accumulator_nm_neighbors, 
+        self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
+
 
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
         self._set_attributes(command_line_arguments)
 
-        # Form the universse.
-        my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
-        my_universe = load_universe(my_positional_args["topology_path"],
-                                    my_positional_args["trajectory_source"],
-                                    **my_keyword_args)
-
         # Loop over each trajectory and calculate the lop fcc fcc
-        nm_frames = my_universe.trajectory.n_frames
-        nm_atoms = my_universe.atoms.n_atoms
         nm_wavevectors,_ = self._wavevectors.shape
 
-        print(f"Number of trajectory frames = {nm_frames}")
+        # Another accumulator reused and reset every frame.
+        # accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
+        #     array_accumulator_builder_key,
+        #     dtype=np.float64,
+        #     capacity=np.int32(self._nm_atoms),
+        #     initial_value=np.float64(0.00),
+        #     name="atom_exp_terms_accumulator",
+        # )
 
+        print(f"Number of trajectory frames = {self._nm_frames}")
         report_iteration = 5
         max_trajectories_to_compute = 100
         trajectory_loop_timer = (
@@ -377,59 +401,30 @@ class LopSfFcc:
         )
         trajectory_loop_timer.start()
         counter = 0
-
-        # One accumulator reused and reset every frame.
-        accumulator_nm_neighbors = array_accumulator_builder_registry.build(
-            array_accumulator_builder_key,
-            dtype=np.int32,
-            capacity=np.int32(nm_atoms),
-            initial_value=np.int32(0),
-            name="atom_neighbor_accumulator",
-        )
-
-        # Another accumulator reused and reset every frame.
-        accumulator_lop_terms0 = array_accumulator_builder_registry.build(
-            array_accumulator_builder_key,
-            dtype=np.complex64,
-            capacity=np.int32(nm_atoms),
-            initial_value=np.complex64(0.00),
-            name="atom_exp_terms_accumulator",
-        )
-
-        # Another accumulator reused and reset every frame.
-        accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
-            array_accumulator_builder_key,
-            dtype=np.float64,
-            capacity=np.int32(nm_atoms),
-            initial_value=np.float64(0.00),
-            name="atom_exp_terms_accumulator",
-        )
-
-        neighbor_search_cutoff = np.float32(command_line_arguments.cutoff)
-
-        for ts in my_universe.trajectory:
+        for ts in self._universe.trajectory:
             frame_index = ts.frame
             frame_time = ts.time
 
-            accumulator_nm_neighbors.reset()
-            accumulator_lop_terms0.reset()
-            accum_lop_terms_with_coeffs.reset()
+            self._accumulator_nm_neighbors.reset()
+            self._accumulator_lop_terms0.reset()
+            self._accum_lop_terms_with_coeffs.reset()
 
             (accum_lop_terms0,accum_nm_neighbors) = (
-                calculate_sf_fcc_atom_order_parameter_no_coeffs(my_universe,
+                calculate_sf_fcc_atom_order_parameter_no_coeffs(
+                    self._universe,
                     self._wavevectors,
-                    neighbor_search_cutoff,
-                    accumulator_nm_neighbors,
-                    accumulator_lop_terms0)
+                    self._neighbor_search_radius,
+                    self._accumulator_nm_neighbors,
+                    self._accumulator_lop_terms0)
             )
 
             accum_lop_terms1 = (
-                calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms,
+                calculate_sf_fcc_atom_order_parameter_with_coeffs(
+                    self._nm_atoms,
                     nm_wavevectors,
                     accum_lop_terms0,
                     accum_nm_neighbors,
-                    accum_lop_terms_with_coeffs))
-
+                    self._accum_lop_terms_with_coeffs))
 
             counter += 1
             trajectory_loop_timer.update(counter)
@@ -451,6 +446,47 @@ def _set_attribute_wavevectors(
     # Form the wavevectors from the fcc edge length.
     wavevectors = create_wavevectors(edge_length)
     return wavevectors
+
+def _set_universe_attributes(command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
+    my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
+    my_universe = load_universe(my_positional_args["topology_path"],
+                                my_positional_args["trajectory_source"],
+                                **my_keyword_args)
+
+    # Loop over each trajectory and calculate the lop fcc fcc
+    nm_frames = my_universe.trajectory.n_frames
+    nm_atoms = my_universe.atoms.n_atoms
+    return my_universe, nm_frames, nm_atoms 
+
+def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
+    # One accumulator reused and reset every frame.
+    accumulator_nm_neighbors = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.int32,
+        capacity=np.int32(nm_atoms),
+        initial_value=np.int32(0),
+        name="atom_neighbor_accumulator",
+    )
+    
+    # Another accumulator reused and reset every frame.
+    accumulator_lop_terms0 = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.complex64,
+        capacity=np.int32(nm_atoms),
+        initial_value=np.complex64(0.00),
+        name="atom_exp_terms_accumulator",
+    )
+    
+    # Another accumulator reused and reset every frame.
+    accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
+        array_accumulator_builder_key,
+        dtype=np.float64,
+        capacity=np.int32(nm_atoms),
+        initial_value=np.float64(0.00),
+        name="atom_exp_terms_accumulator",
+    )
+
+    return accum_lop_terms_with_coeffs, accumulator_nm_neighbors, accum_lop_terms_with_coeffs 
 
 def _set_md_params_attributes(
         command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
