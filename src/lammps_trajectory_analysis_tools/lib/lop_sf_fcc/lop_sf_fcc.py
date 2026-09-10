@@ -238,7 +238,6 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
         adjusted for coefficients.
 
     """
-    accum_lop_terms_with_coeffs = np.zeros(nm_atoms,dtype=np.float64)
     for atom_index in range(nm_atoms):
         x = np.complex64(0.00)
         if accum_lop_nm_neighbors[atom_index] > 0:
