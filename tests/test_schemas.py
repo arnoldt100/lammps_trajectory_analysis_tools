@@ -1,6 +1,7 @@
 import json
 import pytest
 from pathlib import Path
+
 # Replace 'your_module' with the actual folder name of your module
 from lammps_trajectory_analysis_tools.schemas import (
     read_json_file,
@@ -50,7 +51,7 @@ def sample_schema_file(tmp_path: Path) -> Path:
     """Fixture to create a temporary schema file."""
     schema_content = """
     {
-        "$schema": "https://json-schema.org",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "properties": {
             "username": {"type": "string"},

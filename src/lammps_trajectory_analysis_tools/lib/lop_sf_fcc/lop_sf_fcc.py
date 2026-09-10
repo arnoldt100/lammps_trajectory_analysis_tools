@@ -273,7 +273,7 @@ def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
         per atom. The caller must reset it before each call.
 
     Returns:
-        A tuple of a read-only view of the accumulated exp(q*r) terms and a
+        A tuple of a read-only view of the accumulated exp(iq*r) terms and a
         read-only view of the number of neighbors of each atom.
     """
 
@@ -467,7 +467,7 @@ def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
         initial_value=np.int32(0),
         name="atom_neighbor_accumulator",
     )
-    
+
     # Another accumulator reused and reset every frame.
     accumulator_lop_terms0 = array_accumulator_builder_registry.build(
         array_accumulator_builder_key,
@@ -476,7 +476,7 @@ def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
         initial_value=np.complex64(0.00),
         name="atom_exp_terms_accumulator",
     )
-    
+
     # Another accumulator reused and reset every frame.
     accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
         array_accumulator_builder_key,
@@ -486,7 +486,7 @@ def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
         name="atom_exp_terms_accumulator",
     )
 
-    return accum_lop_terms_with_coeffs, accumulator_nm_neighbors, accum_lop_terms_with_coeffs 
+    return accum_lop_terms_with_coeffs, accumulator_nm_neighbors, accumulator_lop_terms0
 
 def _set_md_params_attributes(
         command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
