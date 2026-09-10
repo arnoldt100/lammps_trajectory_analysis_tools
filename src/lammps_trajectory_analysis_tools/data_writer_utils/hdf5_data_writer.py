@@ -18,6 +18,7 @@ from lammps_trajectory_analysis_tools.data_writer_utils.exceptions import (
     DataWriterTargetError,
 )
 
+
 # ----------
 # Public members
 # ----------

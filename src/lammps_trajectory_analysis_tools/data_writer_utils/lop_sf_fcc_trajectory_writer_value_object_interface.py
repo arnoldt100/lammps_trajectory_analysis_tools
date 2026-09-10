@@ -8,18 +8,17 @@ This module provides the following public members:
 
 from __future__ import annotations
 
+import collections.abc
 from abc import abstractmethod
-from collections.abc import Mapping
 from typing import Any, Self
 
-from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.value_object_interface import (
-    ValueObjectInterface,
-)
+import lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.value_object_interface
+
 
 # ----------
 # Public members
 # ----------
-class LopSfFccTrajectoryWriterValueObjectInterface(ValueObjectInterface):
+class LopSfFccTrajectoryWriterValueObjectInterface(lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.value_object_interface.ValueObjectInterface):
     """Value-semantics contract for an object owning a trajectory data writer.
 
     This type defines the required value semantics plus the trajectory writing
@@ -31,13 +30,13 @@ class LopSfFccTrajectoryWriterValueObjectInterface(ValueObjectInterface):
 
     @property
     @abstractmethod
-    def metadata(self) -> Mapping[str, Any]:
+    def metadata(self) -> collections.abc.Mapping[str, Any]:
         """Return a defensive copy of the run metadata."""
         ...
 
     @property
     @abstractmethod
-    def writer_configuration(self) -> Mapping[str, Any]:
+    def writer_configuration(self) -> collections.abc.Mapping[str, Any]:
         """Return the owned writer's configuration."""
         ...
 

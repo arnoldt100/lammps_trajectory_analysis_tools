@@ -217,9 +217,9 @@ def calculate_lop_fcc_exp_terms(atom_pairs_indices,
 
 def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
         nm_wavevectors: np.int32,
-        accum_lop_terms_no_coeffs: np.ndarray[tuple[int],np.dtype[np.complex64]],
-        accum_lop_nm_neighbors: np.ndarray[tuple[int],np.dtype[np.int32]],
-        temp_accum_lop_terms_with_coeffs: ArrayAccumulator)->ArrayAccumulator:
+        lop_terms_no_coeffs: np.ndarray[tuple[int],np.dtype[np.complex64]],
+        lop_nm_neighbors: np.ndarray[tuple[int],np.dtype[np.int32]],
+        accum_lop_terms_with_coeffs: ArrayAccumulator)->ArrayAccumulator:
     """ Calculates the FCC local order parameter exp(iq*r) for a set of atom
     coordinates.
 
@@ -229,9 +229,9 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
     Args:
         nm_atoms: The number of atoms in the molecular system.
         nm_wavevectors: The number of wave vectors.
-        accum_lop_terms_no_coeffs: The struture factor terms for each atom.
-        accum_lop_nm_neighbors: The number of neighbors atoms in calculating the structure factor.
-        temp_accum_lop_terms_with_coeffs: The values of lop sf FCC for each atom.
+        lop_terms_no_coeffs: The struture factor terms for each atom.
+        lop_nm_neighbors: The number of neighbors atoms in calculating the structure factor.
+        accum_lop_terms_with_coeffs: The values of lop sf FCC for each atom.
 
     Returns:
         accum_lop_terms_with_coeffs: The struture factor terms for each atom
@@ -240,11 +240,11 @@ def calculate_sf_fcc_atom_order_parameter_with_coeffs(nm_atoms: np.int32,
     """
     for atom_index in range(nm_atoms):
         x = np.complex64(0.00)
-        if accum_lop_nm_neighbors[atom_index] > 0:
-            x = accum_lop_terms_no_coeffs[atom_index]/(nm_wavevectors*accum_lop_nm_neighbors[atom_index])
+        if lop_nm_neighbors[atom_index] > 0:
+            x = lop_terms_no_coeffs[atom_index]/(nm_wavevectors*lop_nm_neighbors[atom_index])
             y = np.abs(x)**2
-            temp_accum_lop_terms_with_coeffs.accumulate(atom_index,y)
-    return temp_accum_lop_terms_with_coeffs
+            accum_lop_terms_with_coeffs.accumulate(atom_index,y)
+    return accum_lop_terms_with_coeffs
 
 def calculate_sf_fcc_atom_order_parameter_no_coeffs(universe : MDA_Universe,
                                      wave_vectors: LatticeVectors,
@@ -346,6 +346,9 @@ class LopSfFcc:
         self._accumulator_lop_terms0 = None
         self._accum_lop_terms_with_coeffs = None
 
+        # These attriibutes are for writing results to hdf files.
+        self._data_writer = None
+
         return
 
     def _set_attributes(self,command_line_arguments:CLILopSfFcc)->None:
@@ -370,10 +373,14 @@ class LopSfFcc:
         # Set the neighbor search radius.
         self._neighbor_search_radius = np.float32(command_line_arguments.cutoff)
 
-        #Set the accumulators.
+        # Set the accumulators.
         (self._accum_lop_terms_with_coeffs, 
         self._accumulator_nm_neighbors, 
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
+
+        # Set the data writres attributes.
+        ( self._data_writer) = _set_data_writer_attributes(command_line_arguments)
+
 
 
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
@@ -408,7 +415,7 @@ class LopSfFcc:
             self._accumulator_lop_terms0.reset()
             self._accum_lop_terms_with_coeffs.reset()
 
-            (accum_lop_terms0,accum_nm_neighbors) = (
+            (lop_terms0,nm_neighbors) = (
                 calculate_sf_fcc_atom_order_parameter_no_coeffs(
                     self._universe,
                     self._wavevectors,
@@ -421,8 +428,8 @@ class LopSfFcc:
                 calculate_sf_fcc_atom_order_parameter_with_coeffs(
                     self._nm_atoms,
                     nm_wavevectors,
-                    accum_lop_terms0,
-                    accum_nm_neighbors,
+                    lop_terms0,
+                    nm_neighbors,
                     self._accum_lop_terms_with_coeffs))
 
             counter += 1
@@ -436,6 +443,12 @@ class LopSfFcc:
 # ----------
 # Private members
 # ----------
+
+def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc)->None:
+    hdf_file_name = command_line_arguments.output_hdf5_file
+
+    return None
+
 def _set_attribute_wavevectors(
         command_line_arguments:CLILopSfFcc)->LatticeVectors:
     # We get the edge length of the fcc lattice and define
