@@ -1,0 +1,24 @@
+{
+  "simulation_metadata": {
+    "software_description": {
+      "name": "LAMMPS",
+      "version": "stable_some_date"""
+    },
+    "build_description": {
+      "machine_compiled_on": "Frontier",
+      "machine_run_on": "Frontier",
+      "description": [
+        "GPU enabled build with Kokkos",
+        "ROCM 6.2.4"
+      ],
+      "compiler_flags": [
+        "flag1",
+        "flag2"
+      ],
+      "lmod_modules": [
+        "lmod1",
+        "lmod2"
+      ]
+    }
+  }
+}
