@@ -44,7 +44,6 @@ from lammps_trajectory_analysis_tools.timer_utils import (
 from lammps_trajectory_analysis_tools.schemas import (
     read_json_file,
     validate_json_file,
-    read_jsonschema_file,
 )
 
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
@@ -331,7 +330,6 @@ class LopSfFcc:
         # These attributes store the simulation parameters as a JSON
         # file and the corresponding JSON schema file for validation.
         self._md_params_json = None
-        self._md_params_jsonschema = None
 
         # These attributes store universe related data.
         self._universe = None
@@ -361,7 +359,7 @@ class LopSfFcc:
         self._wavevectors = _set_attribute_wavevectors(command_line_arguments)
 
         # Set the json atributes
-        self._md_params_json, self._md_params_jsonschema = (
+        self._md_params_json = (
             _set_md_params_attributes(command_line_arguments)
         )
 
@@ -379,7 +377,8 @@ class LopSfFcc:
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
 
         # Set the data writres attributes.
-        ( self._data_writer) = _set_data_writer_attributes(command_line_arguments)
+        ( self._data_writer) = _set_data_writer_attributes(command_line_arguments,
+                                                           self._md_params_json)
 
 
 
@@ -444,9 +443,11 @@ class LopSfFcc:
 # Private members
 # ----------
 
-def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc)->None:
+def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
+                                md_params_json)->None:
     hdf_file_name = command_line_arguments.output_hdf5_file
-
+    
+    
     return None
 
 def _set_attribute_wavevectors(
@@ -502,19 +503,11 @@ def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
 
 def _set_md_params_attributes(
         command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
-    md_params_json = _load_json_file(command_line_arguments.md_params_json)
-    md_params_jsonschema = _load_jsonschema_file(LopSfFcc.md_params_schema_filepath)
-    return md_params_json,md_params_jsonschema
+    validate_json_file(command_line_arguments.md_params_json,
+                       LopSfFcc.md_params_schema_filepath)
+    md_params_json = read_json_file(command_line_arguments.md_params_json)
+    return md_params_json
 
-def _load_json_file(file_name:str)->JSON:
-    file_path = Path(file_name)
-    json_file = read_json_file(file_path)
-    return json_file
-
-def _load_jsonschema_file(file_name:str)->JSON:
-    file_path = Path(file_name)
-    json_file = read_json_file(file_path)
-    return json_file
 
 
 def _main()->None:

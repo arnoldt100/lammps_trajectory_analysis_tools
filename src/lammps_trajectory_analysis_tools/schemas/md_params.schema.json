@@ -26,7 +26,7 @@
     },
     "ensemble": {
       "type" : "string",
-      "description" : "The simuation ensemble"
+      "description" : "The simulation ensemble"
     },
     "pressure": {
       "type": "number",
