@@ -344,10 +344,8 @@ class LopSfFcc:
         self._accumulator_lop_terms0 = None
         self._accum_lop_terms_with_coeffs = None
 
-        # These attriibutes are for writing results to hdf files.
+        # These attributes are for writing results to hdf files.
         self._data_writer = None
-
-        return
 
     def _set_attributes(self,command_line_arguments:CLILopSfFcc)->None:
         """ Sets the attributes of this class. """
@@ -376,7 +374,7 @@ class LopSfFcc:
         self._accumulator_nm_neighbors, 
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
 
-        # Set the data writres attributes.
+        # Set the data writer attributes.
         ( self._data_writer) = _set_data_writer_attributes(command_line_arguments,
                                                            self._md_params_json)
 
@@ -446,7 +444,7 @@ class LopSfFcc:
 def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
                                 md_params_json)->None:
     hdf_file_name = command_line_arguments.output_hdf5_file
-    
+    md_params_json = command_line_arguments.md_params_json
     
     return None
 

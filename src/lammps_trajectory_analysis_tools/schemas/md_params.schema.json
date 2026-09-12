@@ -1,37 +1,47 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "md_params.schema.json",
-  "title": "MD Simulation Parameters",
+  "title": "MD Simulation Parameters Schema",
   "type": "object",
-  "required": ["time","ensemble","pressure"],
   "properties": {
-    "time": {
-      "type": "object",
-      "required": ["units", "time_step","total_number_steps"],
-      "properties": {
-        "units": {
-          "type": "string",
-          "description": "Time units used in the MD simulation, e.g. fs, ps, ns"
-        },
-        "time_step": {
-          "type": "number",
-          "description": "MD time step value"
-        },
-        "total_number_steps": {
-          "type": "number",
-          "description": "Total number of steps."
-        }
-      },
-      "additionalProperties": true
-    },
-    "ensemble": {
-      "type" : "string",
-      "description" : "The simulation ensemble"
-    },
-    "pressure": {
-      "type": "number",
-      "description": "The pressure of the ensemble"
-    }
+      "simulation_parameters": {
+          "type": "object",
+          "description": "Simulation parameters for the MD simulation",
+          "properties": {
+              "time": {
+                  "type": "object",
+                  "description": "Time-related parameters for the simulation",
+                  "required": ["units", "time_step", "total_steps"],
+                  "properties": {
+                      "units": {
+                          "type": "string",
+                          "description": "Units of time for the simulation"
+                      },
+                      "time_step": {
+                          "type": "number",
+                          "description": "Time step for the simulation"
+                      },
+                      "total_steps": {
+                          "type": "number",
+                          "description": "Total number of steps for the simulation"
+                      }
+                  }
+              },
+              "ensemble": {
+                  "type": "string",
+                  "description": "Ensemble type for the simulation"
+              },
+              "temperature": {
+                  "type": "number",
+                  "description": "Temperature for the simulation"
+              },
+              "pressure": {
+                  "type": "number",
+                  "description": "Pressure for the simulation"
+              }
+          },
+          "required": ["time", "ensemble", "temperature", "pressure"] 
+      }
   },
-  "additionalProperties": true
+  "required": ["simulation_parameters"]
 }
