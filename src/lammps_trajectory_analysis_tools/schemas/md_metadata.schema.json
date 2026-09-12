@@ -2,66 +2,57 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "md_metadata.schema.json",
   "title": "Generated MD Metadata",
+  "description" : "A MD simulation metadata - software build parameters, programming environment, etc.",
   "type": "object",
-  "required": ["simulation_metadata"],
   "properties": {
-    "simulation_metadata": {
-      "type": "object",
-      "required": ["time", "build", "simulation_parameters", "generated"],
-      "properties": {
-        "time": {
-          "type": "object",
-          "required": ["units", "time_step"],
+      "simulation_metadata" : {
+          "description": "The simulation metadata",
+          "type" : "object",
           "properties": {
-            "units": {
-              "type": "string"
-            },
-            "time_step": {
-              "type": "number"
-            }
-          },
-          "additionalProperties": false
-        },
-        "build": {
-          "type": "object",
-          "required": [
-            "compiler_flags",
-            "compiled_on_machine",
-            "lmod_modules"
-          ],
-          "properties": {
-            "compiler_flags": {
-              "$ref": "compiler_flags.schema.json#/properties/compiler_flags"
-            },
-            "compiled_on_machine": {
-              "type": "string"
-            },
-            "lmod_modules": {
-              "type": "array",
-              "items": {
-                "type": "string"
+              "software_description": {
+                  "type" : "object",
+                  "description": "The software name and version",
+                  "properties": {
+                      "extras": {
+                          "description" : "Extra software information",
+                          "type" : "array",
+                          "items" : {"type": "string"}
+                      },
+                      "name": {
+                          "description": "The software name",
+                          "type": "string"
+                      },
+                      "version": {
+                          "description": "The software version",
+                          "type": "string"
+                      }
+                  },
+                  "required" : ["name","version"]
+              },
+              "build_description": {
+                  "description": "The software build programming environment",
+                  "type" : "object",
+                  "properties": {
+                      "extras": {
+                          "description" : "Extra build information",
+                          "type": "array",
+                          "items": {"type": "string"}
+                      },
+                      "compiling machine": {
+                          "description" : "The computer the program was compiled on.",
+                          "type": "string"
+                      },
+                      "programming environment": {
+                          "description" : "The programming environment the software was built with",
+                          "type": "array",
+                          "items": {"type": "string"}
+                      }
+                  },
+                  "required": ["compiling machine","programming environment"]
               }
-            }
           },
-          "additionalProperties": false
-        },
-        "simulation_parameters": {
-          "$ref": "md_params.schema.json"
-        },
-        "generated": {
-          "type": "object",
-          "required": ["timestamp"],
-          "properties": {
-            "timestamp": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    }
+          "required" : ["software_description","build_description"]
+      }
   },
-  "additionalProperties": false
+  "required": ["simulation_metadata"]
 }
