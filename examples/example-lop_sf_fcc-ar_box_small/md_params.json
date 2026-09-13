@@ -1,16 +1,17 @@
 {
   "simulation_parameters": {
-    "simulation metadata": "./md_params_metadata.json",
+    "simulation_metadata": "./md_params_metadata.json",
     "time": {
       "units": "fs",
       "time_step": 2.0,
       "total_steps": 500000
     },
-    "date": "Fri Sep 11 01:01:42 PM EDT 2026",
+    "date" : "Fri Sep 11 01:01:42 PM EDT 2026",
     "ensemble": "NVT",
     "temperature": 300,
     "pressure": 1.0,
-    "notes": [
-      "LAMMPS version: stable","Standard NPT simulation"]
+    "extras": [
+        "LAMMPS version: stable",
+        "Standard NPT simulation"]
     }
   }

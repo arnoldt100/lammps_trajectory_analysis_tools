@@ -3,29 +3,18 @@
     "software_description": {
       "extras" : ["No extra information"],
       "name": "LAMMPS",
-      "version": "stable_some_date",
+      "version": "stable_some_date"
     },
     "build_description": {
-      "machine_compiled_on": "Frontier",
-      "machine_run_on": "Frontier",
       "extras": [
         "GPU enabled build with Kokkos HIP backend",
         "ROCM 6.2.4",
         "Parallel"],
-      "compiler_flags": [
-        "flag1",
-        "flag2",
-        "extras" : ["No extra information"]
-      ],
-      "lmod_modules": [
-        "extras": [
-          "AMD Programming Programming Enviroment"],
+      "compiling_machine": "Frontier",
+      "programming_environment": [
         "lmod1",
         "lmod2"
       ]
     }
-      "extras" : ["Built on Frontier with the AMD programming environment"],
-      "compiling machine" : "Frontier",
-      "programming environment" : ["lmod1", "lmod2"]
   }
 }

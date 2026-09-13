@@ -38,17 +38,17 @@
                           "type": "array",
                           "items": {"type": "string"}
                       },
-                      "compiling machine": {
+                      "compiling_machine": {
                           "description" : "The computer the program was compiled on.",
                           "type": "string"
                       },
-                      "programming environment": {
+                      "programming_environment": {
                           "description" : "The programming environment the software was built with",
                           "type": "array",
                           "items": {"type": "string"}
                       }
                   },
-                  "required": ["compiling machine","programming environment"]
+                  "required": ["compiling_machine","programming_environment"]
               }
           },
           "required" : ["software_description","build_description"]
