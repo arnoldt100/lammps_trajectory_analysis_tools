@@ -89,5 +89,6 @@ TimeStep = TypeVar("TimeStep",
 type TimeUnits = str
 
 # The type for JSON abd JSON schema files.
-type JSON = dict[str,Any]
+type JSON = dict[str, "JSON"] | list["JSON"] | str | int | float | bool | None
+
 

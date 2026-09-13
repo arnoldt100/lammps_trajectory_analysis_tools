@@ -323,6 +323,10 @@ class LopSfFcc:
         "src","lammps_trajectory_analysis_tools","schemas",
         "md_params.schema.json")
 
+    md_params_metadata_schema_filepath = os.path.join(os.getenv("LTAT_TOP_LEVEL"),
+        "src","lammps_trajectory_analysis_tools","schemas",
+        "md_metadata.schema.json")
+    
     def __init__(self)->None:
         self._wavevectors = None
         self._parallel_threads = 1
@@ -356,9 +360,15 @@ class LopSfFcc:
         # Set the wavevectors.
         self._wavevectors = _set_attribute_wavevectors(command_line_arguments)
 
-        # Set the json atributes
+        # Set the JSON MD simulation atribute.
         self._md_params_json = (
             _set_md_params_attributes(command_line_arguments)
+        )
+
+        # Set the JSON MD simulation metadata atribute.
+        self._md_metadata_json = (
+            _set_md_params_metada_attributes(
+                self._md_params_json["simulation_parameters"]["simulation_metadata"])
         )
 
         # Set the universe related attributes
@@ -375,8 +385,10 @@ class LopSfFcc:
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
 
         # Set the data writer attributes.
-        ( self._data_writer) = _set_data_writer_attributes(command_line_arguments,
-                                                           self._md_params_json)
+        ( self._data_writer) = _set_data_writer_attributes(
+                                command_line_arguments,
+                                self._md_params_json,
+                                self._md_metadata_json)
 
 
 
@@ -442,10 +454,9 @@ class LopSfFcc:
 # ----------
 
 def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
-                                md_params_json)->None:
+                                md_params_json,
+                                md_metadata_json)->None:
     hdf_file_name = command_line_arguments.output_hdf5_file
-    md_params_json = command_line_arguments.md_params_json
-    
     return None
 
 def _set_attribute_wavevectors(
@@ -500,13 +511,22 @@ def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
     return accum_lop_terms_with_coeffs, accumulator_nm_neighbors, accumulator_lop_terms0
 
 def _set_md_params_attributes(
-        command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
+        command_line_arguments:CLILopSfFcc)->JSON:
+
+    # We read the JSON file for the simulation parameters.
     validate_json_file(command_line_arguments.md_params_json,
                        LopSfFcc.md_params_schema_filepath)
     md_params_json = read_json_file(command_line_arguments.md_params_json)
     return md_params_json
 
+def _set_md_params_metada_attributes(
+        md_simulation_metadata_filepath:str)->JSON:
 
+    # We read the JSON file for the simulation parameters.
+    validate_json_file(md_simulation_metadata_filepath,
+                       LopSfFcc.md_params_metadata_schema_filepath)
+    md_metadata_json = read_json_file(md_simulation_metadata_filepath)
+    return md_metadata_json
 
 def _main()->None:
     pass
