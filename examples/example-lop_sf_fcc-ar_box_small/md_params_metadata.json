@@ -21,12 +21,11 @@
         "extras": [
           "AMD Programming Programming Enviroment"],
         "lmod1",
-        "lmod2",
+        "lmod2"
       ]
     }
       "extras" : ["Built on Frontier with the AMD programming environment"],
       "compiling machine" : "Frontier",
-      "programming environment" : ["lmod1", "lmod2"],
-      
+      "programming environment" : ["lmod1", "lmod2"]
   }
 }
