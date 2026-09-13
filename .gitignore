@@ -69,3 +69,5 @@ Thumbs.db
 config_local.yaml
 *.hdf5
 *.h5
+/.project
+/.pydevproject
