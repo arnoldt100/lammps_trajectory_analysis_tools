@@ -387,6 +387,7 @@ class LopSfFcc:
         # Set the data writer attributes.
         ( self._data_writer) = _set_data_writer_attributes(
                                 command_line_arguments,
+                                self._universe,
                                 self._md_params_json,
                                 self._md_metadata_json)
 
@@ -454,6 +455,7 @@ class LopSfFcc:
 # ----------
 
 def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
+                                universe,
                                 md_params_json,
                                 md_metadata_json)->None:
     hdf_file_name = command_line_arguments.output_hdf5_file
