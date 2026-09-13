@@ -47,6 +47,7 @@ from lammps_trajectory_analysis_tools.schemas import (
 )
 
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
+from tests.data_writer_utils.test_lop_sf_fcc_trajectory_writer_integration import layout_arguments
 
 # ----------
 # Public members
@@ -459,6 +460,9 @@ def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
                                 md_params_json,
                                 md_metadata_json)->None:
     hdf_file_name = command_line_arguments.output_hdf5_file
+    
+    layout_arguments = _build_layout_arguments(universe)
+    metadata_arguments = _build_metadata_arguments()
     return None
 
 def _set_attribute_wavevectors(
@@ -530,6 +534,16 @@ def _set_md_params_metada_attributes(
     md_metadata_json = read_json_file(md_simulation_metadata_filepath)
     return md_metadata_json
 
+def _build_layout_arguments(universe)->dict[str,Any]:
+    nm_atoms = universe.atoms.n_atoms
+    length_units_label = universe.trajectory.units["length"]
+    layout_arguments = {"number_of_atoms" : nm_atoms,
+                        "length_units_label" : length_units_label}
+    return layout_arguments
+
+def _build_metadata_arguments():
+    ...
+    
 def _main()->None:
     pass
 
