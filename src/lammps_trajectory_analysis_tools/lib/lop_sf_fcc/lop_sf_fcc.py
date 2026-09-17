@@ -47,7 +47,6 @@ from lammps_trajectory_analysis_tools.schemas import (
 )
 
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
-from tests.data_writer_utils.test_lop_sf_fcc_trajectory_writer_integration import layout_arguments
 
 # ----------
 # Public members
