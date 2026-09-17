@@ -461,8 +461,7 @@ def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
     hdf_file_name = command_line_arguments.output_hdf5_file
 
     layout_args = _build_layout_arguments(universe)
-    metadata_args = _build_metadata_arguments(md_params_json,
-                                              md_metadata_json)
+    metadata_args = _build_metadata_arguments(md_params_json)
     return None
 
 def _set_attribute_wavevectors(
@@ -541,9 +540,10 @@ def _build_layout_arguments(universe)->dict[str,Any]:
                         "length_units_label" : length_units_label}
     return layout_arguments
 
-def _build_metadata_arguments(md_params_json: JSON,
-                              md_metadata_json: JSON):
-    ...
+def _build_metadata_arguments(md_params_json:JSON):
+    metadata_args = {}
+    metadata_args["time_units"] = md_params_json["simulation_parameters"]["time"]["units"]
+    return metadata_args
 
 def _main()->None:
     pass
