@@ -13,7 +13,13 @@
       "compiling_machine": "Frontier",
       "programming_environment": [
         "lmod1",
-        "lmod2"
+        "lmod2",
+        "lmod3"
+      ],
+      "compile_flags": [
+        "-compile_flag_1",
+        "-compile_flag_2",
+        "-compile_flag_3"
       ]
     }
   }

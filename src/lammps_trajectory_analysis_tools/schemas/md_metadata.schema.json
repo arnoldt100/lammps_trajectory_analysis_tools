@@ -46,9 +46,14 @@
                           "description" : "The programming environment the software was built with",
                           "type": "array",
                           "items": {"type": "string"}
-                      }
+                      },
+					  "compile_flags": {
+					      "description": "The compile flags used to build the software",
+						  "type": "array",
+						  "items": {"type": "string"}
+					  }
                   },
-                  "required": ["compiling_machine","programming_environment"]
+                  "required": ["compiling_machine","programming_environment","compile_flags"]
               }
           },
           "required" : ["software_description","build_description"]
