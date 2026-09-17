@@ -48,6 +48,11 @@ from lammps_trajectory_analysis_tools.schemas import (
 
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
 
+from lammps_trajectory_analysis_tools.data_writer_utils import (
+    data_writer_factory,
+    HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey
+)
+
 # ----------
 # Public members
 # ----------
@@ -385,13 +390,11 @@ class LopSfFcc:
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
 
         # Set the data writer attributes.
-        ( self._data_writer) = _set_data_writer_attributes(
+        self._data_writer = _set_data_writer_attributes(
                                 command_line_arguments,
                                 self._universe,
                                 self._md_params_json,
                                 self._md_metadata_json)
-
-
 
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
@@ -461,8 +464,17 @@ def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
     hdf_file_name = command_line_arguments.output_hdf5_file
 
     layout_args = _build_layout_arguments(universe)
-    metadata_args = _build_metadata_arguments(md_params_json)
-    return None
+    metadata_args = _build_metadata_arguments(md_params_json,md_metadata_json)
+
+    # Build the composite value object; no writer is opened yet.
+    value_object = data_writer_factory.build(
+        HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
+        file_path=Path(hdf_file_name),
+        metadata=metadata_args,
+        layout=layout_args,
+    )
+
+    return value_object
 
 def _set_attribute_wavevectors(
         command_line_arguments:CLILopSfFcc)->LatticeVectors:
@@ -540,9 +552,26 @@ def _build_layout_arguments(universe)->dict[str,Any]:
                         "length_units_label" : length_units_label}
     return layout_arguments
 
-def _build_metadata_arguments(md_params_json:JSON):
+def _build_metadata_arguments(md_params_json:JSON,
+                              md_metadata_json:JSON ):
     metadata_args = {}
-    metadata_args["time_units"] = md_params_json["simulation_parameters"]["time"]["units"]
+    metadata_args["time_units_label"] = (
+        md_params_json["simulation_parameters"]["time"]["units"]
+    )
+
+    metadata_args["time_units"] = (
+        md_params_json["simulation_parameters"]["time"]["time_step"]
+    )
+
+    metadata_args["number_of_trajectories"] = (
+        md_params_json["simulation_parameters"]["time"]["total_steps"]
+    )
+
+    metadata_args["generation_date"] = (
+        md_params_json["simulation_parameters"]["date"]
+    )
+
+
     return metadata_args
 
 def _main()->None:
