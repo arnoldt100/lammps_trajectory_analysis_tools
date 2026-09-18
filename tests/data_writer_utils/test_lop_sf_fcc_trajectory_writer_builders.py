@@ -37,7 +37,7 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_
 )
 
 METADATA_ARGUMENTS = {
-    "time_units": 0.002,
+    "time_step": 0.002,
     "time_units_label": "ps",
     "number_of_trajectories": 3,
     "generation_date": datetime(2026, 9, 3, 12, 0, tzinfo=timezone.utc),
@@ -116,7 +116,7 @@ def test_writer_builder_produces_the_concrete_writer(
 def test_invalid_arguments_fail_the_same_way_when_built(
     registry: BuilderRegistry,
 ) -> None:
-    invalid = {**METADATA_ARGUMENTS, "time_units": 0.0}
+    invalid = {**METADATA_ARGUMENTS, "time_step": 0.0}
 
     with pytest.raises(DataWriterConfigurationError):
         registry.build(LopSfFccRunMetadataBuilderKey, **invalid).validate()

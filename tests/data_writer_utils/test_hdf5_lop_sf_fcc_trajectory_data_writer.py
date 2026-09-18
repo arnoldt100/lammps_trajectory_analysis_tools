@@ -48,7 +48,7 @@ def test_constructor_rejects_invalid_configuration(
 ) -> None:
     with pytest.raises(DataWriterConfigurationError):
         HDF5LopSfFccTrajectoryDataWriter(
-            file_path, metadata.replace({"time_units": 0.0}), layout
+            file_path, metadata.replace({"time_step": 0.0}), layout
         )
     with pytest.raises(DataWriterConfigurationError):
         HDF5LopSfFccTrajectoryDataWriter(
@@ -66,7 +66,7 @@ def test_create_writes_root_metadata_and_every_trajectory_group(
 
     with h5py.File(file_path, "r") as output:
         assert output.attrs["generating_machine"] == metadata.generating_machine
-        assert output.attrs["time_units"] == pytest.approx(metadata.time_units)
+        assert output.attrs["time_step"] == pytest.approx(metadata.time_step)
         names = sorted(output["trajectories"].keys())
         assert names == [
             f"traj_{index:05d}" for index in range(metadata.number_of_trajectories)

@@ -22,7 +22,7 @@ def test_validate_state_accepts_valid_members(
 def test_validate_state_rejects_invalid_metadata(
     state: LopSfFccTrajectoryWriterState,
 ) -> None:
-    invalid = state.replace({"metadata": state.metadata.replace({"time_units": 0.0})})
+    invalid = state.replace({"metadata": state.metadata.replace({"time_step": 0.0})})
 
     with pytest.raises(DataWriterConfigurationError):
         invalid.validate_state()

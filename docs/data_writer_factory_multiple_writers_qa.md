@@ -112,7 +112,7 @@ from lammps_trajectory_analysis_tools.data_writer_utils import (
 )
 
 metadata_arguments = {
-    "time_units": 0.002,
+    "time_step": 0.002,
     "time_units_label": "ps",
     "number_of_trajectories": 2,
     "generation_date": datetime(2026, 9, 3, 12, 0, tzinfo=timezone.utc),

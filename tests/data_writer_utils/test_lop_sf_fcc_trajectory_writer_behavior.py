@@ -93,7 +93,7 @@ def test_validate_state_delegates_to_the_state(
 ) -> None:
     behavior.validate_state(state)
 
-    invalid = state.replace({"metadata": state.metadata.replace({"time_units": -1.0})})
+    invalid = state.replace({"metadata": state.metadata.replace({"time_step": -1.0})})
     with pytest.raises(DataWriterConfigurationError):
         behavior.validate_state(invalid)
 

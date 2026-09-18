@@ -31,7 +31,7 @@ def build_value_object(
 @pytest.fixture
 def metadata_arguments() -> dict:
     return {
-        "time_units": 0.002,
+        "time_step": 0.002,
         "time_units_label": "ps",
         "number_of_trajectories": 2,
         "generation_date": datetime(2026, 9, 3, 12, 0, tzinfo=timezone.utc),
@@ -89,8 +89,8 @@ def test_end_to_end_write_and_read_back(
                 append_batch(writer, trajectory_index, batch)
 
     with h5py.File(target, "r") as output:
-        assert output.attrs["time_units"] == pytest.approx(
-            metadata_arguments["time_units"]
+        assert output.attrs["time_step"] == pytest.approx(
+            metadata_arguments["time_step"]
         )
         assert output.attrs["generating_machine"] == "nimzoindian"
         np.testing.assert_array_equal(
@@ -122,7 +122,7 @@ def test_end_to_end_write_and_read_back(
             assert group["box_angles"].attrs["units"] == "degrees"
 
 
-def test_simulation_time_is_derived_from_steps_and_time_units(
+def test_simulation_time_is_derived_from_steps_and_time_step(
     tmp_path: Path, metadata_arguments: dict, layout_arguments: dict
 ) -> None:
     target = tmp_path / "simulation_time.h5"
@@ -135,7 +135,7 @@ def test_simulation_time_is_derived_from_steps_and_time_units(
 
     with h5py.File(target, "r") as output:
         stored_steps = output["trajectories"]["traj_00000"]["step_number"][...]
-        simulation_time = stored_steps * output.attrs["time_units"]
+        simulation_time = stored_steps * output.attrs["time_step"]
 
     np.testing.assert_allclose(simulation_time, [0.0, 0.5, 1.0])
 

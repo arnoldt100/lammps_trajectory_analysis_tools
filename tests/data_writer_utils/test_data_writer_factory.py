@@ -74,7 +74,7 @@ def test_an_unknown_key_raises_a_builder_key_error() -> None:
 def test_a_duplicate_registration_raises_and_preserves_the_original() -> None:
     original = data_writer_factory.build(
         LopSfFccRunMetadataBuilderKey,
-        time_units=1.0,
+        time_step=1.0,
         time_units_label="fs",
         number_of_trajectories=1,
         generation_date=_utc_date(),

@@ -32,7 +32,7 @@ def scale_value_object(tmp_path: Path):
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=tmp_path / "scale.h5",
         metadata={
-            "time_units": 0.002,
+            "time_step": 0.002,
             "time_units_label": "ps",
             "number_of_trajectories": 1,
             "generation_date": datetime(2026, 9, 3, tzinfo=timezone.utc),

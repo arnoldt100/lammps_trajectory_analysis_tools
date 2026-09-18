@@ -45,13 +45,13 @@ class LopSfFccRunMetadata:
         "_generation_date",
         "_lmod_modules",
         "_number_of_trajectories",
-        "_time_units",
+        "_time_step",
         "_time_units_label",
     )
 
     def __init__(
         self,
-        time_units: float,
+        time_step: float,
         time_units_label: str,
         number_of_trajectories: int,
         generation_date: datetime,
@@ -62,15 +62,15 @@ class LopSfFccRunMetadata:
         """Initialize the run metadata.
 
         Args:
-            time_units: Simulation time advanced by one trajectory step.
-            time_units_label: Unit label for ``time_units``, such as ``"ps"``.
+            time_step: Simulation time advanced by one trajectory step.
+            time_units_label: Unit label for ``time_step``, such as ``"ps"``.
             number_of_trajectories: Fixed number of trajectories in the file.
             generation_date: Timezone-aware date the data was generated.
             compiler_build_flags: Build flags used for the generating binary.
             generating_machine: Machine that generated the trajectory data.
             lmod_modules: Lmod module files loaded when building the binary.
         """
-        self._time_units = time_units
+        self._time_step = time_step
         self._time_units_label = time_units_label
         self._number_of_trajectories = number_of_trajectories
         self._generation_date = generation_date
@@ -79,9 +79,9 @@ class LopSfFccRunMetadata:
         self._lmod_modules = _as_string_tuple(lmod_modules)
 
     @property
-    def time_units(self) -> float:
+    def time_step(self) -> float:
         """Return the simulation time advanced by one trajectory step."""
-        return self._time_units
+        return self._time_step
 
     @property
     def time_units_label(self) -> str:
@@ -119,12 +119,12 @@ class LopSfFccRunMetadata:
         Raises:
             DataWriterConfigurationError: If any field is invalid.
         """
-        if not isinstance(self._time_units, (int, float)) or isinstance(
-            self._time_units, bool
+        if not isinstance(self._time_step, (int, float)) or isinstance(
+            self._time_step, bool
         ):
-            raise DataWriterConfigurationError("time_units must be a real number")
-        if not isfinite(float(self._time_units)) or self._time_units <= 0:
-            raise DataWriterConfigurationError("time_units must be positive and finite")
+            raise DataWriterConfigurationError("time_step must be a real number")
+        if not isfinite(float(self._time_step)) or self._time_step <= 0:
+            raise DataWriterConfigurationError("time_step must be positive and finite")
         _require_non_empty_string(self._time_units_label, "time_units_label")
         if not isinstance(self._number_of_trajectories, int) or isinstance(
             self._number_of_trajectories, bool
@@ -143,7 +143,7 @@ class LopSfFccRunMetadata:
     def as_attributes(self) -> dict[str, Any]:
         """Return an h5py-writable mapping of the metadata."""
         return {
-            "time_units": float(self._time_units),
+            "time_step": float(self._time_step),
             "time_units_label": self._time_units_label,
             "number_of_trajectories": int(self._number_of_trajectories),
             "generation_date": self._generation_date.isoformat(),
@@ -175,7 +175,7 @@ class LopSfFccRunMetadata:
 
     def _as_arguments(self) -> dict[str, Any]:
         return {
-            "time_units": self._time_units,
+            "time_step": self._time_step,
             "time_units_label": self._time_units_label,
             "number_of_trajectories": self._number_of_trajectories,
             "generation_date": self._generation_date,

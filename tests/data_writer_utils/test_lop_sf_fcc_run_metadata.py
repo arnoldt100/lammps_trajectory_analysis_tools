@@ -21,8 +21,8 @@ def test_validate_accepts_a_fully_populated_metadata_value(
 @pytest.mark.parametrize(
     "changes",
     [
-        {"time_units": 0.0},
-        {"time_units": -1.0},
+        {"time_step": 0.0},
+        {"time_step": -1.0},
         {"number_of_trajectories": 0},
         {"number_of_trajectories": -2},
         {"generating_machine": ""},
@@ -55,7 +55,7 @@ def test_metadata_attributes_cannot_be_assigned(
     metadata: LopSfFccRunMetadata,
 ) -> None:
     with pytest.raises(AttributeError):
-        metadata.time_units = 1.0  # type: ignore[misc]
+        metadata.time_step = 1.0  # type: ignore[misc]
 
 
 def test_equal_field_values_compare_equal_and_metadata_is_hashable(
@@ -85,7 +85,7 @@ def test_as_attributes_reports_every_required_metadata_name(
     attributes = metadata.as_attributes()
 
     assert set(attributes) == {
-        "time_units",
+        "time_step",
         "time_units_label",
         "number_of_trajectories",
         "generation_date",
@@ -105,7 +105,7 @@ def test_metadata_attributes_round_trip_through_hdf5(
             output.attrs[name] = value
 
     with h5py.File(target, "r") as output:
-        assert output.attrs["time_units"] == pytest.approx(metadata.time_units)
+        assert output.attrs["time_step"] == pytest.approx(metadata.time_step)
         assert output.attrs["number_of_trajectories"] == metadata.number_of_trajectories
         assert output.attrs["generating_machine"] == metadata.generating_machine
         assert output.attrs["generation_date"] == metadata.generation_date.isoformat()
@@ -121,7 +121,7 @@ def test_metadata_attributes_round_trip_through_hdf5(
 
 def test_generation_date_may_use_any_timezone() -> None:
     metadata = LopSfFccRunMetadata(
-        time_units=1.0,
+        time_step=1.0,
         time_units_label="fs",
         number_of_trajectories=1,
         generation_date=datetime(2026, 9, 3, tzinfo=timezone.utc),

@@ -559,7 +559,7 @@ def _build_metadata_arguments(md_params_json:JSON,
         md_params_json["simulation_parameters"]["time"]["units"]
     )
 
-    metadata_args["time_units"] = (
+    metadata_args["time_step"] = (
         md_params_json["simulation_parameters"]["time"]["time_step"]
     )
 

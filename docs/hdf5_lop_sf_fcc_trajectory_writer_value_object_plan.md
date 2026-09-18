@@ -35,10 +35,10 @@ is the structural guide for lifecycle, validation, and error translation.
   Box lengths and angles vary from step to step, so they are stored per frame
   rather than as trajectory or run metadata.
 
-- Simulation time: `simulation_time = step_number * time_units`. The file stores
-  step numbers only; time is derived by readers from the `time_units` metadata.
+- Simulation time: `simulation_time = step_number * time_step`. The file stores
+   step numbers only; time is derived by readers from the `time_step` metadata.
 
-- Run metadata: `time_units`, `time_units_label`, `number_of_trajectories`,
+- Run metadata: `time_step`, `time_units_label`, `number_of_trajectories`,
   `generation_date`, `compiler_build_flags`, `generating_machine`, and
   `lmod_modules`.
 
@@ -46,7 +46,7 @@ is the structural guide for lifecycle, validation, and error translation.
 
 ```text
 /                                   (root, holds run metadata as attributes)
-|-- attrs: time_units, time_units_label, number_of_trajectories,
+|-- attrs: time_step, time_units_label, number_of_trajectories,
 |          generation_date, compiler_build_flags, generating_machine,
 |          lmod_modules
 `-- trajectories/
@@ -533,7 +533,7 @@ write method with the documented argument order.
 ### 1. `LopSfFccRunMetadata`
 
 1. `validate()` accepts a fully populated, valid metadata value.
-2. `validate()` rejects `time_units <= 0`, `number_of_trajectories <= 0`, an
+2. `validate()` rejects `time_step <= 0`, `number_of_trajectories <= 0`, an
    empty `generating_machine`, an empty `time_units_label`, and a naive
    `generation_date`.
 3. `validate()` rejects non-string entries in `compiler_build_flags` or
@@ -709,7 +709,7 @@ Parametrized over both `write_trajectory` and `append_trajectory_frames`:
 1. End-to-end: build through the package factory, open with the context
    manager, append several batches to several trajectories, close, then reopen
    with `h5py` and verify every dataset, attribute, unit label, and ordering.
-2. Derived simulation time: `step_number * time_units` recomputed from the file
+2. Derived simulation time: `step_number * time_step` recomputed from the file
    matches the expected values.
 3. A file written with compression reads back identically to an uncompressed
    file written from the same input, and the compression filter is recorded on
