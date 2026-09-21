@@ -9,6 +9,7 @@ The public members provided by this module are:
 
 # Python standard library imports
 import os
+import datetime
 from pathlib import Path
 from typing import Any
 
@@ -568,10 +569,20 @@ def _build_metadata_arguments(md_params_json:JSON,
     )
 
     metadata_args["generation_date"] = (
-        md_params_json["simulation_parameters"]["date"]
+        datetime.datetime.fromisoformat(md_params_json["simulation_parameters"]["date"])
     )
 
+    metadata_args["compiler_build_flags"] = (
+       md_metadata_json["simulation_metadata"]["build_description"]["compiler_flags"]
+    )
+    
+    metadata_args["generating_machine"] = (
+        md_metadata_json["simulation_metadata"]["build_description"]["compiling_machine"]
+    )
 
+    metadata_args["lmod_modules"] = (
+        md_metadata_json["simulation_metadata"]["build_description"]["programming_environment"]
+    )
     return metadata_args
 
 def _main()->None:

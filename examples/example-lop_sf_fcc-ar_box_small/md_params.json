@@ -6,7 +6,7 @@
       "time_step": 2.0,
       "total_steps": 500000
     },
-    "date" : "Fri Sep 11 01:01:42 PM EDT 2026",
+    "date" : "2026-09-21T16:38:48.600942+00:00",
     "ensemble": "NVT",
     "temperature": 300,
     "pressure": 1.0,
