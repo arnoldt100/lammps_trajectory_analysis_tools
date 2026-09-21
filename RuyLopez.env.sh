@@ -21,13 +21,22 @@ export PATH="${LTAT_TOP_LEVEL}/src/bin:${PATH}"
 # ---------------------------------------------------
 # Modify the PYTHONPATH variable.
 # ---------------------------------------------------
-export PYTHONPATH="$(pwd)/src:${PYTHONPATH}"
+export PYTHONPATH="$(pwd)/src:$(pwd)/tests:${PYTHONPATH}"
 
 # ---------------------------------------------------
 # Set the machine name.
 #
 # ---------------------------------------------------
 export LTAT_MACHINE="Ruylopez"
+
+# ---------------------------------------------------
+# Some debug environmental variables.
+#
+# ---------------------------------------------------
+
+# Plots only the first N frames for debugging.
+# A non-positive integer value means plot all frames.
+export LTAT_DEBUG_PLOT_FRAMES=1 
 
 # ---------------------------------------------------
 # Ensure that the environmental variable 'LTAT_BUILD_CONFIGURATION'

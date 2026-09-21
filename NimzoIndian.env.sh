@@ -30,6 +30,15 @@ export PYTHONPATH="$(pwd)/src:$(pwd)/tests:${PYTHONPATH}"
 export LTAT_MACHINE="NimzoIndian"
 
 # ---------------------------------------------------
+# Some debug environmental variables.
+#
+# ---------------------------------------------------
+
+# Plots only the first N frames for debugging.
+# A non-positive integer value means plot all frames.
+export LTAT_DEBUG_PLOT_FRAMES=1 
+
+# ---------------------------------------------------
 # Ensure that the environmental variable 'LTAT_BUILD_CONFIGURATION'
 # is set and not null and the corresponding build configuration file exists.
 #
