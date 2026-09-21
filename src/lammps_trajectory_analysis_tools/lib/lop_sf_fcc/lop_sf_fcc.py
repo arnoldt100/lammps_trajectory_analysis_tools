@@ -404,54 +404,61 @@ class LopSfFcc:
         # Loop over each trajectory and calculate the lop fcc fcc
         nm_wavevectors,_ = self._wavevectors.shape
 
-        # Another accumulator reused and reset every frame.
-        # accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
-        #     array_accumulator_builder_key,
-        #     dtype=np.float64,
-        #     capacity=np.int32(self._nm_atoms),
-        #     initial_value=np.float64(0.00),
-        #     name="atom_exp_terms_accumulator",
-        # )
-
         print(f"Number of trajectory frames = {self._nm_frames}")
-        report_iteration = 5
-        max_trajectories_to_compute = 100
+        report_iteration = 1
+        max_trajectories_to_compute = 10
         trajectory_loop_timer = (
             timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",max_trajectories_to_compute,report_iteration)
         )
-        trajectory_loop_timer.start()
-        counter = 0
-        for ts in self._universe.trajectory:
-            frame_index = ts.frame
-            frame_time = ts.time
 
-            self._accumulator_nm_neighbors.reset()
-            self._accumulator_lop_terms0.reset()
-            self._accum_lop_terms_with_coeffs.reset()
+        with self._data_writer as writer:
+            trajectory_loop_timer.start()
+            counter = 0
 
-            (lop_terms0,nm_neighbors) = (
-                calculate_sf_fcc_atom_order_parameter_no_coeffs(
-                    self._universe,
-                    self._wavevectors,
-                    self._neighbor_search_radius,
-                    self._accumulator_nm_neighbors,
-                    self._accumulator_lop_terms0)
-            )
+            for ts in self._universe.trajectory:
+                positions = self._universe.atoms.positions
+                frame_index = ts.frame
+                frame_time = ts.time
 
-            accum_lop_terms1 = (
-                calculate_sf_fcc_atom_order_parameter_with_coeffs(
-                    self._nm_atoms,
-                    nm_wavevectors,
-                    lop_terms0,
-                    nm_neighbors,
-                    self._accum_lop_terms_with_coeffs))
+                self._accumulator_nm_neighbors.reset()
+                self._accumulator_lop_terms0.reset()
+                self._accum_lop_terms_with_coeffs.reset()
 
-            counter += 1
-            trajectory_loop_timer.update(counter)
+                (lop_terms0,nm_neighbors) = (
+                    calculate_sf_fcc_atom_order_parameter_no_coeffs(
+                        self._universe,
+                        self._wavevectors,
+                        self._neighbor_search_radius,
+                        self._accumulator_nm_neighbors,
+                        self._accumulator_lop_terms0)
+                )
 
-            if counter == max_trajectories_to_compute:
-                break
-        trajectory_loop_timer.stop()
+                accum_lop_terms1 = (
+                    calculate_sf_fcc_atom_order_parameter_with_coeffs(
+                        self._nm_atoms,
+                        nm_wavevectors,
+                        lop_terms0,
+                        nm_neighbors,
+                        self._accum_lop_terms_with_coeffs))
+
+                a,b,c = ts.dimensions[:3]
+                box_lengths = np.array([a,b,c])
+
+                alpha, beta, gamma = ts.dimensions[3:]
+                box_angles = np.array([alpha,beta,gamma])
+                writer.append_trajectory_frames(counter,
+                                         frame_index,
+                                         positions,
+                                         accum_lop_terms1.finalize(),
+                                         box_lengths,
+                                         box_angles)
+
+                counter += 1
+                trajectory_loop_timer.update(counter)
+
+                if counter == max_trajectories_to_compute:
+                    break
+            trajectory_loop_timer.stop()
         return
 
 # ----------

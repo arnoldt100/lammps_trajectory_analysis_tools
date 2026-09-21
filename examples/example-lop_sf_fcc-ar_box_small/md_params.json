@@ -4,7 +4,7 @@
     "time": {
       "units": "fs",
       "time_step": 2.0,
-      "total_steps": 500000
+      "total_steps": 5001
     },
     "date" : "2026-09-21T16:38:48.600942+00:00",
     "ensemble": "NVT",
