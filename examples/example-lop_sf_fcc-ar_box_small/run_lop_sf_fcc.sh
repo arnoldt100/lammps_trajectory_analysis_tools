@@ -62,7 +62,7 @@ md_params_json="md_params.json"
 cat argon_box_small_dcd_* >${dcd_file}
 
 # Remove the old hdf5 output file.
-rm ${output_hdf5}
+rm -f ${output_hdf5}
 
 # Run the example.
 uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd \
