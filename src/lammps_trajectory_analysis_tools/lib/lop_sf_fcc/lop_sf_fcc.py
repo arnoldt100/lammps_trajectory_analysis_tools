@@ -406,16 +406,15 @@ class LopSfFcc:
 
         print(f"Number of trajectory frames = {self._nm_frames}")
         report_iteration = 1
-        max_trajectories_to_compute = 10
         trajectory_loop_timer = (
-            timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",max_trajectories_to_compute,report_iteration)
+            timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",self._nm_frames,report_iteration)
         )
 
         with self._data_writer as writer:
             trajectory_loop_timer.start()
             counter = 0
 
-            for ts in self._universe.trajectory:
+            for ts in self._universe.trajectory[:self._nm_frames]:
                 positions = self._universe.atoms.positions
                 frame_index = ts.frame
                 frame_time = ts.time
@@ -455,9 +454,6 @@ class LopSfFcc:
 
                 counter += 1
                 trajectory_loop_timer.update(counter)
-
-                if counter == max_trajectories_to_compute:
-                    break
             trajectory_loop_timer.stop()
         return
 
@@ -494,6 +490,46 @@ def _set_attribute_wavevectors(
     wavevectors = create_wavevectors(edge_length)
     return wavevectors
 
+def _read_debug_plot_frames_env_var()->int | None:
+    """ Returns the positive frame limit from LTAT_DEBUG_PLOT_FRAMES, or None
+    if unset or non-positive (meaning: compute all frames).
+
+    Raises:
+        ValueError: If the env var is set but not a valid integer.
+    """
+    raw_value = os.environ.get("LTAT_DEBUG_PLOT_FRAMES")
+    if raw_value is None:
+        return None
+
+    try:
+        parsed_value = int(raw_value)
+    except ValueError as error:
+        raise ValueError(
+            f"LTAT_DEBUG_PLOT_FRAMES must be an integer, got {raw_value!r}"
+        ) from error
+
+    if parsed_value <= 0:
+        return None
+    return parsed_value
+
+def _resolve_nm_frames_to_compute(total_frames: int,
+                                  debug_plot_frames: int | None)->int:
+    """ Returns the number of trajectory frames to compute, honoring
+    LTAT_DEBUG_PLOT_FRAMES if it requests fewer than total_frames.
+
+    Raises:
+        ValueError: If debug_plot_frames exceeds total_frames.
+    """
+    if debug_plot_frames is None:
+        return total_frames
+
+    if debug_plot_frames > total_frames:
+        raise ValueError(
+            f"LTAT_DEBUG_PLOT_FRAMES={debug_plot_frames} exceeds the "
+            f"number of available trajectory frames ({total_frames})"
+        )
+    return debug_plot_frames
+
 def _set_universe_attributes(command_line_arguments:CLILopSfFcc)->tuple[Any,...]:
     my_positional_args,my_keyword_args = create_mdanalysis_arguments(command_line_arguments)
     my_universe = load_universe(my_positional_args["topology_path"],
@@ -501,7 +537,9 @@ def _set_universe_attributes(command_line_arguments:CLILopSfFcc)->tuple[Any,...]
                                 **my_keyword_args)
 
     # Loop over each trajectory and calculate the lop fcc fcc
-    nm_frames = my_universe.trajectory.n_frames
+    total_nm_frames = my_universe.trajectory.n_frames
+    debug_plot_frames = _read_debug_plot_frames_env_var()
+    nm_frames = _resolve_nm_frames_to_compute(total_nm_frames, debug_plot_frames)
     nm_atoms = my_universe.atoms.n_atoms
     return my_universe, nm_frames, nm_atoms 
 
