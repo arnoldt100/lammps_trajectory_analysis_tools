@@ -36,7 +36,7 @@ export LTAT_MACHINE="NimzoIndian"
 
 # Plots only the first N frames for debugging.
 # A non-positive integer value means plot all frames.
-export LTAT_DEBUG_PLOT_FRAMES=1 
+export LTAT_DEBUG_PLOT_FRAMES=1
 
 # ---------------------------------------------------
 # Ensure that the environmental variable 'LTAT_BUILD_CONFIGURATION'
