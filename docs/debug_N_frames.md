@@ -87,4 +87,32 @@ and stop the program. If N > total frames available, raise an exception
   how `LTAT_DEBUG_PLOT_FRAMES` is already exported in
   `NimzoIndian.env.sh`/`RuyLopez.env.sh`.
 
+## Command-Line Help Follow-Up Plan
+
+### Goal
+Show the usage contract for `LTAT_DEBUG_PLOT_FRAMES` when either `-h` or
+`--help` is invoked for the `lop_sf_fcc` subcommand. Keep top-level help
+unchanged because the environment variable applies only to this analysis.
+
+### Steps
+1. Add private epilog text to `LopSfFccSubparserBuilder` in
+  `lop_sf_fcc_cli_parser.py`. State that a positive integer `N` processes
+  only the first `N` frames; an unset, zero, or negative value processes all
+  frames; and a non-integer or a value greater than the available frame count
+  terminates the command with an error.
+2. Configure the `lop_sf_fcc` parser with the epilog and
+  `argparse.RawDescriptionHelpFormatter` so the environment-variable section
+  remains readable. Do not add a command-line option or move environment
+  parsing out of `lop_sf_fcc.py`.
+3. Add a parameterized pytest in `test_lop_sf_fcc_cli_parser.py` that invokes
+  both `lop_sf_fcc -h` and `lop_sf_fcc --help`, checks for a successful help
+  exit, and verifies the rendered output describes the complete contract.
+
+### Verification
+1. Run
+  `.venv/bin/python -m pytest tests/test_lop_sf_fcc_cli_parser.py -q`.
+2. Inspect `uv run src/bin/lammps_analysis_tool.py lop_sf_fcc -h` and
+  `uv run src/bin/lammps_analysis_tool.py lop_sf_fcc --help` to confirm both
+  aliases display the same readable environment-variable section.
+
 
