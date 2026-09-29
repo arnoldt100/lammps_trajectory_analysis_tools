@@ -173,13 +173,23 @@ class LopSfFccSubparserBuilder:
 
     _hdf5_data_file_help = "The hdf5 file where the data is stored."
 
+    _epilog = """environment variables:
+  LTAT_DEBUG_PLOT_FRAMES=N
+    Set N to a positive integer to process only the first N trajectory frames.
+    If unset, zero, or negative, all trajectory frames are processed.
+    A non-integer value or a value greater than the available frame count
+    terminates the command with an error.
+"""
+
     def __init__(self)->None:
         return
 
     def __call__(self, top_level_subparsers)->None:
 
         parser1 = top_level_subparsers.add_parser("lop_sf_fcc",
-                                                  help=self._subcommand_help)
+                                                  help=self._subcommand_help,
+                                                  epilog=self._epilog,
+                                                  formatter_class=argparse.RawDescriptionHelpFormatter)
         parser1.add_argument("--trajectory",
                              type=str,required=True,help=self._trajectory_help)
 

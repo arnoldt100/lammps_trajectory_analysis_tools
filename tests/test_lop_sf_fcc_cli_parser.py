@@ -31,6 +31,23 @@ def _create_parser() -> argparse.ArgumentParser:
     subparser_builder_registry.build("lop_sf_fcc", subparsers)
     return parser
 
+@pytest.mark.parametrize("help_option", ["-h", "--help"])
+def test_help_describes_debug_plot_frames_environment_variable(
+    help_option: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        _create_parser().parse_args(["lop_sf_fcc", help_option])
+
+    assert exit_info.value.code == 0
+    help_output = capsys.readouterr().out
+    assert "environment variables:" in help_output
+    assert "LTAT_DEBUG_PLOT_FRAMES=N" in help_output
+    assert "positive integer" in help_output
+    assert "unset, zero, or negative" in help_output
+    assert "non-integer value" in help_output
+    assert "greater than the available frame count" in help_output
+
 def required_arguments() -> list[str]:
     args = []
     for option,value in _cli_required_arguments.items():
