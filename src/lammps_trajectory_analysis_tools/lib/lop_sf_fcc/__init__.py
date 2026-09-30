@@ -12,6 +12,10 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_builder import (
     lop_sf_fcc_builder_key,
     LopSfFccBuilder)
 
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
+    LOP_SF_FCC,
+)
+
 analysis_tool_builder_registry: BuilderRegistry[Any] = BuilderRegistry()
 analysis_tool_builder_registry.register_builder(lop_sf_fcc_builder_key,
                                                  LopSfFccBuilder())
@@ -24,4 +28,5 @@ subparser_builder_registry.register_builder(lop_sf_fcc_subcommand_name(),
 __all__ = ["subparser_builder_registry",
            "lop_sf_fcc_subcommand_name",
            "analysis_tool_builder_registry",
-           "lop_sf_fcc_builder_key"]
+           "lop_sf_fcc_builder_key",
+           "LOP_SF_FCC"]

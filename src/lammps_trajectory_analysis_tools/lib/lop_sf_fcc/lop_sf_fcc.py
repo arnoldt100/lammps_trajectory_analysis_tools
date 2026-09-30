@@ -47,6 +47,9 @@ from lammps_trajectory_analysis_tools.schemas import (
     validate_json_file,
 )
 
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
+    LOP_SF_FCC, )
+
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
 
 from lammps_trajectory_analysis_tools.data_writer_utils import (
@@ -386,8 +389,8 @@ class LopSfFcc:
         self._neighbor_search_radius = np.float32(command_line_arguments.cutoff)
 
         # Set the accumulators.
-        (self._accum_lop_terms_with_coeffs, 
-        self._accumulator_nm_neighbors, 
+        (self._accum_lop_terms_with_coeffs,
+        self._accumulator_nm_neighbors,
         self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
 
         # Set the data writer attributes.
@@ -396,6 +399,10 @@ class LopSfFcc:
                                 self._universe,
                                 self._md_params_json,
                                 self._md_metadata_json)
+
+        # This attriribute is store the MDAnalysis ananlyis class to calculate the
+        # local fcc order parameter.
+        self._lop_sf_fcc = _set_lop_sf_fcc_attribute(self._universe.atoms)
 
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
@@ -455,6 +462,8 @@ class LopSfFcc:
                 counter += 1
                 trajectory_loop_timer.update(counter)
             trajectory_loop_timer.stop()
+        self._lop_sf_fcc.run()
+        print(self._lop_sf_fcc.results.lop_sf_fcc)
         return
 
 # ----------
@@ -598,6 +607,9 @@ def _build_layout_arguments(universe)->dict[str,Any]:
                         "length_units_label" : length_units_label}
     return layout_arguments
 
+def _set_lop_sf_fcc_attribute(atom_group):
+    return LOP_SF_FCC(atom_group)
+
 def _build_metadata_arguments(md_params_json:JSON,
                               md_metadata_json:JSON ):
     metadata_args = {}
@@ -620,7 +632,7 @@ def _build_metadata_arguments(md_params_json:JSON,
     metadata_args["compiler_build_flags"] = (
        md_metadata_json["simulation_metadata"]["build_description"]["compiler_flags"]
     )
-    
+
     metadata_args["generating_machine"] = (
         md_metadata_json["simulation_metadata"]["build_description"]["compiling_machine"]
     )

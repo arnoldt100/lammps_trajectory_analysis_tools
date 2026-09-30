@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 from lammps_trajectory_analysis_tools.lib.lammps_analysis_tool_parser import process_command_line_arguments
 from lammps_trajectory_analysis_tools.lib.lammps_analysis_tool_parser import CLI_ID
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import LOP_SF_FCC
 
 from .data_types import JSON
 
 __all__ = ["process_command_line_arguments",
            "CLI_ID",
-           "JSON"]
+           "JSON",
+           "LOP_SF_FCC"]
