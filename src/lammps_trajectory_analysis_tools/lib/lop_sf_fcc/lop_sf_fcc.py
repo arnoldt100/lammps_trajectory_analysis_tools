@@ -462,8 +462,9 @@ class LopSfFcc:
                 counter += 1
                 trajectory_loop_timer.update(counter)
             trajectory_loop_timer.stop()
+
         self._lop_sf_fcc.run()
-        print(self._lop_sf_fcc.results.lop_sf_fcc)
+
         return
 
 # ----------
