@@ -51,6 +51,11 @@ class LopSfFccTrajectoryWriterValueObjectInterface(lammps_trajectory_analysis_to
         ...
 
     @abstractmethod
+    def open_for_append(self) -> Self:
+        """Open the existing output target for appending and return self."""
+        ...
+
+    @abstractmethod
     def append_trajectory_frames(
         self,
         trajectory_index: int,
@@ -70,7 +75,7 @@ class LopSfFccTrajectoryWriterValueObjectInterface(lammps_trajectory_analysis_to
 
     @abstractmethod
     def __enter__(self) -> Self:
-        """Create the output target and return this value object."""
+        """Create the output target unless a writer is open; return self."""
         ...
 
     @abstractmethod

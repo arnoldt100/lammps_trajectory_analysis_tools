@@ -337,7 +337,6 @@ class LopSfFcc:
         "md_metadata.schema.json")
     
     def __init__(self)->None:
-        self._wavevectors = None
         self._parallel_threads = 1
 
         # These attributes store the simulation parameters as a JSON
@@ -352,22 +351,17 @@ class LopSfFcc:
         # These attributes are related to the neigbor search radius.
         self._neighbor_search_radius = None
 
-        # The attributes store the accumulators needed to calculate the FCC LOP.
-        self._accumulator_nm_neighbors = None
-        self._accumulator_lop_terms0 = None
-        self._accum_lop_terms_with_coeffs = None
-
         # These attributes are for writing results to hdf files.
         self._data_writer = None
+
+        # The MDAnalysis analysis object that calculates and writes the FCC LOP.
+        self._lop_sf_fcc = None
 
     def _set_attributes(self,command_line_arguments:CLILopSfFcc)->None:
         """ Sets the attributes of this class. """
 
         # Set the number of parallel threads.
         self._parallel_threads = command_line_arguments.parallel_threads
-
-        # Set the wavevectors.
-        self._wavevectors = _set_attribute_wavevectors(command_line_arguments)
 
         # Set the JSON MD simulation atribute.
         self._md_params_json = (
@@ -388,11 +382,6 @@ class LopSfFcc:
         # Set the neighbor search radius.
         self._neighbor_search_radius = np.float32(command_line_arguments.cutoff)
 
-        # Set the accumulators.
-        (self._accum_lop_terms_with_coeffs,
-        self._accumulator_nm_neighbors,
-        self._accumulator_lop_terms0) = _set_accumulator_attributes(self._nm_atoms)
-
         # Set the data writer attributes.
         self._data_writer = _set_data_writer_attributes(
                                 command_line_arguments,
@@ -402,68 +391,24 @@ class LopSfFcc:
 
         # This attriribute is store the MDAnalysis ananlyis class to calculate the
         # local fcc order parameter.
-        self._lop_sf_fcc = _set_lop_sf_fcc_attribute(self._universe.atoms)
+        self._lop_sf_fcc = _set_lop_sf_fcc_attribute(
+            self._universe.atoms,
+            command_line_arguments.edge_length,
+            self._neighbor_search_radius,
+            self._data_writer)
 
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
         self._set_attributes(command_line_arguments)
 
-        # Loop over each trajectory and calculate the lop fcc fcc
-        nm_wavevectors,_ = self._wavevectors.shape
-
         print(f"Number of trajectory frames = {self._nm_frames}")
-        report_iteration = 1
         trajectory_loop_timer = (
-            timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",self._nm_frames,report_iteration)
+            timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",1,1)
         )
-
-        with self._data_writer as writer:
-            trajectory_loop_timer.start()
-            counter = 0
-
-            for ts in self._universe.trajectory[:self._nm_frames]:
-                positions = self._universe.atoms.positions
-                frame_index = ts.frame
-                frame_time = ts.time
-
-                self._accumulator_nm_neighbors.reset()
-                self._accumulator_lop_terms0.reset()
-                self._accum_lop_terms_with_coeffs.reset()
-
-                (lop_terms0,nm_neighbors) = (
-                    calculate_sf_fcc_atom_order_parameter_no_coeffs(
-                        self._universe,
-                        self._wavevectors,
-                        self._neighbor_search_radius,
-                        self._accumulator_nm_neighbors,
-                        self._accumulator_lop_terms0)
-                )
-
-                accum_lop_terms1 = (
-                    calculate_sf_fcc_atom_order_parameter_with_coeffs(
-                        self._nm_atoms,
-                        nm_wavevectors,
-                        lop_terms0,
-                        nm_neighbors,
-                        self._accum_lop_terms_with_coeffs))
-
-                a,b,c = ts.dimensions[:3]
-                box_lengths = np.array([a,b,c])
-
-                alpha, beta, gamma = ts.dimensions[3:]
-                box_angles = np.array([alpha,beta,gamma])
-                writer.append_trajectory_frames(counter,
-                                         frame_index,
-                                         positions,
-                                         accum_lop_terms1.finalize(),
-                                         box_lengths,
-                                         box_angles)
-
-                counter += 1
-                trajectory_loop_timer.update(counter)
-            trajectory_loop_timer.stop()
-
-        self._lop_sf_fcc.run()
+        trajectory_loop_timer.start()
+        self._lop_sf_fcc.run(stop=self._nm_frames)
+        trajectory_loop_timer.update(1)
+        trajectory_loop_timer.stop()
 
         return
 
@@ -489,16 +434,6 @@ def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
     )
 
     return value_object
-
-def _set_attribute_wavevectors(
-        command_line_arguments:CLILopSfFcc)->LatticeVectors:
-    # We get the edge length of the fcc lattice and define
-    # reciprocal lattice vectors for this edge length.
-    edge_length = np.float64(command_line_arguments.edge_length)
-
-    # Form the wavevectors from the fcc edge length.
-    wavevectors = create_wavevectors(edge_length)
-    return wavevectors
 
 def _read_debug_plot_frames_env_var()->int | None:
     """ Returns the positive frame limit from LTAT_DEBUG_PLOT_FRAMES, or None
@@ -553,36 +488,6 @@ def _set_universe_attributes(command_line_arguments:CLILopSfFcc)->tuple[Any,...]
     nm_atoms = my_universe.atoms.n_atoms
     return my_universe, nm_frames, nm_atoms 
 
-def _set_accumulator_attributes(nm_atoms)->tuple[Any,...]:
-    # One accumulator reused and reset every frame.
-    accumulator_nm_neighbors = array_accumulator_builder_registry.build(
-        array_accumulator_builder_key,
-        dtype=np.int32,
-        capacity=np.int32(nm_atoms),
-        initial_value=np.int32(0),
-        name="atom_neighbor_accumulator",
-    )
-
-    # Another accumulator reused and reset every frame.
-    accumulator_lop_terms0 = array_accumulator_builder_registry.build(
-        array_accumulator_builder_key,
-        dtype=np.complex64,
-        capacity=np.int32(nm_atoms),
-        initial_value=np.complex64(0.00),
-        name="atom_exp_terms_accumulator",
-    )
-
-    # Another accumulator reused and reset every frame.
-    accum_lop_terms_with_coeffs = array_accumulator_builder_registry.build(
-        array_accumulator_builder_key,
-        dtype=np.float64,
-        capacity=np.int32(nm_atoms),
-        initial_value=np.float64(0.00),
-        name="atom_exp_terms_accumulator",
-    )
-
-    return accum_lop_terms_with_coeffs, accumulator_nm_neighbors, accumulator_lop_terms0
-
 def _set_md_params_attributes(
         command_line_arguments:CLILopSfFcc)->JSON:
 
@@ -608,8 +513,8 @@ def _build_layout_arguments(universe)->dict[str,Any]:
                         "length_units_label" : length_units_label}
     return layout_arguments
 
-def _set_lop_sf_fcc_attribute(atom_group):
-    return LOP_SF_FCC(atom_group)
+def _set_lop_sf_fcc_attribute(atom_group, edge_length, cutoff, data_writer):
+    return LOP_SF_FCC(atom_group, edge_length, cutoff, data_writer=data_writer)
 
 def _build_metadata_arguments(md_params_json:JSON,
                               md_metadata_json:JSON ):

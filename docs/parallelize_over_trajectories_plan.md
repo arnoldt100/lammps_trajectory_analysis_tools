@@ -130,7 +130,8 @@ description.
    explicit loop is the reference used to verify `LOP_SF_FCC`.
 4. Moving the HDF5 writer to read from `self._lop_sf_fcc.results` and
    removing the explicit loop is a follow-up decision, made only after the
-   verification below passes.
+   verification below passes. See *Stage 1 Follow-Up — Write HDF5 From
+   `LOP_SF_FCC` Results*.
 
 ### Tests
 
@@ -160,3 +161,168 @@ Add tests under `tests/`:
   the existing loop.
 - All new and existing tests pass.
 - No changes to the HDF5 output format.
+
+**Status:** Phases 1–4 complete. All tests pass, and an end-to-end run on two
+frames of `examples/example-lop_sf_fcc-ar_box_small` matches the explicit
+loop to about `5e-10`.
+
+### Stage 1 Follow-Up — Write HDF5 From `LOP_SF_FCC` Results (Sketch)
+
+#### Goal
+
+Make `LOP_SF_FCC` the only place the order parameter is calculated.
+`LopSfFcc.__call__` calls `run()` and then writes the HDF5 file from
+`self._lop_sf_fcc.results`. The explicit frame loop and the three
+`LopSfFcc` accumulators are removed.
+
+#### What The Writer Needs Per Frame
+
+`writer.append_trajectory_frames(trajectory_index, step_numbers, positions,
+lop_sf_fcc_values, box_lengths, box_angles)` currently receives:
+
+| Argument | Current source (explicit loop) | Source after migration |
+| --- | --- | --- |
+| `trajectory_index` | loop `counter` | `i`, the row index into `results` |
+| `step_numbers` | `ts.frame` | `self._lop_sf_fcc.frames[i]` |
+| `positions` | `universe.atoms.positions` | `results.positions[i]` (new) |
+| `lop_sf_fcc_values` | `accum_lop_terms1.finalize()` | `results.lop_sf_fcc[i]` |
+| `box_lengths` | `ts.dimensions[:3]` | `results.box_lengths[i]` |
+| `box_angles` | `ts.dimensions[3:]` | `results.box_angles[i]` |
+
+The only missing data is `positions`.
+
+#### Changes To `LOP_SF_FCC`
+
+- Add `results.positions` with shape `(n_frames, n_atoms, 3)`, dtype
+  `float32`, allocated in `_prepare` and filled in `_single_frame` from
+  `self._atomgroup.positions`.
+- Document the new attribute in the class docstring.
+- Do not open or write the HDF5 file inside `_single_frame`. Writing from
+  inside a frame would cause side effects in the analysis class and break
+  the Stage 2 parallel backends, where frames run in separate workers.
+
+#### Changes To `LopSfFcc.__call__`
+
+This is an intermediate step. See *End State* below.
+
+Sketch:
+
+```python
+with self._data_writer as writer:
+    self._lop_sf_fcc.run(stop=self._nm_frames)
+    results = self._lop_sf_fcc.results
+    for i, frame_index in enumerate(self._lop_sf_fcc.frames):
+        writer.append_trajectory_frames(i,
+                                        frame_index,
+                                        results.positions[i],
+                                        results.lop_sf_fcc[i],
+                                        results.box_lengths[i],
+                                        results.box_angles[i])
+```
+
+- Remove the explicit `for ts in self._universe.trajectory` loop.
+- Remove `_set_accumulator_attributes` and the three accumulator attributes.
+- Keep the `LoopTimer`, but time the `run()` call. MDAnalysis also offers
+  `run(verbose=True)` for a progress bar.
+
+#### End State — `LopSfFcc.__call__` Only Calls `run()`
+
+Eventually `LopSfFcc.__call__` drops the `with self._data_writer as writer`
+context and only does:
+
+```python
+self._set_attributes(command_line_arguments)
+self._lop_sf_fcc.run(stop=self._nm_frames)
+```
+
+The writing moves into `LOP_SF_FCC`:
+
+- `LOP_SF_FCC.__init__` takes the data-writer value object, for example
+  `LOP_SF_FCC(atomgroup, edge_length, cutoff, data_writer=..., **kwargs)`.
+  `data_writer=None` means "compute only", which keeps the class usable in
+  tests and notebooks.
+- `_conclude` opens `with self._data_writer as writer:` and appends every
+  row of `self.results` using the same loop as the intermediate sketch.
+- `_single_frame` still never writes, as stated above.
+- `_set_lop_sf_fcc_attribute` passes `self._data_writer` into `LOP_SF_FCC`.
+  `LopSfFcc` keeps building the value object, but no longer enters it.
+
+Why `_conclude`:
+
+- It runs once, in the main process, after all frames are done.
+- In Stage 2, MDAnalysis runs `_conclude` after the per-worker results are
+  aggregated. The same writing code therefore works for the serial and
+  parallel backends.
+- The file is written in frame order regardless of how frames were split
+  across workers.
+
+Resolved: the writer now has an append mode. `open_for_append()` reopens an
+existing target made by `create()`, keeps its metadata and stored frames, and
+checks that its trajectory groups and datasets match the configured layout.
+On the value object it returns `self`, so chunked runs can use:
+
+```python
+with self._data_writer as writer:                    # first chunk: create
+    ...
+with self._data_writer.open_for_append() as writer:  # later chunks: append
+    ...
+```
+
+The value object's `__enter__` creates the target only when no writer is
+open, which is what makes the second form work.
+
+#### Memory Consideration
+
+Storing all positions costs `n_frames × n_atoms × 3 × 4` bytes. For the
+argon example this is about `5000 × 5849 × 12 ≈ 350 MB`. If that is too
+large, run in chunks:
+
+```python
+for start in range(0, nm_frames, chunk_size):
+    stop = min(start + chunk_size, nm_frames)
+    self._lop_sf_fcc.run(start=start, stop=stop)
+    # write rows of this chunk, offsetting trajectory_index by start
+```
+
+Chunking keeps memory bounded and fits Stage 2: each chunk can be run with a
+parallel backend before its frames are written in order.
+
+#### Tests
+
+- Keep the existing explicit-loop tests in `lop_sf_fcc.py` as the numerical
+  reference.
+- New test: run `LopSfFcc` on a small trajectory, writing to `tmp_path`, then
+  check that every HDF5 dataset matches `LOP_SF_FCC.results`. This includes
+  positions, step numbers, and box data.
+- Regression test: HDF5 output from the old and new code paths is identical
+  for the argon example limited with `LTAT_DEBUG_PLOT_FRAMES`. Capture the
+  old output before removing the explicit loop.
+
+#### Phases
+
+1. Add `results.positions` to `LOP_SF_FCC` and its test.
+2. Capture reference HDF5 output from the current explicit loop.
+3. Replace the explicit loop in `LopSfFcc.__call__` with `run()` plus the
+   writer loop. Remove the unused accumulators.
+4. Compare the new HDF5 output with the reference and run the full test
+   suite.
+5. Move the writer into `LOP_SF_FCC._conclude`, pass the data writer
+   through `_set_lop_sf_fcc_attribute`, and reduce `LopSfFcc.__call__` to
+   `run()` only. Re-run the HDF5 comparison.
+6. Optional: add chunked runs if memory profiling requires it, using the
+   writer's `open_for_append()` for every chunk after the first.
+
+**Status:** Phases 1–5 complete. Phases 3 and 5 were done together:
+`LopSfFcc` went directly to the end state. On three frames of the argon
+example, all 25 005 HDF5 datasets match the explicit-loop reference exactly
+(maximum absolute difference `0.0`). `LOP_SF_FCC` creates the target on its
+first `run()` and calls `open_for_append()` on later runs, so chunked runs
+(phase 6) need no further writer changes.
+
+#### Exit Criteria
+
+- `LopSfFcc` produces HDF5 datasets that match the explicit-loop output
+  within floating-point tolerance.
+- `lop_sf_fcc.py` no longer calculates the order parameter itself.
+- `LopSfFcc.__call__` contains no `with self._data_writer` context, only
+  `self._lop_sf_fcc.run(...)`.

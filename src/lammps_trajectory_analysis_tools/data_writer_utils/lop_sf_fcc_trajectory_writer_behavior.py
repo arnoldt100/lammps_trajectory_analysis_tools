@@ -118,6 +118,13 @@ class LopSfFccTrajectoryWriterBehavior:
         writer.create()
         return state.with_writer(writer)
 
+    def open_for_append(self, state: LopSfFccTrajectoryWriterState) -> Any:
+        """Build a writer, open the existing target for appending, and return
+        the state that carries it."""
+        writer = self.build_writer(state)
+        writer.open_for_append()
+        return state.with_writer(writer)
+
 # ----------
 # Private members
 # ----------
