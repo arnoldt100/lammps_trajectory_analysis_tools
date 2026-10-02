@@ -326,3 +326,115 @@ first `run()` and calls `open_for_append()` on later runs, so chunked runs
 - `lop_sf_fcc.py` no longer calculates the order parameter itself.
 - `LopSfFcc.__call__` contains no `with self._data_writer` context, only
   `self._lop_sf_fcc.run(...)`.
+
+### Stage 1 Cleanup — Remove Dead Code From `lop_sf_fcc.py` (Sketch)
+
+#### Goal
+
+`LopSfFcc` no longer calculates the order parameter, so the calculation
+functions left in `lop_sf_fcc.py` are dead in production code. Remove them so
+that `lop_sf_fcc_mdanalysis.py` is the single source of the calculation.
+`lop_sf_fcc.py` keeps only `LopSfFcc` and its setup helpers.
+
+#### Dead Code Inventory
+
+Production code does not call any of these. Only tests and test fixtures
+import them.
+
+| Symbol in `lop_sf_fcc.py` | Copy in `lop_sf_fcc_mdanalysis.py` | External users |
+| --- | --- | --- |
+| `create_primitive_lattice_vectors` | yes | `tests/input_files/Ar4Version0.py` |
+| `create_reciprocal_lattice_vectors` | yes | `tests/input_files/Ar4Version0.py`, `tests/test_lop_sf_fcc.py` |
+| `create_wavevectors` | yes | `tests/test_lop_sf_fcc.py`, `tests/test_lop_sf_fcc_mdanalysis.py` |
+| `calculate_lop_fcc_atom_pair_exp_terms` | yes | `tests/test_lop_sf_fcc_Ar4Version0.py` |
+| `calculate_sf_fcc_atom_order_parameter_no_coeffs` | yes; takes an `AtomGroup`, not a `Universe` | `tests/test_lop_sf_fcc_Ar4Version0.py`, `tests/test_lop_sf_fcc_mdanalysis.py` |
+| `calculate_sf_fcc_atom_order_parameter_with_coeffs` | yes | `tests/test_lop_sf_fcc_Ar4Version0.py`, `tests/test_lop_sf_fcc_mdanalysis.py` |
+| `calculate_lop_fcc_exp_terms` | no | `tests/test_lop_sf_fcc_Ar4Version0.py::test_lop_fcc_exp_terms` |
+| `create_atom_pair_key` | no | `tests/test_lop_sf_fcc_Ar4Version0.py::test_lop_fcc_exp_terms` |
+
+Imports that become unused once these functions are removed:
+
+- `array_accumulator_builder_key`, `array_accumulator_builder_registry`
+- `ArrayAccumulator`
+- `calculate_atom_pairs`, `calculate_atom_pairs_vectors`
+- `LatticeVectors`, `MDA_Universe`
+
+Keep:
+
+- `key_lop_sf_fcc`, documented as reserved for future use.
+- `LoopTimerBuilderKey`, `timer_object_factory`, `load_universe`, and
+  `numpy`, which are still used.
+
+The notebooks (`FCC_LOP.ipynb`, `FCC_LOP_1.ipynb`) and `examples/` do not
+reference the dead symbols.
+
+#### Decision — Functions Without A Copy
+
+`calculate_lop_fcc_exp_terms` and `create_atom_pair_key` exist only in
+`lop_sf_fcc.py`, and only `test_lop_fcc_exp_terms` uses them.
+
+**Decided:** delete both functions and `test_lop_fcc_exp_terms` from
+`tests/test_lop_sf_fcc_Ar4Version0.py`.
+`test_lop_sf_fcc_atom_order_parameter_no_coeffs` already covers the same
+per-atom `exp(iq·r)` sums. Also remove the two names from that test module's
+import list.
+
+#### Test Migration
+
+- `tests/input_files/Ar4Version0.py`, `tests/test_lop_sf_fcc.py`, and
+  `tests/test_lop_sf_fcc_Ar4Version0.py`: change imports from
+  `lop_sf_fcc.lop_sf_fcc` to `lop_sf_fcc.lop_sf_fcc_mdanalysis`.
+- `test_lop_sf_fcc_Ar4Version0.py`: pass `universe.atoms` instead of
+  `universe` to `calculate_sf_fcc_atom_order_parameter_no_coeffs`.
+- `tests/test_lop_sf_fcc_mdanalysis.py`: the reference comparisons
+  (`test_wavevectors_match_reference` and
+  `test_matches_reference_loop_per_frame`) lose their reference. Replace them
+  with the fixed expected values in `Ar4Version0`
+  (`atom_accum_exp_terms_with_coeffs`, `wave_vectors`). The perfect-FCC,
+  isolated-atom, and HDF5 tests already provide independent checks.
+- Run the full test suite before and after. The test count may only drop by
+  the removed tests.
+
+#### Phases
+
+1. Delete `test_lop_fcc_exp_terms`, and its imports of
+   `calculate_lop_fcc_exp_terms` and `create_atom_pair_key`.
+2. Migrate the test and fixture imports to `lop_sf_fcc_mdanalysis.py`, and
+   replace the two reference-comparison tests. Run the suite while the old
+   functions still exist.
+3. Delete the dead functions and their unused imports from `lop_sf_fcc.py`.
+   Update the module docstring.
+4. Run the full test suite, plus a short `LTAT_DEBUG_PLOT_FRAMES=3` run of the
+   argon example compared with `/tmp/ltat_reference.hdf5`.
+
+#### Exit Criteria
+
+- `lop_sf_fcc.py` contains no order-parameter calculation code.
+- No module imports calculation functions from `lop_sf_fcc.py`.
+- All tests pass, and the HDF5 output is unchanged.
+
+**Status:** Complete.
+
+- Removed the eight dead functions and seven unused imports from
+  `lop_sf_fcc.py`.
+- Removed `test_lop_fcc_exp_terms` and its `ErrMsgLopFccExpTerms` helper.
+- `test_wavevectors_match_reference` and
+  `test_matches_reference_loop_per_frame` were replaced by
+  `test_wavevectors_match_fixture`, `test_matches_fixture_values`, and
+  `test_box_is_stored_per_frame`.
+- Results: 311 passed, 2 skipped. The 3-frame argon HDF5 output matches the
+  reference exactly (25 005 datasets, maximum absolute difference `0.0`).
+
+## Stage 2 — Parallel Version
+
+### Number Of Workers
+
+The command-line option `--parallel-threads` sets the number of workers for
+parallelization.
+
+- Parsed by `positive_integer` in `lop_sf_fcc_cli_parser.py`. The default is
+  `1`, and non-positive values are rejected.
+- Exposed as `CLILopSfFcc.parallel_threads` and stored in
+  `LopSfFcc._parallel_threads`.
+- Stage 2 passes this value as the worker count to
+  `LOP_SF_FCC.run(...)` (MDAnalysis `n_workers`).

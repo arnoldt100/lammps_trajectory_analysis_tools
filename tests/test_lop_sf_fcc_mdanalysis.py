@@ -12,15 +12,10 @@ import pytest
 from MDAnalysis.coordinates.memory import MemoryReader
 
 # Local Library package imports
-from lammps_trajectory_analysis_tools.accumulator import (
-    array_accumulator_builder_key,
-    array_accumulator_builder_registry,
-)
 from lammps_trajectory_analysis_tools.data_writer_utils import (
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
     data_writer_factory,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import lop_sf_fcc as reference
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import lop_sf_fcc_mdanalysis as mdtool
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
     LOP_SF_FCC,
@@ -61,29 +56,10 @@ def _perfect_fcc_universe(edge_length: float, nm_cells: int) -> mda.Universe:
     return universe
 
 
-def _reference_frame_values(universe, wavevectors, cutoff) -> np.ndarray:
-    nm_atoms = universe.atoms.n_atoms
-    build = array_accumulator_builder_registry.build
-    nm_neighbors = build(array_accumulator_builder_key, dtype=np.int32,
-                         capacity=np.int32(nm_atoms), initial_value=np.int32(0),
-                         name="nm_neighbors")
-    lop_terms0 = build(array_accumulator_builder_key, dtype=np.complex64,
-                       capacity=np.int32(nm_atoms), initial_value=np.complex64(0.0),
-                       name="lop_terms0")
-    lop_terms1 = build(array_accumulator_builder_key, dtype=np.float64,
-                       capacity=np.int32(nm_atoms), initial_value=np.float64(0.0),
-                       name="lop_terms1")
-    terms0, neighbors = reference.calculate_sf_fcc_atom_order_parameter_no_coeffs(
-        universe, wavevectors, cutoff, nm_neighbors, lop_terms0)
-    result = reference.calculate_sf_fcc_atom_order_parameter_with_coeffs(
-        nm_atoms, wavevectors.shape[0], terms0, neighbors, lop_terms1)
-    return np.array(result.finalize())
-
-
-def test_wavevectors_match_reference() -> None:
-    edge_length = np.float64(5.19)
-    np.testing.assert_allclose(mdtool.create_wavevectors(edge_length),
-                               reference.create_wavevectors(edge_length))
+def test_wavevectors_match_fixture() -> None:
+    structure = Ar4Version0()
+    np.testing.assert_allclose(mdtool.create_wavevectors(structure.lattice_edge_length),
+                               structure.wave_vectors, rtol=1e-5)
 
 
 @pytest.mark.parametrize("run_kwargs, expected_frames", [
@@ -102,15 +78,21 @@ def test_results_shape_and_frames(run_kwargs, expected_frames) -> None:
     np.testing.assert_array_equal(analysis.frames, expected_frames)
 
 
-def test_matches_reference_loop_per_frame() -> None:
-    universe, structure = _ar4_multiframe_universe()
-    cutoff = np.float32(structure.cutoff)
-    analysis = LOP_SF_FCC(universe.atoms, structure.lattice_edge_length, cutoff).run()
+def test_matches_fixture_values() -> None:
+    structure = Ar4Version0()
+    universe = structure.create_md_analysis_universe()
+    analysis = LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                          structure.cutoff).run()
+    np.testing.assert_allclose(analysis.results.lop_sf_fcc[0],
+                               structure.atom_accum_exp_terms_with_coeffs,
+                               rtol=1e-5, atol=1e-8)
 
-    wavevectors = reference.create_wavevectors(np.float64(structure.lattice_edge_length))
+
+def test_box_is_stored_per_frame() -> None:
+    universe, structure = _ar4_multiframe_universe()
+    analysis = LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                          structure.cutoff).run()
     for frame_index, ts in enumerate(universe.trajectory):
-        expected = _reference_frame_values(universe, wavevectors, cutoff)
-        np.testing.assert_allclose(analysis.results.lop_sf_fcc[frame_index], expected)
         np.testing.assert_allclose(analysis.results.box_lengths[frame_index], ts.dimensions[:3])
         np.testing.assert_allclose(analysis.results.box_angles[frame_index], ts.dimensions[3:])
 
