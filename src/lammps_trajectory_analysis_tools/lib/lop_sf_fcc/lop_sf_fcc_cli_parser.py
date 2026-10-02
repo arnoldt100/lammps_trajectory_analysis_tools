@@ -229,7 +229,8 @@ class LopSfFccSubparserBuilder:
                      type=positive_integer,
                      required=False,
                      default=1,
-                     help="Number of parallel threads. If omitted, the default is 1.")
+                     help=("Number of MDAnalysis multiprocessing workers. 1 runs "
+                           "serially. If omitted, the default is 1."))
 
         parser1.add_argument("--md-params-json",
                      type=non_blank_string,

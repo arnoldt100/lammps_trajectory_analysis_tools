@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 # Python standard library imports
+import pickle
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -191,3 +192,108 @@ def test_no_data_writer_writes_nothing(tmp_path: Path) -> None:
     universe, structure = _ar4_multiframe_universe()
     LOP_SF_FCC(universe.atoms, structure.lattice_edge_length, structure.cutoff).run()
     assert list(tmp_path.iterdir()) == []
+
+
+RESULT_NAMES = ("lop_sf_fcc", "positions", "box_lengths", "box_angles")
+
+
+def _assert_same_analysis(actual, expected) -> None:
+    np.testing.assert_array_equal(actual.frames, expected.frames)
+    np.testing.assert_array_equal(actual.times, expected.times)
+    for name in RESULT_NAMES:
+        np.testing.assert_array_equal(actual.results[name], expected.results[name])
+
+
+def _run(universe, structure, **run_kwargs):
+    return LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                      structure.cutoff).run(**run_kwargs)
+
+
+def test_supports_serial_and_multiprocessing() -> None:
+    assert LOP_SF_FCC.get_supported_backends() == ("serial", "multiprocessing")
+    universe, structure = _ar4_multiframe_universe()
+    assert LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                      structure.cutoff).parallelizable
+
+
+@pytest.mark.parametrize("n_workers", [1, 2, 3])
+@pytest.mark.parametrize("run_kwargs", [{}, {"start": 1, "stop": 5, "step": 2}])
+def test_multiprocessing_matches_serial(n_workers, run_kwargs) -> None:
+    universe, structure = _ar4_multiframe_universe()
+    serial = _run(universe, structure, **run_kwargs)
+    parallel = _run(universe, structure, backend="multiprocessing",
+                    n_workers=n_workers, **run_kwargs)
+    _assert_same_analysis(parallel, serial)
+
+
+@pytest.mark.parametrize("n_parts", [4, NM_FRAMES + 3])
+def test_multiprocessing_is_independent_of_n_parts(n_parts) -> None:
+    universe, structure = _ar4_multiframe_universe()
+    serial = _run(universe, structure)
+    parallel = _run(universe, structure, backend="multiprocessing",
+                    n_workers=2, n_parts=n_parts)
+    _assert_same_analysis(parallel, serial)
+
+
+def test_more_workers_than_frames() -> None:
+    universe, structure = _ar4_multiframe_universe()
+    serial = _run(universe, structure)
+    parallel = _run(universe, structure, backend="multiprocessing",
+                    n_workers=NM_FRAMES + 2)
+    _assert_same_analysis(parallel, serial)
+
+
+def test_multiprocessing_writes_the_same_hdf5_as_serial(tmp_path: Path) -> None:
+    universe, structure = _ar4_multiframe_universe()
+    paths = {}
+    for backend, n_workers in (("serial", None), ("multiprocessing", 3)):
+        paths[backend] = tmp_path / f"{backend}.hdf5"
+        writer = _hdf5_data_writer(paths[backend], NM_FRAMES, structure.nm_atoms)
+        LOP_SF_FCC(universe.atoms, structure.lattice_edge_length, structure.cutoff,
+                   data_writer=writer).run(backend=backend, n_workers=n_workers)
+
+    serial = _read_trajectories(paths["serial"])
+    parallel = _read_trajectories(paths["multiprocessing"])
+    assert len(parallel) == len(serial) == NM_FRAMES
+    for parallel_trajectory, serial_trajectory in zip(parallel, serial):
+        for name, values in serial_trajectory.items():
+            np.testing.assert_array_equal(parallel_trajectory[name], values)
+
+
+def test_multiprocessing_chunks_append_in_frame_order(tmp_path: Path) -> None:
+    universe, structure = _ar4_multiframe_universe()
+    file_path = tmp_path / "lop.hdf5"
+    writer = _hdf5_data_writer(file_path, NM_FRAMES, structure.nm_atoms)
+    analysis = LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                          structure.cutoff, data_writer=writer)
+    analysis.run(stop=2, backend="multiprocessing", n_workers=2)
+    analysis.run(start=2, backend="multiprocessing", n_workers=2)
+
+    step_numbers = [int(trajectory["step_number"][0])
+                    for trajectory in _read_trajectories(file_path)]
+    assert step_numbers == list(range(NM_FRAMES))
+
+
+def test_pickled_copies_carry_no_writer(tmp_path: Path) -> None:
+    universe, structure = _ar4_multiframe_universe()
+    writer = _hdf5_data_writer(tmp_path / "lop.hdf5", NM_FRAMES, structure.nm_atoms)
+    analysis = LOP_SF_FCC(universe.atoms, structure.lattice_edge_length,
+                          structure.cutoff, data_writer=writer).run()
+
+    copy = pickle.loads(pickle.dumps(analysis))
+    assert copy._data_writer is None
+    assert analysis._data_writer is writer
+    np.testing.assert_array_equal(copy.results.lop_sf_fcc, analysis.results.lop_sf_fcc)
+
+
+def test_run_starts_with_empty_results() -> None:
+    universe, structure = _ar4_multiframe_universe()
+    analysis = _run(universe, structure)
+    analysis.run(stop=2, backend="multiprocessing", n_workers=2)
+    assert analysis.results.lop_sf_fcc.shape == (2, structure.nm_atoms)
+
+
+def test_verbose_requires_the_serial_backend() -> None:
+    universe, structure = _ar4_multiframe_universe()
+    with pytest.raises(ValueError):
+        _run(universe, structure, backend="multiprocessing", n_workers=2, verbose=True)

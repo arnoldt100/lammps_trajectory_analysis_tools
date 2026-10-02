@@ -588,6 +588,57 @@ Do this only if the Stage 2.3 pilot shows peak memory is too high.
 - Pick the chunk size so that one chunk's results fit comfortably in memory,
   and keep it a multiple of `n_workers`.
 
+### Stage 2 Status
+
+- **2.1 — done.** `LOP_SF_FCC` declares `serial` and `multiprocessing`
+  support, sets `_analysis_algorithm_is_parallelizable = True`, and
+  implements `_get_aggregator()` (`ndarray_vstack` for all four results).
+  - `__getstate__` drops `_data_writer` and the per-run accumulators from
+    pickled copies.
+  - `run()` resets `self.results` first, so earlier results are not shipped
+    to workers.
+  - Implementation note: `__getstate__` must not clear `results`. The worker
+    copies are pickled back to the main process, and their results would be
+    lost.
+- **2.2 — done.** `LopSfFcc` uses `_backend_run_arguments(parallel_threads)`:
+  `1` selects `serial`, and `N > 1` selects `multiprocessing` with
+  `n_workers=N`. It warns when `N` exceeds `os.cpu_count()`, and prints the
+  backend and worker count.
+  - New tests: `tests/test_lop_sf_fcc_end_to_end.py`.
+  - Parallel matrix: `tests/test_lop_sf_fcc_mdanalysis.py`.
+  - Full suite: 330 passed, 2 skipped.
+- **2.3 regression — done.** 3 argon frames with 1, 2, and 3 workers match
+  `/tmp/ltat_reference.hdf5` exactly (25 005 datasets, maximum absolute
+  difference `0.0`).
+  - Driver scripts must be real files guarded by
+    `if __name__ == "__main__":`. With `forkserver`, workers cannot import a
+    script read from stdin.
+- **2.3 pilot — done.** 100 argon frames (5849 atoms), run with
+  `PYTHON_GIL=0 OMP_NUM_THREADS=1 /usr/bin/time -v` on the 10-core machine.
+  The HDF5 output for every worker count is identical to the serial output.
+
+  | Workers | Wall time | Speed-up | Parallel efficiency | Max RSS of largest process |
+  | --- | --- | --- | --- | --- |
+  | 1 (serial) | 502.0 s | 1.00× | 100 % | 349 MB |
+  | 2 | 259.5 s | 1.93× | 97 % | 218 MB |
+  | 4 | 134.5 s | 3.73× | 93 % | 218 MB |
+  | 8 | 90.0 s | 5.58× | 70 % | 217 MB |
+  | 10 | 77.8 s | 6.45× | 65 % | 217 MB |
+
+  - Serial cost is about 5.0 s per frame. Scaling is near-linear up to 4
+    workers and flattens beyond 8.
+  - Projected full run (5001 frames): about 7 h serial, and about 65 min with
+    10 workers.
+  - `/usr/bin/time -v` reports the largest single process, not the sum over
+    workers.
+  - Projected main-process memory for the full run: about 585 MB of merged
+    results, plus the worker copies held briefly during the merge, so roughly
+    1.2 GB. The machine has 30 GB of RAM with about 21 GB available, so
+    Stage 2.4 (memory control) is not needed for this example.
+- **2.3 full run — not started.** It needs the user's go-ahead. Recommended
+  setting: `--parallel-threads 10` with `OMP_NUM_THREADS=1`, writing to
+  scratch space.
+
 ### Stage 2 Exit Criteria
 
 - `LOP_SF_FCC` declares `multiprocessing` support and passes the parallel

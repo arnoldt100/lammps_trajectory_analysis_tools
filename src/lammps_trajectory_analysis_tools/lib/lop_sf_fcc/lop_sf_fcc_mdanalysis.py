@@ -9,6 +9,7 @@ The public members provided by this module are:
 # Third party library imports
 import numpy as np
 from MDAnalysis.analysis.base import AnalysisBase
+from MDAnalysis.analysis.results import Results, ResultsGroup
 
 # Local imports
 from lammps_trajectory_analysis_tools.accumulator import (
@@ -76,11 +77,18 @@ class LOP_SF_FCC(AnalysisBase):
     Notes
     -----
     Periodic displacement vectors assume a right rectangular box.
+
+    Supported backends are ``'serial'`` and ``'multiprocessing'``; pass
+    ``backend`` and ``n_workers`` to :meth:`run`. Frames are calculated in
+    the workers, but the data writer is used only by ``_conclude`` in the
+    main process, after the worker results are merged in frame order.
     """
+
+    _analysis_algorithm_is_parallelizable = True
 
     @classmethod
     def get_supported_backends(cls):
-        return ('serial', )
+        return ('serial', 'multiprocessing')
 
     def __init__(self, atomgroup, edge_length, cutoff, data_writer=None, **kwargs):
         super().__init__(atomgroup.universe.trajectory, **kwargs)
@@ -92,6 +100,29 @@ class LOP_SF_FCC(AnalysisBase):
         self._data_writer = data_writer
         self._data_writer_created = False
         self._nm_frames_written = 0
+
+    def __getstate__(self):
+        # Pickled copies (worker copies) never write; _prepare rebuilds the accumulators.
+        state = self.__dict__.copy()
+        state["_data_writer"] = None
+        for name in ("_accumulator_nm_neighbors",
+                     "_accumulator_lop_terms0",
+                     "_accum_lop_terms_with_coeffs"):
+            state.pop(name, None)
+        return state
+
+    def run(self, *args, **kwargs):
+        # Otherwise results of an earlier run are pickled into every worker.
+        self.results = Results()
+        return super().run(*args, **kwargs)
+
+    def _get_aggregator(self):
+        return ResultsGroup(lookup={
+            "lop_sf_fcc": ResultsGroup.ndarray_vstack,
+            "box_lengths": ResultsGroup.ndarray_vstack,
+            "box_angles": ResultsGroup.ndarray_vstack,
+            "positions": ResultsGroup.ndarray_vstack,
+        })
 
     def _prepare(self):
         self.results.lop_sf_fcc = np.zeros((self.n_frames, self._nm_atoms),

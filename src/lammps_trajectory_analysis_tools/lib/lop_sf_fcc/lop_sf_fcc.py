@@ -10,6 +10,7 @@ The public members provided by this module are:
 # Python standard library imports
 import os
 import datetime
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -133,11 +134,13 @@ class LopSfFcc:
         self._set_attributes(command_line_arguments)
 
         print(f"Number of trajectory frames = {self._nm_frames}")
+        run_kwargs = _backend_run_arguments(self._parallel_threads)
+        print(f"Backend = {run_kwargs['backend']}, workers = {self._parallel_threads}")
         trajectory_loop_timer = (
             timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",1,1)
         )
         trajectory_loop_timer.start()
-        self._lop_sf_fcc.run(stop=self._nm_frames)
+        self._lop_sf_fcc.run(stop=self._nm_frames, **run_kwargs)
         trajectory_loop_timer.update(1)
         trajectory_loop_timer.stop()
 
@@ -246,6 +249,16 @@ def _build_layout_arguments(universe)->dict[str,Any]:
 
 def _set_lop_sf_fcc_attribute(atom_group, edge_length, cutoff, data_writer):
     return LOP_SF_FCC(atom_group, edge_length, cutoff, data_writer=data_writer)
+
+def _backend_run_arguments(parallel_threads: int)->dict[str,Any]:
+    """ Returns the MDAnalysis run() backend keywords for the worker count. """
+    if parallel_threads == 1:
+        return {"backend": "serial"}
+    cpu_count = os.cpu_count()
+    if cpu_count is not None and parallel_threads > cpu_count:
+        warnings.warn(f"--parallel-threads={parallel_threads} exceeds the "
+                      f"{cpu_count} available CPUs", RuntimeWarning, stacklevel=2)
+    return {"backend": "multiprocessing", "n_workers": parallel_threads}
 
 def _build_metadata_arguments(md_params_json:JSON,
                               md_metadata_json:JSON ):
