@@ -1,5 +1,8 @@
 # Parallelize Over Trajectories Plan
 
+**Status: complete (2026-10-02).** Stage 1 and Stage 2 are done; Stage 2.4
+was not needed. All exit criteria are met.
+
 ## Stages
 
 The change is planned in two stages:
@@ -635,9 +638,24 @@ Do this only if the Stage 2.3 pilot shows peak memory is too high.
     results, plus the worker copies held briefly during the merge, so roughly
     1.2 GB. The machine has 30 GB of RAM with about 21 GB available, so
     Stage 2.4 (memory control) is not needed for this example.
-- **2.3 full run — not started.** It needs the user's go-ahead. Recommended
-  setting: `--parallel-threads 10` with `OMP_NUM_THREADS=1`, writing to
-  scratch space.
+- **2.3 full run — done.** All 5001 argon frames (5849 atoms), run with
+  `env -u LTAT_DEBUG_PLOT_FRAMES PYTHON_GIL=0 OMP_NUM_THREADS=1
+  /usr/bin/time -v` and `--parallel-threads 10` on the 10-core machine,
+  writing to scratch space (`/tmp/ltat_stage2/full_w10.hdf5`).
+  - Wall time: 1:00:37 (3636 s; analysis loop 3636.4 s), versus the projected
+    65 min. Max RSS of the largest process: 1.48 GB (projected: 1.2 GB).
+    Output file: 547 MB.
+  - Verification passed: the HDF5 output holds exactly 5001 trajectory groups
+    (`traj_00000`–`traj_05000`), every group has complete, finite
+    `positions` / `lop_sf_fcc` / `box_lengths` / `box_angles` / `step_number`
+    datasets, and step numbers run `0..5000` in order.
+  - Gotcha: `LTAT_DEBUG_PLOT_FRAMES` must be unset for the full run. A stale
+    `LTAT_DEBUG_PLOT_FRAMES=100` in the shell truncated an earlier attempt to
+    100 frames. Check the log for "Number of trajectory frames = 5001" right
+    after startup.
+- **2.4 — skipped (justified).** The full run's measured peak memory
+  (1.48 GB max RSS) is far below the 21 GB available on the target machine,
+  so chunked writing is not needed for this example.
 
 ### Stage 2 Exit Criteria
 
@@ -648,3 +666,5 @@ Do this only if the Stage 2.3 pilot shows peak memory is too high.
 - HDF5 output is identical across worker counts, and writing happens only in
   the main process.
 - Benchmark results (time, speed-up, memory) are recorded in this plan.
+
+All Stage 2 exit criteria are met. The plan is complete.
