@@ -438,3 +438,162 @@ parallelization.
   `LopSfFcc._parallel_threads`.
 - Stage 2 passes this value as the worker count to
   `LOP_SF_FCC.run(...)` (MDAnalysis `n_workers`).
+
+### Objective
+
+Run the per-frame FCC order-parameter calculation in parallel over trajectory
+frames, using the MDAnalysis `multiprocessing` backend. Follow the MDAnalysis
+"split-apply-combine" guidelines for parallel analysis classes (MDAnalysis
+≥ 2.8; this project uses `2.10.0`).
+
+**Scope rule: the HDF5 writer is not parallelized.** Only `_prepare` and
+`_single_frame` run in workers. All HDF5 writing stays in `_conclude`, which
+MDAnalysis runs once, in the main process, after the worker results are
+merged. No worker opens, creates, or writes the HDF5 file.
+
+### How MDAnalysis Runs A Parallel Analysis (2.10.0)
+
+From `MDAnalysis/analysis/base.py`:
+
+1. `run(start, stop, step, frames, n_workers, n_parts, backend, ...)` calls
+   `_setup_frames` in the main process, which sets `self.n_frames`.
+2. `_setup_computation_groups` splits the selected frames into `n_parts`
+   groups. `n_parts` defaults to `n_workers`.
+3. The backend calls `self._compute(group)` once per group.
+   `BackendMultiprocessing` uses `multiprocessing.Pool.map`, so `self` (the
+   analysis object, including its `AtomGroup` and `Universe`) is pickled into
+   every worker.
+4. Each worker copy runs `_prepare()` and then `_single_frame()` for its own
+   frames. `self.n_frames` and `self._frame_index` are local to the group, so
+   result arrays are sized per group.
+5. In the main process, `frames` and `times` are concatenated with `hstack`,
+   and `self.results` is built by `self._get_aggregator().merge(...)`.
+6. `_conclude()` runs once in the main process on the merged results.
+
+Environment facts checked for this plan:
+
+- The default multiprocessing start method on this Python (3.14t) is
+  `forkserver`, so everything sent to a worker must be picklable.
+- `LOP_SF_FCC` on the argon DCD universe pickles successfully.
+- The HDF5 writer value object pickles successfully while closed.
+- The argon example has 5001 frames and 5849 atoms.
+- Target machine: 1 socket, 1 NUMA node, 10 physical cores (CPUs 0–9), and
+  1 thread per core (no hyper-threading). The useful worker range is
+  therefore `1–10`. The main process mostly waits in `Pool.map`, so all 10
+  cores can be workers.
+
+### Stage 2.1 — Make `LOP_SF_FCC` Parallelizable
+
+Changes to `lop_sf_fcc_mdanalysis.py`, following the MDAnalysis guidelines:
+
+- Set `_analysis_algorithm_is_parallelizable = True`.
+- `get_supported_backends()` returns `('serial', 'multiprocessing')`. Dask is
+  out of scope.
+- Implement `_get_aggregator()` to stack every per-frame result along the
+  frame axis:
+
+  ```python
+  def _get_aggregator(self):
+      return ResultsGroup(lookup={
+          "lop_sf_fcc": ResultsGroup.ndarray_vstack,
+          "box_lengths": ResultsGroup.ndarray_vstack,
+          "box_angles": ResultsGroup.ndarray_vstack,
+          "positions": ResultsGroup.ndarray_vstack,
+      })
+  ```
+
+- Keep `_single_frame` free of cross-frame state. It already only uses
+  per-group accumulators created in `_prepare` and writes to
+  `self.results[...][self._frame_index]`.
+- Keep the writer out of workers explicitly. Add `__getstate__` that returns
+  a copy of the state with `_data_writer` set to `None`. This means no worker
+  can touch the writer and the writer is not pickled. `_conclude` runs on the
+  original main-process object, which still holds the writer.
+- `_conclude` is unchanged. It writes the merged `self.results` in frame
+  order using `self.frames`.
+- Update the class docstring: list the supported backends and state that
+  writing happens only in the main process.
+
+Tests (`tests/test_lop_sf_fcc_mdanalysis.py`):
+
+- Parametrize the existing shape, value, and frame tests over
+  `backend="serial"` and `backend="multiprocessing"` with
+  `n_workers ∈ {1, 2, 3}`.
+- Multiprocessing results equal serial results exactly for `lop_sf_fcc`,
+  `positions`, `box_lengths`, `box_angles`, `frames`, and `times`.
+- Results do not depend on `n_parts`. Check `n_parts > n_workers` and
+  `n_parts` larger than the number of frames, which gives empty groups.
+- With a data writer and `backend="multiprocessing"`, the HDF5 file equals
+  the serial-backend file.
+- A pickled copy of an analysis object with a writer has
+  `_data_writer is None`.
+- `run(verbose=True)` with a non-serial backend raises, as documented by
+  MDAnalysis. Keep `verbose` for serial only.
+
+### Stage 2.2 — Wire `--parallel-threads` Into `LopSfFcc`
+
+In `LopSfFcc.__call__`:
+
+```python
+if self._parallel_threads == 1:
+    self._lop_sf_fcc.run(stop=self._nm_frames)
+else:
+    self._lop_sf_fcc.run(stop=self._nm_frames,
+                         backend="multiprocessing",
+                         n_workers=self._parallel_threads)
+```
+
+- `1` keeps the serial backend, which allows `verbose` progress bars.
+- Report the backend and worker count next to the existing
+  "Number of trajectory frames" message.
+- Update the `--parallel-threads` help text to say it sets the number of
+  multiprocessing workers.
+- Do not clamp `n_workers` to the frame count. MDAnalysis handles empty
+  groups. Cover this with a test (`n_workers > n_frames`).
+- Note in the README that each worker uses one process. Users should set
+  `OMP_NUM_THREADS=1` to avoid oversubscribing cores through NumPy's threaded
+  libraries. On the 10-core target machine, a value above 10 only adds
+  overhead. Allow it, but print a warning when `--parallel-threads` exceeds
+  `os.cpu_count()`.
+
+Tests: a `LopSfFcc` end-to-end test on a small trajectory with
+`parallel_threads ∈ {1, 2}` writing to `tmp_path`. The two HDF5 files must be
+equal.
+
+### Stage 2.3 — Verification And Benchmarking
+
+1. **Regression:** run the argon example with `LTAT_DEBUG_PLOT_FRAMES=3` and
+   `--parallel-threads` set to 1, 2, and 3. Compare each output with
+   `/tmp/ltat_reference.hdf5`; the maximum absolute difference must be `0.0`.
+2. **Pilot:** 100 frames with 1, 2, 4, 8, and 10 workers under
+   `/usr/bin/time -v`, with `OMP_NUM_THREADS=1`. Record wall time, speed-up,
+   and peak memory in this plan. Write output to scratch space, not the
+   example directory. With one NUMA node, no CPU pinning or NUMA binding is
+   needed.
+3. **Full run:** all 5001 frames with the best worker count from the pilot.
+   Check that the HDF5 output is complete and that step numbers are in order.
+
+### Stage 2.4 — Memory Control (Conditional)
+
+Do this only if the Stage 2.3 pilot shows peak memory is too high.
+
+- Each worker returns its `positions` and `lop_sf_fcc` arrays to the main
+  process through pickling. During the merge, the main process briefly holds
+  both the worker copies and the stacked result. For all 5001 frames that is
+  about 585 MB of results before this extra copy.
+- Run in frame chunks from `LopSfFcc`: call `run(start, stop, backend=...,
+  n_workers=...)` once per chunk. `_conclude` creates the HDF5 target on the
+  first chunk and uses `open_for_append()` on later chunks, which is already
+  implemented. Writing stays serial and in frame order.
+- Pick the chunk size so that one chunk's results fit comfortably in memory,
+  and keep it a multiple of `n_workers`.
+
+### Stage 2 Exit Criteria
+
+- `LOP_SF_FCC` declares `multiprocessing` support and passes the parallel
+  test matrix with results identical to the serial backend.
+- `--parallel-threads N` runs `N` multiprocessing workers. `N = 1` runs
+  serially.
+- HDF5 output is identical across worker counts, and writing happens only in
+  the main process.
+- Benchmark results (time, speed-up, memory) are recorded in this plan.
