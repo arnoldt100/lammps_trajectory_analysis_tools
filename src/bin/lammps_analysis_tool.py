@@ -14,6 +14,7 @@ J. Chem. Phys. 116(21), 134503 (2002).
 
 from lammps_trajectory_analysis_tools.lib import process_command_line_arguments
 from lammps_trajectory_analysis_tools.lib import CLI_ID
+from lammps_trajectory_analysis_tools.lib import LOP_SF_FCC
 
 def main ():
     my_args: CLI_ID = process_command_line_arguments()

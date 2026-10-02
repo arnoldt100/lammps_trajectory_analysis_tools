@@ -53,7 +53,7 @@ dt=1.0
 cutoff=10.4
 
 # Define the number of parallel threads.
-nm_threads=2
+nm_threads=10
 
 # Define the json md parameter file.
 md_params_json="md_params.json"

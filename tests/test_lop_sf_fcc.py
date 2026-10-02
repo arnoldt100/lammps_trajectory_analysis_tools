@@ -19,7 +19,7 @@ from lammps_trajectory_analysis_tools.integrations.mdanalysis.universe import (
     calculate_atom_pairs_vectors,
 )
 
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
     create_reciprocal_lattice_vectors,
     create_wavevectors)
 

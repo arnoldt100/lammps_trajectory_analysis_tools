@@ -17,6 +17,7 @@ EXPECTED_ABSTRACT_MEMBERS = frozenset(
         "replace",
         "dummy_method",
         "create",
+        "open_for_append",
         "append_trajectory_frames",
         "close",
         "__enter__",
@@ -104,6 +105,9 @@ def _minimal_implementation() -> LopSfFccTrajectoryWriterValueObjectInterface:
 
         def create(self) -> None:
             return None
+
+        def open_for_append(self):
+            return self
 
         def append_trajectory_frames(
             self,
