@@ -115,6 +115,18 @@ class HDF5LopSfFccTrajectoryWriterValueObject(
             self._state_implementations
         )
 
+    def open_for_append(self) -> Self:
+        """Open the existing output target for appending and return this object.
+
+        Use as ``with value_object.open_for_append() as writer:`` to append to
+        a target made by an earlier ``create``.
+        """
+        self.close()
+        self._state_implementations = self._behavior.open_for_append(
+            self._state_implementations
+        )
+        return self
+
     def append_trajectory_frames(
         self,
         trajectory_index: int,
@@ -161,8 +173,10 @@ class HDF5LopSfFccTrajectoryWriterValueObject(
         )
 
     def __enter__(self) -> Self:
-        """Create the output target and return this value object."""
-        self.create()
+        """Create the output target, unless a writer is already open, and
+        return this value object."""
+        if self._state_implementations.writer is None:
+            self.create()
         return self
 
     def __exit__(self, exception_type: Any, exception: Any, traceback: Any) -> None:

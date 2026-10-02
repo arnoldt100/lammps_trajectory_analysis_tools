@@ -14,7 +14,7 @@ import MDAnalysis as mda
 from MDAnalysis.coordinates.memory import MemoryReader
 
 # Local Library package imports
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc import (create_reciprocal_lattice_vectors,
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (create_reciprocal_lattice_vectors,
  create_primitive_lattice_vectors)
 
 from lammps_trajectory_analysis_tools.accumulator.array_accumulator import ArrayAccumulator

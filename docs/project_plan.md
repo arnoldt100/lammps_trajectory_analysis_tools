@@ -40,6 +40,7 @@ This document contains requirements that apply to the entire repository. Package
 - Add focused tests for new or changed behavior, including invalid input and lifecycle boundaries where applicable.
 - Preserve ordering, atomicity, and error semantics when a change affects stored or streamed data.
 - Run the focused tests first, then the complete suite before considering a change complete.
+- Executing `src/bin/run_unit_tests.sh` runs all unit tests. It runs `uv run pytest -rA tests` from the repository root, with `PYTHON_GIL=0` and `src` on `PYTHONPATH`.
 - Keep integration tests separate from unit tests and use realistic fixtures for external backends.
 
 ## Documentation Rules

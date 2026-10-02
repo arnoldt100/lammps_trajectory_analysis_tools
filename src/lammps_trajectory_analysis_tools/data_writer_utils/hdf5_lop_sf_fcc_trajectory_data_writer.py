@@ -110,6 +110,33 @@ class HDF5LopSfFccTrajectoryDataWriter:
                 f"could not create HDF5 target '{self._file_path}'"
             ) from error
 
+    def open_for_append(self) -> None:
+        """Open an existing target, previously made by ``create``, for appending.
+
+        Stored frames and metadata are kept; new frames are appended after them.
+
+        Raises:
+            DataWriterTargetError: If the target is missing or cannot be opened.
+            DataWriterConfigurationError: If the target's trajectory groups or
+                datasets do not match the configured metadata and layout.
+        """
+        self.close()
+        try:
+            self._file = h5py.File(
+                self._file_path,
+                "r+",
+                rdcc_nbytes=self._chunk_cache_bytes(),
+            )
+        except (OSError, TypeError, ValueError) as error:
+            raise DataWriterTargetError(
+                f"could not open HDF5 target '{self._file_path}' for appending"
+            ) from error
+        try:
+            self._require_matching_target(self._file)
+        except DataWriterConfigurationError:
+            self.close()
+            raise
+
     def write_trajectory(
         self,
         trajectory_index: int,
@@ -237,6 +264,42 @@ class HDF5LopSfFccTrajectoryDataWriter:
     @staticmethod
     def _trajectory_name(index: int) -> str:
         return f"traj_{index:05d}"
+
+    def _require_matching_target(self, target: h5py.File) -> None:
+        if _TRAJECTORY_ROOT not in target:
+            raise DataWriterConfigurationError(
+                f"'{self._file_path}' has no '{_TRAJECTORY_ROOT}' group"
+            )
+        root = target[_TRAJECTORY_ROOT]
+        expected_count = self._metadata.number_of_trajectories
+        if len(root) != expected_count:
+            raise DataWriterConfigurationError(
+                f"'{self._file_path}' holds {len(root)} trajectories, "
+                f"expected {expected_count}"
+            )
+        frame_shapes = self._layout.frame_shapes
+        dtypes = self._layout.dataset_dtypes
+        for index in range(expected_count):
+            group_name = self._trajectory_name(index)
+            if group_name not in root:
+                raise DataWriterConfigurationError(
+                    f"'{self._file_path}' is missing trajectory '{group_name}'"
+                )
+            group = root[group_name]
+            for name in _DATASET_NAMES:
+                if name not in group:
+                    raise DataWriterConfigurationError(
+                        f"trajectory '{group_name}' is missing dataset '{name}'"
+                    )
+                dataset = group[name]
+                if (dataset.shape[1:] != frame_shapes[name]
+                        or dataset.dtype != np.dtype(dtypes[name])):
+                    raise DataWriterConfigurationError(
+                        f"dataset '{group_name}/{name}' has shape "
+                        f"{dataset.shape} and dtype {dataset.dtype}, expected "
+                        f"frame shape {frame_shapes[name]} and dtype "
+                        f"{np.dtype(dtypes[name])}"
+                    )
 
     def _require_group(self, trajectory_index: int) -> h5py.Group:
         if self._file is None or not self._file.id.valid:
