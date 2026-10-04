@@ -33,7 +33,7 @@ Always maintain and respect the project layout outlined below:
 ├── .github/
 │   └── copilot-instructions.md   # System rules
 ├── src/                          # Global engine, shared scientific constants, base classes
-│   └── ... 
+│   └── ...
 ├── tests/                        # Centralized mathematical and performance validation
 │   ├── test_global/              # Global framework verification
 │   └── features/                 # Feature-specific mathematical assertions
