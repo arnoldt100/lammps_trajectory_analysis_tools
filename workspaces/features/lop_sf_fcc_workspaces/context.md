@@ -25,11 +25,11 @@ mirroring the feature structure.
   the HDF5 trajectory data writer (value object, layout/metadata, builders,
   concrete writer, and the `lop_sf_fcc_data_writer_factory` registry) in
   `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`. Active.
-
-Planned children (not yet created):
-
-- `lop_sf_fcc_visit_plotter_workspaces/` — VisIt-based plotting of the
-  computed order parameter.
+- [lop_sf_fcc_visit_plotter_workspaces/](lop_sf_fcc_visit_plotter_workspaces/README.md) —
+  VisIt-based plotting of the computed order parameter: a time series of 3D
+  atom point-clouds pseudocolored by `lop_sf_fcc`, rendered headlessly via a
+  VisIt subprocess. Workspace created and plan authored 2026-10-05; no
+  production code yet (status: planned).
 
 ## Rules
 
