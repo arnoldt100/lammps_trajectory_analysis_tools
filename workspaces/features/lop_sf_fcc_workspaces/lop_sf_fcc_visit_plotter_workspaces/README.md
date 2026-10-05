@@ -86,6 +86,65 @@ Dependencies of this feature — each is documented in both workspaces:
   site. See
   [../../design_patterns_workspaces/builder_design_pattern/README.md](../../design_patterns_workspaces/builder_design_pattern/README.md).
 
+## Usage
+
+Render a LOP SF FCC HDF5 file as a VisIt time series (one PNG per timestep,
+each a 3D atom point-cloud pseudocolored by `lop_sf_fcc`):
+
+```python
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.visit_plotter import (
+    LopSfFccVisitPlotter,
+    locate_visit_installation,
+)
+
+# A LOP SF FCC HDF5 file produced by the analysis.
+source_hdf5 = (
+    "examples/example-lop_sf_fcc-ar_box_small/"
+    "ar_box_small.lop_sf_fcc.nm-frames-1.validated.hdf5"
+)
+
+# Locate the headless VisIt launcher ($AT_SW_PACKAGES/visit/bin/visit,
+# or override with the LTAT_VISIT env var).
+installation = locate_visit_installation()
+
+# Build the plotter (timeout bounds the render subprocess).
+plotter = LopSfFccVisitPlotter(installation, timeout=180.0)
+
+# Export the master .xdmf and render one PNG per timestep.
+frames = plotter.render(
+    source_hdf5,
+    output_dir="render_out",  # per-frame PNGs land here
+    color_min=0.0,            # fixed pseudocolor range across frames
+    color_max=1.0,
+)
+
+for frame in frames:
+    print("wrote", frame)
+```
+
+`render()` writes `frame_0000.png`, `frame_0001.png`, … into `output_dir` and
+returns the sorted list of `Path`s. To write the master `.xdmf` **without**
+rendering, call `plotter.export_xdmf(source_hdf5, "series.xdmf")` directly.
+Rendering requires VisIt resolvable and `libxml2.so.2` available to
+`mdserver` (the launcher prepends `${AT_SW_PACKAGES}/pymol/lib`
+automatically).
+
+Builder-style equivalent (via the registry):
+
+```python
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.visit_plotter import (
+    lop_sf_fcc_visit_plotter_factory,
+    LopSfFccVisitPlotterBuilderKey,
+    VisitInstallationBuilderKey,
+)
+
+installation = lop_sf_fcc_visit_plotter_factory.build(VisitInstallationBuilderKey)
+plotter = lop_sf_fcc_visit_plotter_factory.build(
+    LopSfFccVisitPlotterBuilderKey, installation, timeout=180.0
+)
+frames = plotter.render(source_hdf5, "render_out")
+```
+
 ## Related Documents
 
 - Standing plan: [top_level_plan.md](top_level_plan.md)
