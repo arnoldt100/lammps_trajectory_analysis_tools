@@ -92,12 +92,14 @@ Current consumers:
   `StateValueObjectImmutable` and satisfies `ValueSemantics`;
   `array_accumulator.py` uses `StateValueObjectMutable` with its own concrete
   state and behavior.
-- **Data writer utils**
-  (`src/lammps_trajectory_analysis_tools/data_writer_utils/`):
+- **LOP SF FCC HDF5 writer**
+  (`src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`):
   `lop_sf_fcc_trajectory_writer_value_object_interface.py` subclasses
-  `ValueObjectInterface` for the HDF5 trajectory-writer value object.
+  `ValueObjectInterface` for the HDF5 trajectory-writer value object. Owned
+  by
+  [lop_sf_fcc_hdf5_writer_workspaces](../../lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/README.md).
 - Consumer-side tests: `tests/test_array_accumulator_contract.py`,
-  `tests/data_writer_utils/`.
+  `tests/lib/lop_sf_fcc/hdf5_writer/`.
 
 Sibling feature: [builder_design_pattern](../builder_design_pattern/README.md)
 — domain families commonly combine both templates (value objects built

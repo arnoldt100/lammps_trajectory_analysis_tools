@@ -4,20 +4,20 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import lammps_trajectory_analysis_tools.data_writer_utils as data_writer_utils
-from lammps_trajectory_analysis_tools.data_writer_utils import (
+import lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer as hdf5_writer
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
     HDF5LopSfFccTrajectoryWriterValueObject,
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
     LopSfFccRunMetadata,
     LopSfFccTrajectoryLayout,
-    data_writer_factory,
+    lop_sf_fcc_data_writer_factory,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_builder_keys import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_builder_keys import (
     HDF5LopSfFccTrajectoryDataWriterBuilderKey,
     LopSfFccRunMetadataBuilderKey,
     LopSfFccTrajectoryLayoutBuilderKey,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_builders import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_builders import (
     LopSfFccRunMetadataBuilder,
 )
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.exceptions import (
@@ -36,43 +36,43 @@ EXPECTED_KEYS = frozenset(
 
 
 def test_the_factory_registers_exactly_the_documented_keys() -> None:
-    assert data_writer_factory.keys() == EXPECTED_KEYS
+    assert lop_sf_fcc_data_writer_factory.keys() == EXPECTED_KEYS
 
 
 def test_the_package_exposes_one_factory_instance() -> None:
     reimported = importlib.import_module(
-        "lammps_trajectory_analysis_tools.data_writer_utils"
+        "lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer"
     )
 
-    assert reimported.data_writer_factory is data_writer_factory
+    assert reimported.lop_sf_fcc_data_writer_factory is lop_sf_fcc_data_writer_factory
 
 
 def test_importing_implementation_modules_registers_nothing_further() -> None:
-    before = data_writer_factory.keys()
+    before = lop_sf_fcc_data_writer_factory.keys()
 
     importlib.reload(
         importlib.import_module(
-            "lammps_trajectory_analysis_tools.data_writer_utils."
+            "lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer."
             "lop_sf_fcc_trajectory_writer_builders"
         )
     )
     importlib.reload(
         importlib.import_module(
-            "lammps_trajectory_analysis_tools.data_writer_utils."
+            "lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer."
             "hdf5_lop_sf_fcc_trajectory_data_writer"
         )
     )
 
-    assert data_writer_factory.keys() == before
+    assert lop_sf_fcc_data_writer_factory.keys() == before
 
 
 def test_an_unknown_key_raises_a_builder_key_error() -> None:
     with pytest.raises(BuilderKeyError):
-        data_writer_factory.build("no_such_builder")
+        lop_sf_fcc_data_writer_factory.build("no_such_builder")
 
 
 def test_a_duplicate_registration_raises_and_preserves_the_original() -> None:
-    original = data_writer_factory.build(
+    original = lop_sf_fcc_data_writer_factory.build(
         LopSfFccRunMetadataBuilderKey,
         time_step=1.0,
         time_units_label="fs",
@@ -84,12 +84,12 @@ def test_a_duplicate_registration_raises_and_preserves_the_original() -> None:
     )
 
     with pytest.raises(BuilderRegistrationError):
-        data_writer_factory.register_builder(
+        lop_sf_fcc_data_writer_factory.register_builder(
             LopSfFccRunMetadataBuilderKey, LopSfFccRunMetadataBuilder()
         )
 
     assert isinstance(original, LopSfFccRunMetadata)
-    assert data_writer_factory.keys() == EXPECTED_KEYS
+    assert lop_sf_fcc_data_writer_factory.keys() == EXPECTED_KEYS
 
 
 def test_the_package_factory_builds_a_usable_value_object(
@@ -97,7 +97,7 @@ def test_the_package_factory_builds_a_usable_value_object(
 ) -> None:
     target = tmp_path / "package_factory.h5"
 
-    value_object = data_writer_factory.build(
+    value_object = lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=target,
         metadata=metadata,
@@ -118,8 +118,8 @@ def test_the_package_factory_builds_a_usable_value_object(
 
 
 def test_the_package_exports_its_public_names() -> None:
-    for name in data_writer_utils.__all__:
-        assert hasattr(data_writer_utils, name)
+    for name in hdf5_writer.__all__:
+        assert hasattr(hdf5_writer, name)
 
 
 def _utc_date():

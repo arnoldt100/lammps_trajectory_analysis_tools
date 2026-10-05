@@ -83,8 +83,10 @@ workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_orchestrator_workspaces/
      (`total_nm_frames` vs. resolved `nm_frames`).
    - `_neighbor_search_radius = np.float32(cutoff)`.
    - `_set_data_writer_attributes`: build the HDF5 writer value object via
-     `data_writer_factory` (metadata from `_build_metadata_arguments`,
-     layout from `_build_layout_arguments`).
+     `lop_sf_fcc_data_writer_factory` (metadata from
+     `_build_metadata_arguments`, layout from `_build_layout_arguments`);
+     the registry and writer stack are owned by the
+     `lop_sf_fcc_hdf5_writer_workspaces` feature.
    - `_set_lop_sf_fcc_attribute`: construct `LOP_SF_FCC(universe.atoms,
      edge_length, cutoff, data_writer)`.
 2. Print the resolved frame count; compute `run_kwargs` via

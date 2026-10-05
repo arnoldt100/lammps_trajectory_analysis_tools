@@ -7,26 +7,26 @@ import pytest
 from lammps_trajectory_analysis_tools.data_writer_utils import (
     DataWriterConfigurationError,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.hdf5_lop_sf_fcc_trajectory_data_writer import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.hdf5_lop_sf_fcc_trajectory_data_writer import (
     HDF5LopSfFccTrajectoryDataWriter,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_builder_keys import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_builder_keys import (
     HDF5LopSfFccTrajectoryDataWriterBuilderKey,
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
     LopSfFccRunMetadataBuilderKey,
     LopSfFccTrajectoryLayoutBuilderKey,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_builders import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_builders import (
     HDF5LopSfFccTrajectoryDataWriterBuilder,
     HDF5LopSfFccTrajectoryWriterValueObjectBuilder,
     LopSfFccRunMetadataBuilder,
     LopSfFccTrajectoryLayoutBuilder,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_state import (
     LopSfFccRunMetadata,
     LopSfFccTrajectoryLayout,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_value_object import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_value_object import (
     HDF5LopSfFccTrajectoryWriterValueObject,
 )
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (

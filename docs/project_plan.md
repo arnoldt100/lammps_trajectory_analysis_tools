@@ -84,6 +84,7 @@ A project change is complete when its implementation, tests, documentation, and 
 - [LOP SF FCC Workspaces Plan](../workspaces/features/lop_sf_fcc_workspaces/top_level_plan.md)
 - [LOP SF FCC Orchestrator Plan](../workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_orchestrator_workspaces/top_level_plan.md)
 - [LOP SF FCC MDAnalysis Backend Plan](../workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_mdanalysis_workspaces/top_level_plan.md)
+- [LOP SF FCC HDF5 Writer Plan](../workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md)
 - [MDAnalysis Integration Plan](mdanalysis_integration_plan.md)
 - [Module Migration Path Plan](module_migration_path_plan.md)
 - [Architecture](../ARCHITECTURE.md)

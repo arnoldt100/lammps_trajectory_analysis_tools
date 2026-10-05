@@ -13,9 +13,9 @@ import pytest
 from MDAnalysis.coordinates.memory import MemoryReader
 
 # Local Library package imports
-from lammps_trajectory_analysis_tools.data_writer_utils import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
-    data_writer_factory,
+    lop_sf_fcc_data_writer_factory,
 )
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import lop_sf_fcc_mdanalysis as mdtool
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
@@ -143,7 +143,7 @@ def _hdf5_data_writer(file_path: Path, nm_trajectories: int, nm_atoms: int):
         "lmod_modules": ("gcc",),
     }
     layout = {"number_of_atoms": int(nm_atoms), "length_units_label": "A"}
-    return data_writer_factory.build(
+    return lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=file_path,
         metadata=metadata,

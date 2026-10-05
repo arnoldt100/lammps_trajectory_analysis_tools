@@ -23,7 +23,8 @@ Last reviewed: 2026-10-04.
 - Domain consumers active: accumulator value objects
   (`array_accumulator_value.py`, `array_accumulator.py`) and the HDF5
   trajectory-writer value object interface
-  (`data_writer_utils/lop_sf_fcc_trajectory_writer_value_object_interface.py`).
+  (`lib/lop_sf_fcc/hdf5_writer/lop_sf_fcc_trajectory_writer_value_object_interface.py`,
+  owned by the `lop_sf_fcc_hdf5_writer_workspaces` feature).
 - Usage guide published at
   `docs/value_semantics_package_usage_guide.md` (copy-and-adapt tutorial).
 - Feature workspace converted to ICM on 2026-10-04; the former canonical

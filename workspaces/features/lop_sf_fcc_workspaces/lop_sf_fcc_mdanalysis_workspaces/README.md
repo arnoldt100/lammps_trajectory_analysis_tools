@@ -64,8 +64,10 @@ module performs the order-parameter math.
 - **MDAnalysis integration package** (`integrations/mdanalysis/`):
   `calculate_atom_pairs` for neighbor searches.
 - **Data types** (`lib/data_types.py`): `LatticeVectors`.
-- **Data writer utils** (`data_writer_utils/`): the optional
-  `LopSfFccTrajectoryWriterValueObjectInterface` used by `_conclude`.
+- **LOP SF FCC HDF5 writer** (`lop_sf_fcc_hdf5_writer_workspaces`, package
+  `lib/lop_sf_fcc/hdf5_writer/`): the optional
+  `LopSfFccTrajectoryWriterValueObjectInterface` used by `_conclude`. See
+  [../lop_sf_fcc_hdf5_writer_workspaces/README.md](../lop_sf_fcc_hdf5_writer_workspaces/README.md).
 
 ## Cross-Feature Dependencies
 
@@ -91,3 +93,5 @@ Dependencies of this feature — each is documented in both workspaces:
 - Project-wide rules: [../../../top_level_plan.md](../../../top_level_plan.md)
 - Orchestrator contract:
   [../lop_sf_fcc_orchestrator_workspaces/top_level_plan.md](../lop_sf_fcc_orchestrator_workspaces/top_level_plan.md)
+- HDF5 writer contract:
+  [../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md](../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md)

@@ -23,9 +23,10 @@ workspaces/
     command_line_workspaces/
       ...              # command_line feature (active)
     lop_sf_fcc_workspaces/
-      ...              # lop_sf_fcc collection: lop_sf_fcc_orchestrator_workspaces/
-                       # and lop_sf_fcc_mdanalysis_workspaces/ (active); HDF5 writer
-                       # and VisIt plotter subworkspaces planned
+      ...              # lop_sf_fcc collection: lop_sf_fcc_orchestrator_workspaces/,
+                       # lop_sf_fcc_mdanalysis_workspaces/, and
+                       # lop_sf_fcc_hdf5_writer_workspaces/ (active); VisIt
+                       # plotter subworkspace planned
 ```
 
 ## Feature Folder Convention

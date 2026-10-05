@@ -85,7 +85,7 @@ LopSfFcc.__call__
   ├─ simulation_metadata file ──▶ validate + read ──▶ writer metadata
   ├─ load_universe(psf, trajectory, dt)
   │    └─ LTAT_DEBUG_PLOT_FRAMES ──▶ resolved nm_frames
-  ├─ data_writer_factory.build(HDF5 value object)
+  ├─ lop_sf_fcc_data_writer_factory.build(HDF5 value object)
   └─ LOP_SF_FCC(atoms, edge_length, cutoff, data_writer)
   │
   ▼

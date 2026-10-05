@@ -21,12 +21,13 @@ mirroring the feature structure.
   the `LOP_SF_FCC` MDAnalysis backend: single source of the order-parameter
   physics; serial and multiprocessing backends; main-process HDF5 writing.
   Active.
+- [lop_sf_fcc_hdf5_writer_workspaces/](lop_sf_fcc_hdf5_writer_workspaces/README.md) —
+  the HDF5 trajectory data writer (value object, layout/metadata, builders,
+  concrete writer, and the `lop_sf_fcc_data_writer_factory` registry) in
+  `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`. Active.
 
 Planned children (not yet created):
 
-- `lop_sf_fcc_hdf5_writer_workspaces/` — the HDF5 trajectory data writer
-  (value object, layout/metadata, builders) currently owned by
-  `data_writer_utils`.
 - `lop_sf_fcc_visit_plotter_workspaces/` — VisIt-based plotting of the
   computed order parameter.
 

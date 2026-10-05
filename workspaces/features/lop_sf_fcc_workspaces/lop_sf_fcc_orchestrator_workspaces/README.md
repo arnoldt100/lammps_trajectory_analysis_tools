@@ -55,9 +55,11 @@ package.
 - **Schemas package** (`schemas/`): `validate_json_file`/`read_json_file`
   plus `md_params.schema.json` and `md_metadata.schema.json` for MD
   simulation parameters and metadata.
-- **Data writer utils** (`data_writer_utils/`): `data_writer_factory` and
+- **LOP SF FCC HDF5 writer** (`lop_sf_fcc_hdf5_writer_workspaces`, package
+  `lib/lop_sf_fcc/hdf5_writer/`): `lop_sf_fcc_data_writer_factory` and
   `HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey` for building the HDF5
-  writer value object.
+  writer value object. See
+  [../lop_sf_fcc_hdf5_writer_workspaces/README.md](../lop_sf_fcc_hdf5_writer_workspaces/README.md).
 - **Timer utils** (`timer_utils/`): `timer_object_factory` and
   `LoopTimerBuilderKey` for run timing.
 - Third-party: NumPy only, in addition to the packages above.
@@ -95,3 +97,5 @@ Dependencies of this feature — each is documented in both workspaces:
 - Command-line contract: [../../command_line_workspaces/top_level_plan.md](../../command_line_workspaces/top_level_plan.md)
 - MDAnalysis backend contract:
   [../lop_sf_fcc_mdanalysis_workspaces/top_level_plan.md](../lop_sf_fcc_mdanalysis_workspaces/top_level_plan.md)
+- HDF5 writer contract:
+  [../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md](../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md)

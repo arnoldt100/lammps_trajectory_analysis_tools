@@ -28,8 +28,9 @@ MDAnalysis calculation backend, and (planned) output writers and plotters.
   owned production code is private with exactly one leading underscore;
   external access goes through properties or explicit methods.
 - **Backend isolation:** MDAnalysis imports stay in the backend feature and
-  the `integrations/mdanalysis` package; HDF5 imports stay in the writer
-  feature and `data_writer_utils`.
+  the `integrations/mdanalysis` package; `h5py` imports stay in the writer
+  feature package (`lib/lop_sf_fcc/hdf5_writer/`) and the generic
+  `data_writer_utils` package.
 - **Expansion requires a demonstrated consumer:** add a child feature only
   when the owning production code exists or is actively planned (see the
   planned writer and plotter entries in [context.md](context.md)).

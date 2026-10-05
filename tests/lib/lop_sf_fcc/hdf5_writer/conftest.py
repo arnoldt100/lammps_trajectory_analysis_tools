@@ -5,18 +5,18 @@ from typing import Any, Callable
 import numpy as np
 import pytest
 
-from lammps_trajectory_analysis_tools.data_writer_utils.hdf5_lop_sf_fcc_trajectory_data_writer import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.hdf5_lop_sf_fcc_trajectory_data_writer import (
     HDF5LopSfFccTrajectoryDataWriter,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_behavior import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_behavior import (
     LopSfFccTrajectoryWriterBehavior,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_state import (
     LopSfFccRunMetadata,
     LopSfFccTrajectoryLayout,
     LopSfFccTrajectoryWriterState,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_value_object import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_value_object import (
     HDF5LopSfFccTrajectoryWriterValueObject,
 )
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_registry import (

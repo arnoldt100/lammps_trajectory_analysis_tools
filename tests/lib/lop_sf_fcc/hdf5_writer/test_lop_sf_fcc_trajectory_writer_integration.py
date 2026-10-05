@@ -5,11 +5,11 @@ import h5py
 import numpy as np
 import pytest
 
-from lammps_trajectory_analysis_tools.data_writer_utils import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
     LopSfFccRunMetadata,
     LopSfFccTrajectoryLayout,
-    data_writer_factory,
+    lop_sf_fcc_data_writer_factory,
 )
 
 DATASET_NAMES = ("positions", "lop_sf_fcc", "box_lengths", "box_angles", "step_number")
@@ -20,7 +20,7 @@ def build_value_object(
     metadata_arguments: dict,
     layout_arguments: dict,
 ):
-    return data_writer_factory.build(
+    return lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=file_path,
         metadata=metadata_arguments,
@@ -194,13 +194,13 @@ def test_a_pre_built_metadata_value_is_reused_across_writers(
     shared_metadata = LopSfFccRunMetadata(**metadata_arguments)
     shared_layout = LopSfFccTrajectoryLayout(**layout_arguments)
 
-    first = data_writer_factory.build(
+    first = lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=tmp_path / "shared_first.h5",
         metadata=shared_metadata,
         layout=shared_layout,
     )
-    second = data_writer_factory.build(
+    second = lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=tmp_path / "shared_second.h5",
         metadata=shared_metadata,

@@ -7,9 +7,9 @@ import h5py
 import numpy as np
 import pytest
 
-from lammps_trajectory_analysis_tools.data_writer_utils import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
-    data_writer_factory,
+    lop_sf_fcc_data_writer_factory,
 )
 
 FRAME_COUNT = 100
@@ -28,7 +28,7 @@ pytestmark = [
 
 @pytest.fixture
 def scale_value_object(tmp_path: Path):
-    return data_writer_factory.build(
+    return lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=tmp_path / "scale.h5",
         metadata={

@@ -12,6 +12,10 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_builder import (
     lop_sf_fcc_builder_key,
     LopSfFccBuilder)
 
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
+    lop_sf_fcc_data_writer_factory,
+)
+
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis import (
     LOP_SF_FCC,
 )
@@ -29,4 +33,5 @@ __all__ = ["subparser_builder_registry",
            "lop_sf_fcc_subcommand_name",
            "analysis_tool_builder_registry",
            "lop_sf_fcc_builder_key",
+           "lop_sf_fcc_data_writer_factory",
            "LOP_SF_FCC"]

@@ -40,8 +40,8 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.lop_sf_fcc_mdanalysis impor
 
 from lammps_trajectory_analysis_tools.lib.data_types import JSON
 
-from lammps_trajectory_analysis_tools.data_writer_utils import (
-    data_writer_factory,
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer import (
+    lop_sf_fcc_data_writer_factory,
     HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey
 )
 
@@ -121,7 +121,7 @@ class LopSfFcc:
                                 self._md_params_json,
                                 self._md_metadata_json)
 
-        # This attriribute is store the MDAnalysis ananlyis class to calculate the
+        # This attribute is store the MDAnalysis analysis class to calculate the
         # local fcc order parameter.
         self._lop_sf_fcc = _set_lop_sf_fcc_attribute(
             self._universe.atoms,
@@ -160,7 +160,7 @@ def _set_data_writer_attributes(command_line_arguments:CLILopSfFcc,
     metadata_args = _build_metadata_arguments(md_params_json,md_metadata_json)
 
     # Build the composite value object; no writer is opened yet.
-    value_object = data_writer_factory.build(
+    value_object = lop_sf_fcc_data_writer_factory.build(
         HDF5LopSfFccTrajectoryWriterValueObjectBuilderKey,
         file_path=Path(hdf_file_name),
         metadata=metadata_args,

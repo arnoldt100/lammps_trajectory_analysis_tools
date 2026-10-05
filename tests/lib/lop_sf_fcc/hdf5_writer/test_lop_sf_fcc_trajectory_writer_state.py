@@ -6,7 +6,7 @@ import pytest
 from lammps_trajectory_analysis_tools.data_writer_utils import (
     DataWriterConfigurationError,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_state import (
     LopSfFccRunMetadata,
     LopSfFccTrajectoryLayout,
     LopSfFccTrajectoryWriterState,

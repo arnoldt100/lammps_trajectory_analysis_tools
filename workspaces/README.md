@@ -41,6 +41,8 @@ workspaces/
         README.md  context.md  top_level_plan.md
       lop_sf_fcc_mdanalysis_workspaces/      # LOP_SF_FCC MDAnalysis backend
         README.md  context.md  top_level_plan.md
+      lop_sf_fcc_hdf5_writer_workspaces/     # HDF5 trajectory writer
+        README.md  context.md  top_level_plan.md
 ```
 
 ## Layout Index & Status
@@ -52,11 +54,12 @@ workspaces/
 | value_semantics | [design_patterns_workspaces/value_semantics/](features/design_patterns_workspaces/value_semantics/context.md) | `src/lammps_trajectory_analysis_tools/design_patterns_templates/value_semantics/` | `tests/design_patterns_templates/value_semantics/` | Active |
 | lop_sf_fcc orchestrator | [lop_sf_fcc_workspaces/lop_sf_fcc_orchestrator_workspaces/](features/lop_sf_fcc_workspaces/lop_sf_fcc_orchestrator_workspaces/context.md) | `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/{__init__.py, lop_sf_fcc.py, lop_sf_fcc_builder.py}` | `tests/test_lop_sf_fcc_end_to_end.py`, `tests/test_lop_sf_fcc.py` | Active |
 | lop_sf_fcc MDAnalysis backend | [lop_sf_fcc_workspaces/lop_sf_fcc_mdanalysis_workspaces/](features/lop_sf_fcc_workspaces/lop_sf_fcc_mdanalysis_workspaces/context.md) | `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/lop_sf_fcc_mdanalysis.py` | `tests/test_lop_sf_fcc_mdanalysis.py`, `tests/test_lop_sf_fcc_Ar4Version0.py`, `tests/input_files/Ar4Version0.py` | Active |
-| lop_sf_fcc HDF5 writer | `lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/` (not yet created) | `src/lammps_trajectory_analysis_tools/data_writer_utils/` (planned scope) | `tests/data_writer_utils/` | Planned |
+| lop_sf_fcc HDF5 writer | [lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/](features/lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/context.md) | `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/` | `tests/lib/lop_sf_fcc/hdf5_writer/` | Active |
 | lop_sf_fcc VisIt plotter | `lop_sf_fcc_workspaces/lop_sf_fcc_visit_plotter_workspaces/` (not yet created) | TBD | TBD | Planned |
 
 Packages not yet covered by any feature workspace (`accumulator/`,
 `parallelization/`, `schemas/`, `integrations/`, `timer_utils/`,
+`data_writer_utils/`,
 `plotting.py`, `analysis.py`, `trajectory.py`, `utils.py`) are governed
 directly by [top_level_plan.md](top_level_plan.md) until their feature
 workspaces are created.

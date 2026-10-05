@@ -9,16 +9,16 @@ from lammps_trajectory_analysis_tools.data_writer_utils import (
     DataWriterConfigurationError,
     DataWriterLifecycleError,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_behavior import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_behavior import (
     LopSfFccTrajectoryWriterBehavior,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_state import (
     LopSfFccTrajectoryWriterState,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_value_object import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_value_object import (
     HDF5LopSfFccTrajectoryWriterValueObject,
 )
-from lammps_trajectory_analysis_tools.data_writer_utils.lop_sf_fcc_trajectory_writer_value_object_interface import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.hdf5_writer.lop_sf_fcc_trajectory_writer_value_object_interface import (
     LopSfFccTrajectoryWriterValueObjectInterface,
 )
 from lammps_trajectory_analysis_tools.design_patterns_templates.value_semantics.protocols import (
