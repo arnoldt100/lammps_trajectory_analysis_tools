@@ -80,8 +80,12 @@ A project change is complete when its implementation, tests, documentation, and 
 ## Related Plans
 
 - [Data Writer Contract Plan](data_writer_contract_plan.md)
-- [Design Patterns Templates Plan](design_patterns_templates_plan.md)
-- [Builder Design Pattern Plan](builder_design_pattern_plan.md)
+- [Design Patterns Templates Plan](features/design_patterns_workspaces/top_level_plan.md)
+- [Builder Design Pattern Plan](features/design_patterns_workspaces/builder_design_pattern/top_level_plan.md)
+- [Command Line Plan](features/command_line_workspaces/top_level_plan.md)
+- [LOP SF FCC Workspaces Plan](features/lop_sf_fcc_workspaces/top_level_plan.md)
+- [LOP SF FCC Orchestrator Plan](features/lop_sf_fcc_workspaces/lop_sf_fcc_orchestrator_workspaces/top_level_plan.md)
+- [LOP SF FCC MDAnalysis Backend Plan](features/lop_sf_fcc_workspaces/lop_sf_fcc_mdanalysis_workspaces/top_level_plan.md)
 - [MDAnalysis Integration Plan](mdanalysis_integration_plan.md)
 - [Module Migration Path Plan](module_migration_path_plan.md)
 - [Architecture](../ARCHITECTURE.md)

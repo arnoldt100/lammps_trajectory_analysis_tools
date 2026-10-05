@@ -1,61 +1,14 @@
 # MD Parameters Option Contract Plan
 
-## Task
+This plan has moved to the command_line ICM feature workspace:
 
-### Specifying the Molecular Dynamics Simulation Parameters
+- Standing plan (design rules, as-built CLI contract, test plan, non-goals,
+  acceptance criteria, migration log):
+  [command_line_workspaces/top_level_plan.md](../../workspaces/features/command_line_workspaces/top_level_plan.md)
+- Feature goal, structural boundaries, and cross-feature dependencies:
+  [README.md](../../workspaces/features/command_line_workspaces/README.md)
+- Implementation status snapshot:
+  [context.md](../../workspaces/features/command_line_workspaces/context.md)
 
-Add a command line option that specifies the name of the JSON file that
-contains the molecular dynamics simulation parameters. 
-
-The option must:
-
-- The option is mandatory.
-- Adhere to a JSON schema that has file name `md_params.schema.json`, or raise an error.
-- Make the JSON file path/name available to the data writers. The data writers will write the
-MD parameters to the appropriate output file.
-
-## MD Parameter Option
-
-Add the following to the FCC subparser in `lop_sf_fcc_cli_parser.py`:
-
-```text
---md-params-json
-```
-
-Recommended destination and property name:
-
-```text
-md_params_json
-```
-
-Example:
-
-```
-lammps_analysis_tool ... --md-params-json md.params.json ...
-```
-
-
-## Propagation To `LopSfFcc`
-
-
-The current calculation entry point is `LopSfFcc.__call__`, which receives a
-`CLILopSfFcc` instance. Read the configured value from the CLI object at the
-calculation boundary:
-
-```python
-md_params_json = command_line_arguments.md_params_json
-```
-
-## Testing Plan
-
-Add tests to CLI contract
-
-1. Omitting the option produces raises an error.
-2. A file name of empty string or blanks must raise an error.
-3. A valid string value is accepted.
-
-## Documentation Updates on Implementation of Plan
-
-
-### In progress of adding `--md-params-json` to `CLILopSfFcc`.
-### Added tests 1,  2 and 3.
+This file remains only as a stable link target for existing references; it
+carries no content of its own. Update the workspace files, not this file.

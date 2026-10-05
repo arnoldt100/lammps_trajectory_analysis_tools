@@ -235,7 +235,7 @@ storage backend:
 ## Construction
 
 Every object in this design is instantiated through the builder design pattern
-defined in `project-top-level/docs/builder_design_pattern_plan.md`, using the
+defined in `workspaces/features/design_patterns_workspaces/builder_design_pattern/top_level_plan.md`, using the
 shared template in
 `src/lammps_trajectory_analysis_tools/design_patterns_templates/builder/`.
 Direct constructor calls from application code are not the supported entry
