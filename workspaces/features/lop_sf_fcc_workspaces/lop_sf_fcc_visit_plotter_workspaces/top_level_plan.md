@@ -63,9 +63,10 @@ is a read-only consumer of the HDF5 writer feature's output contract.
   parse; temporal collection; per-timestep dims match `n_atoms`; `lop_sf_fcc`
   attribute present; `<Time>` = `step_number * time_step`); env-scrubbing;
   launcher argument construction; error translation.
-- **Integration (opt-in `slow`, skip-if-VisIt-missing):** real headless
-  render of the small argon example → non-trivial PNG(s). Skipped by default
-  so `src/bin/run_unit_tests.sh` stays hermetic.
+- **Integration (strictly opt-in, `LTAT_RUN_VISIT_INTEGRATION=1`,
+  skip-if-VisIt-missing):** real headless render of the small argon example →
+  non-trivial PNG(s). Disabled by default (it launches a real, non-hermetic
+  VisIt subprocess) so `src/bin/run_unit_tests.sh` stays hermetic.
 - Tests mirror the package path: `tests/lib/lop_sf_fcc/visit_plotter/`.
 
 ## Non-Goals

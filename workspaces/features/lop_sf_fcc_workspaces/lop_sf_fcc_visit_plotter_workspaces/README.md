@@ -12,26 +12,37 @@ contract. Physics and HDF5 writing live in their own sibling features; this
 feature owns only plotting. Detailed design:
 [../../../../docs/lop_sf_fcc_visit_plotter_plan.md](../../../../docs/lop_sf_fcc_visit_plotter_plan.md).
 
-Status: **planned** — no production code yet.
+Status: **active** — exporter, render script, launcher, plotter class,
+builders, and registry implemented; unit + integration tests green.
 
 ## Structural Boundaries
 
-Owned production code (planned; not yet created):
+Owned production code (this feature's only production scope):
 
 ```text
 src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/visit_plotter/
-  __init__.py                       # exports; plotter registry registration site
-  visit_installation.py             # locate/validate the headless VisIt launcher
-  lop_sf_fcc_series_exporter.py     # HDF5 -> master .xdmf time series
-  visit_render_script.py            # VisIt-side Python source for the subprocess
-  visit_plotter.py                  # orchestrating plotter class
+  __init__.py                        # lop_sf_fcc_visit_plotter_factory
+                                     # (single registration site) + exports
+  plotter_exceptions.py              # PlotterError hierarchy
+  visit_installation.py              # locate/validate the headless VisIt launcher
+  lop_sf_fcc_series_exporter.py      # HDF5 -> master .xdmf time series
+  visit_render_script.py             # VisIt-side Python source for the subprocess
+  visit_plotter_builder_keys.py      # builder key constants
+  visit_plotter_builders.py          # installation + plotter builders
+  visit_plotter.py                   # LopSfFccVisitPlotter orchestrating class
 ```
 
-Centralized tests (planned; per the project-wide centralized testing rule,
-tests never live inside the feature workspace or `src`):
+Centralized tests (per the project-wide centralized testing rule, tests never
+live inside the feature workspace or `src`):
 
 ```text
 tests/lib/lop_sf_fcc/visit_plotter/
+  conftest.py
+  test_lop_sf_fcc_series_exporter.py
+  test_visit_installation.py
+  test_visit_plotter.py
+  test_visit_plotter_factory.py
+  test_visit_render_integration.py   # opt-in: LTAT_RUN_VISIT_INTEGRATION=1, real headless VisIt render
 ```
 
 Standing plan and status (this folder):

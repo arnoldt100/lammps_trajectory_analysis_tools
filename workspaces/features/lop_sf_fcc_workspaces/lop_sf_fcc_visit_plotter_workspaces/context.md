@@ -12,19 +12,28 @@ Last reviewed: 2026-10-05.
 
 - Feature workspace created and design plan authored (2026-10-05); see
   [../../../../docs/lop_sf_fcc_visit_plotter_plan.md](../../../../docs/lop_sf_fcc_visit_plotter_plan.md).
-- Environment facts verified: VisIt 3.5.0 at `${AT_SW_PACKAGES}/visit`
-  (`current -> 3.5.0`); headless `visit -cli -nowin` works only when
-  `PYTHON_GIL` is unset (the repo sets `PYTHON_GIL=0` for the free-threaded
-  Python 3.14 venv, which VisIt's bundled Python 3.13 rejects). VisIt readers
-  include Xdmf/VTK/Silo; its bundled Python has numpy but no h5py.
+- Full implementation in
+  `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/visit_plotter/`:
+  `plotter_exceptions.py`, `visit_installation.py` (locate/validate the
+  headless launcher + scrubbed subprocess env), `lop_sf_fcc_series_exporter.py`
+  (HDF5 → master `.xdmf` temporal collection, in-place HDF5 DataItems),
+  `visit_render_script.py`, `visit_plotter.py` (orchestrating class), builder
+  keys/builders, and the `lop_sf_fcc_visit_plotter_factory` registry (single
+  registration site in `__init__.py`).
+- Environment facts verified and encoded: VisIt 3.5.0 at
+  `${AT_SW_PACKAGES}/visit` (launcher `bin/visit`); headless `visit -cli
+  -nowin` with `PYTHON_GIL` scrubbed and `${AT_SW_PACKAGES}/pymol/lib`
+  prepended to `LD_LIBRARY_PATH` so `mdserver` resolves `libxml2.so.2`.
+- De-risk confirmed end-to-end: VisIt reads the PolyVertex master `.xdmf`
+  with in-place HDF5 DataItems and renders per-frame PNGs (verified on the
+  argon example through `LopSfFccVisitPlotter.render`).
+- Tests: 22 unit tests + 1 opt-in headless integration test under
+  `tests/lib/lop_sf_fcc/visit_plotter/`. The integration test is disabled by
+  default and runs only when `LTAT_RUN_VISIT_INTEGRATION=1` (it launches a
+  real, non-hermetic VisIt subprocess). Default suite: 353 passed, 3 skipped.
 
 ### Pending
 
-- All production code: `visit_installation.py`,
-  `lop_sf_fcc_series_exporter.py`, `visit_render_script.py`,
-  `visit_plotter.py`, and the subpackage `__init__.py`.
-- Unit tests and the opt-in headless integration test under
-  `tests/lib/lop_sf_fcc/visit_plotter/`.
 - Optional follow-up: a `lammps_analysis_tool` subcommand (command_line
   feature) wrapping the plotter.
 
