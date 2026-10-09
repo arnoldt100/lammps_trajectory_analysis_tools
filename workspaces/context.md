@@ -25,8 +25,7 @@ workspaces/
     lop_sf_fcc_workspaces/
       ...              # lop_sf_fcc collection: lop_sf_fcc_orchestrator_workspaces/,
                        # lop_sf_fcc_mdanalysis_workspaces/, and
-                       # lop_sf_fcc_hdf5_writer_workspaces/ (active);
-                       # lop_sf_fcc_visit_plotter_workspaces/ (planned)
+                       # lop_sf_fcc_hdf5_writer_workspaces/ (active)
 ```
 
 ## Feature Folder Convention

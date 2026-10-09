@@ -25,18 +25,14 @@ mirroring the feature structure.
   the HDF5 trajectory data writer (value object, layout/metadata, builders,
   concrete writer, and the `lop_sf_fcc_data_writer_factory` registry) in
   `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`. Active.
-- [lop_sf_fcc_visit_plotter_workspaces/](lop_sf_fcc_visit_plotter_workspaces/README.md) —
-  VisIt-based plotting of the computed order parameter: a time series of 3D
-  atom point-clouds pseudocolored by `lop_sf_fcc`, rendered headlessly via a
-  VisIt subprocess. Active.
 
 ## Rules
 
 - Dependency direction is one-way: command_line → orchestrator →
-  backend/writer/plotter. Cross-feature dependencies are documented in both
+  backend/writer. Cross-feature dependencies are documented in both
   features' READMEs.
-- Physics lives only in backend features; writers and plotters consume
-  results, they do not compute them.
+- Physics lives only in backend features; writers consume results, they
+  do not compute them.
 - Shared rules for all children live in
   [top_level_plan.md](top_level_plan.md) and inherit from
   [../../top_level_plan.md](../../top_level_plan.md).
