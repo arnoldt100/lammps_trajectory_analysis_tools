@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1040</x>
+      <y>380</y>
+      <w>320</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>LOPSfFccVTKHDFAnimationWriter
+--
+Responsibilities
+-- The concrete VTKHDF LOP SF FCC writer</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>690</x>
+      <y>70</y>
+      <w>400</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/LopSfFCCAnimationWriterBehavior/
+--
+Responsibilities
+-- Defines behaviors shared by concrete animation writers
+-- The concrete writers implement the behaviors</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>180</x>
+      <y>80</y>
+      <w>390</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/LopSfFCCAnimationWriterValueObjectInterface/
+--
+Responsibilities
+-- Defines the value semantics for animation writers</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>420</x>
+      <y>370</y>
+      <w>390</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/LopSfFCCAnimationWriterValueObject/
+--
+Responsibilities
+-- Owns the concrete animation writers</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>200</y>
+      <w>220</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>200.0;10.0;200.0;110.0;10.0;110.0;10.0;170.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>210</y>
+      <w>260</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0;240.0;100.0;240.0;160.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>800</x>
+      <y>440</y>
+      <w>260</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;240.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>640</x>
+      <y>650</y>
+      <w>390</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/LopSfFCCAnimationWriterBuilderKeys/
+--
+Responsibilities
+-- Defines builder keys for LOP DF FCC animation writer
+products</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>30</x>
+      <y>650</y>
+      <w>390</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>/LopSfFCCAnimationWriterBuilder/
+--
+Responsibilities
+-- Builds the various LOP DF FCC animation writer
+products</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>410</x>
+      <y>700</y>
+      <w>250</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>230.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
