@@ -47,9 +47,10 @@ Centralized tests will mirror the package:
 ```text
 tests/lib/lop_sf_fcc/vtkhdf_writer/
   conftest.py
-  test_lop_sf_fcc_vtkhdf_animation_writer.py
   test_lop_sf_fcc_vtkhdf_animation_writer_state.py
   test_lop_sf_fcc_vtkhdf_animation_writer_behavior.py
+  # Planned in later phases:
+  test_lop_sf_fcc_vtkhdf_animation_writer.py
   test_lop_sf_fcc_vtkhdf_animation_writer_value_object.py
   test_lop_sf_fcc_vtkhdf_animation_writer_builders.py
   test_lop_sf_fcc_vtkhdf_animation_writer_integration.py

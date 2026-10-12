@@ -28,12 +28,24 @@ Last reviewed: 2026-10-12.
   - no-overwrite, strict append compatibility, and explicit regeneration
     recovery policy;
   - fixture-based source and expected output trees in `top_level_plan.md`.
+- Phase 2 state and behavior are complete:
+  - immutable `LopSfFccVtkhdfAnimationMetadata`;
+  - immutable `LopSfFccVtkhdfAnimationLayout`;
+  - resource-bearing, unhashable
+    `LopSfFccVtkhdfAnimationWriterState`;
+  - `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` with injected registry
+    construction and no concrete backend import;
+  - whole-state validation, defensive mappings, replacement, controlled
+    update, value equality, writer-free representation, and resource
+    exclusion;
+  - 44 focused tests passing;
+  - Ruff, Ruff format, and mypy passing for Phase 2 files.
 
 ### Pending
 
 - Correct the placeholder public class spelling from `Vtkhd` to `Vtkhdf`.
-- Add state types, behavior, value object, concrete writer, builders, keys,
-  registry, and stable package exports.
+- Add the value object, concrete writer, builders, keys, registry, and stable
+  package exports.
 - Add focused unit, schema-conformance, reader-interoperability, and
   end-to-end conversion tests.
 - Wire a consumer only after the writer contract is stable.
@@ -121,8 +133,8 @@ VTK-compatible visualization tool
 
 ## Current Phase
 
-Phase 1 is complete. Phase 2 (state and behavior) is ready but has not
-started.
+Phases 1 and 2 are complete. Phase 3 (concrete VTKHDF writer) is ready but
+has not started.
 
 ## Maintenance Rule
 

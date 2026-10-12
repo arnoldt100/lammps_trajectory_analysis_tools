@@ -467,5 +467,10 @@ third-party reader remain separate from unit tests.
 
 ## Current Phase
 
-Phase 1 contract and schema completed on 2026-10-12. Production modules remain
-placeholders. Phase 2 state and behavior work is ready but has not started.
+Phase 1 contract/schema and Phase 2 state/behavior completed on 2026-10-12.
+`LopSfFccVtkhdfAnimationMetadata`, `LopSfFccVtkhdfAnimationLayout`,
+`LopSfFccVtkhdfAnimationWriterState`, and
+`LopSfFccVtkhdfAnimationWriterValueObjectBehavior` are implemented and
+covered by 44 backend-independent tests. Phase 3 concrete writer work is
+ready but has not started; the value object, builders, registry, and exports
+remain later-phase placeholders.

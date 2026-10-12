@@ -178,14 +178,24 @@ the schema and two-step fixture in
 
 ### Phase 2: State and behavior
 
-1. Add immutable metadata/layout state and resource-bearing writer state.
-2. Add whole-state validation, replacement, controlled update, equality, and
+Status: **complete (2026-10-12)**.
+
+1. Added immutable `LopSfFccVtkhdfAnimationMetadata` and
+   `LopSfFccVtkhdfAnimationLayout` values plus resource-bearing
+   `LopSfFccVtkhdfAnimationWriterState`.
+2. Added whole-state validation, handle-free replacement, controlled update,
+   value equality, hashing policy, defensive mappings, and writer-free
    representation.
-3. Implement the behavior object using an injected registry.
-4. Add unit tests for copying, equality, replacement, invalid state, and
-   open-resource lifecycle boundaries.
+3. Implemented
+   `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` using an injected
+   `BuilderRegistry`; it imports neither h5py nor a VTK backend.
+4. Added 44 focused tests for metadata/layout/state validation, defensive
+   copying, equality, replacement, invalid state, registry forwarding, and
+   open-resource update boundaries.
 
 Exit gate: state and behavior tests pass without importing the VTK backend.
+Met: 44 focused tests pass; Ruff, Ruff format, and mypy pass for the changed
+Phase 2 files.
 
 ### Phase 3: Concrete VTKHDF writer
 
