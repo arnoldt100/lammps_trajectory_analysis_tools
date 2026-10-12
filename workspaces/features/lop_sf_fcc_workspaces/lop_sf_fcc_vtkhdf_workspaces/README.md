@@ -12,7 +12,7 @@ LOP SF FCC values, alter scientific results, or own trajectory analysis.
 
 ## Structural Boundaries
 
-Planned production scope:
+Production scope:
 
 ```text
 src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
@@ -39,8 +39,8 @@ src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
     # concrete builder keys
 ```
 
-`Vtkhdf` is the canonical class-name spelling. The existing `Vtkhd`
-one-line scaffolds are misspelled placeholders and are not a supported API.
+`Vtkhdf` is the canonical class-name spelling. The former `Vtkhd` scaffolds
+were misspelled placeholders and are not a supported API.
 
 Centralized tests will mirror the package:
 
@@ -50,9 +50,10 @@ tests/lib/lop_sf_fcc/vtkhdf_writer/
   test_lop_sf_fcc_vtkhdf_animation_writer_state.py
   test_lop_sf_fcc_vtkhdf_animation_writer_behavior.py
   test_lop_sf_fcc_vtkhdf_animation_writer.py
-  # Planned in later phases:
+  test_lop_sf_fcc_vtkhdf_animation_writer_value_object_interface.py
   test_lop_sf_fcc_vtkhdf_animation_writer_value_object.py
   test_lop_sf_fcc_vtkhdf_animation_writer_builders.py
+  # Planned for source integration:
   test_lop_sf_fcc_vtkhdf_animation_writer_integration.py
 ```
 

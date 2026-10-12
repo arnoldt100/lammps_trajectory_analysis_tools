@@ -1,5 +1,6 @@
 """Fixtures for backend-independent VTKHDF writer state tests."""
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,9 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vt
     LopSfFccVtkhdfAnimationMetadata,
     LopSfFccVtkhdfAnimationWriterState,
 )
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object import (
+    LopSfFccVtkhdfAnimationWriterValueObject,
+)
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior import (
     LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
 )
@@ -27,6 +31,9 @@ class StubWriterProduct:
     def __init__(self, **arguments: Any) -> None:
         """Initialize the stand-in with forwarded builder arguments."""
         self._arguments = arguments
+        self._aborted = False
+        self._append_count = 0
+        self._closed = False
         self._created = False
         self._opened_for_append = False
 
@@ -45,6 +52,18 @@ class StubWriterProduct:
         """Return whether ``open_for_append`` was called."""
         return self._opened_for_append
 
+    @property
+    def configuration(self) -> dict[str, Any]:
+        """Return observable stand-in state."""
+        return {
+            **self._arguments,
+            "aborted": self._aborted,
+            "append_count": self._append_count,
+            "closed": self._closed,
+            "created": self._created,
+            "opened_for_append": self._opened_for_append,
+        }
+
     def create(self) -> None:
         """Record target creation."""
         self._created = True
@@ -52,6 +71,18 @@ class StubWriterProduct:
     def open_for_append(self) -> None:
         """Record append opening."""
         self._opened_for_append = True
+
+    def append_frames(self, *args: Any, **kwargs: Any) -> None:
+        """Record one append call."""
+        self._append_count += 1
+
+    def close(self) -> None:
+        """Record successful close."""
+        self._closed = True
+
+    def abort(self) -> None:
+        """Record abort."""
+        self._aborted = True
 
 
 @pytest.fixture
@@ -113,3 +144,14 @@ def behavior(
         stub_registry,
         WRITER_BUILDER_KEY,
     )
+
+
+@pytest.fixture
+def value_object(
+    state: LopSfFccVtkhdfAnimationWriterState,
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+) -> Iterator[LopSfFccVtkhdfAnimationWriterValueObject]:
+    """Return a backend-free writer value object."""
+    value = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior)
+    yield value
+    value.abort()

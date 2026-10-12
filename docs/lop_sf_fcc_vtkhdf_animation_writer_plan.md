@@ -219,15 +219,31 @@ confirms two time values, points, and the `lop_sf_fcc` array.
 
 ### Phase 4: Value object and builders
 
-1. Implement the abstract value-object interface.
-2. Implement the concrete mutable value object and context manager.
-3. Add builder keys and focused builders following the reusable builder
-   template.
-4. Create and populate the feature registry only in `vtkhdf_writer/__init__.py`.
-5. Export only the stable supported surface.
+Status: **complete (2026-10-12)**.
+
+1. Implemented the abstract value-object interface with explicit state,
+   replacement, update, lifecycle, append, abort, equality, representation,
+   and context-manager contracts.
+2. Implemented the concrete mutable, unhashable value object with defensive
+   state access, handle-free replacement, atomic controlled updates, and
+   exception-aware context cleanup.
+3. Added four focused builders and four keys for metadata, layout, the
+   concrete writer, and the composite value object.
+4. Created and populated
+   `lop_sf_fcc_vtkhdf_animation_writer_factory` only in
+   `vtkhdf_writer/__init__.py`; implementation-module reloads do not mutate
+   the registry.
+5. Exported the stable state, behavior, writer, value-object, construction,
+   and schema surfaces.
+6. Added 27 focused tests covering the interface, value semantics, lifecycle,
+   builders, exact registry contents, single-site registration, exports, and
+   a real create/reopen/append flow.
 
 Exit gate: application code can build and use the writer without directly
-constructing implementation types.
+constructing implementation types. Met: the package factory builds a usable
+value object that creates, closes, reopens, and appends a VTKHDF file; Ruff
+and mypy pass; the complete suite reports 427 passed and 3 skipped; and the
+optional `vtkHDFReader` interoperability test passes.
 
 ### Phase 5: Integration
 

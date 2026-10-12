@@ -26,11 +26,11 @@ mirroring the feature structure.
   concrete writer, and the `lop_sf_fcc_data_writer_factory` registry) in
   `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`. Active.
 - [lop_sf_fcc_vtkhdf_workspaces/](lop_sf_fcc_vtkhdf_workspaces/README.md) —
-  the planned value-oriented VTKHDF animation writer that translates
+  the value-oriented VTKHDF animation writer that translates
   persisted HDF5 LOP SF FCC trajectories for VTK-compatible visualization.
-  Phase 1 contract/schema, Phase 2 backend-independent state/behavior, and
-  Phase 3 concrete VTKHDF writing are complete; value-object and builder
-  integration remain pending.
+  Phase 1 contract/schema, Phase 2 backend-independent state/behavior, Phase
+  3 concrete VTKHDF writing, and Phase 4 value-object/builder integration are
+  complete; source integration remains pending.
 
 ## Rules
 

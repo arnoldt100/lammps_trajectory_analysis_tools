@@ -53,14 +53,26 @@ Last reviewed: 2026-10-12.
   - 26 concrete writer tests passing in the normal environment;
   - `vtkHDFReader` interoperability test passing with a temporary optional
     VTK installation;
-  - 400 project tests passing, 3 skipped.
+  - 400 project tests passing, 3 skipped at the Phase 3 gate.
+- Phase 4 value object and builders are complete:
+  - abstract interface and concrete mutable, unhashable value object;
+  - defensive state access and metadata, handle-free replacement, atomic
+    controlled update, and state-based equality;
+  - create, append-open, frame append, close, abort, and exception-aware
+    context management;
+  - metadata, layout, concrete-writer, and composite value-object builders
+    and keys in their designated modules;
+  - exact four-builder package registry populated only in `__init__.py`;
+  - stable package exports;
+  - 27 focused Phase 4 tests passing, including real create/reopen/append;
+  - Ruff and mypy passing;
+  - 427 project tests passing, 3 skipped;
+  - optional `vtkHDFReader` interoperability test passing.
 
 ### Pending
 
-- Correct the placeholder public class spelling from `Vtkhd` to `Vtkhdf`.
-- Add the value object, builders, keys, registry, and stable package exports.
-- Add focused unit, schema-conformance, reader-interoperability, and
-  end-to-end conversion tests.
+- Implement the HDF5 source adapter and end-to-end conversion entry point.
+- Add realistic source-to-VTKHDF conversion tests.
 - Wire a consumer only after the writer contract is stable.
 
 ### Not Planned
@@ -146,8 +158,8 @@ VTK-compatible visualization tool
 
 ## Current Phase
 
-Phases 1 through 3 are complete. Phase 4 (value object and builders) is ready
-but has not started.
+Phases 1 through 4 are complete. Phase 5 source integration remains pending
+and must not begin until explicitly requested.
 
 ## Maintenance Rule
 

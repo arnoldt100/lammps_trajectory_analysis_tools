@@ -478,13 +478,15 @@ third-party reader remain separate from unit tests.
 
 ## Current Phase
 
-Phase 1 contract/schema, Phase 2 state/behavior, and Phase 3 concrete writer
-completed on 2026-10-12.
+Phases 1 through 4 completed on 2026-10-12.
 `LopSfFccVtkhdfAnimationMetadata`, `LopSfFccVtkhdfAnimationLayout`,
 `LopSfFccVtkhdfAnimationWriterState`, and
 `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` are covered by 44
 backend-independent tests. `LopSfFccVtkhdfAnimationWriter` is covered by 26
 normal-environment tests plus a passing optional `vtkHDFReader`
-interoperability check. Phase 4 value-object and builder work is ready but
-has not started; builders, keys, registry wiring, stable exports, and the
-value object remain placeholders.
+interoperability check. The value-object interface, mutable value object,
+four builders, four keys, exact package registry, single registration site,
+and stable exports are covered by 27 focused Phase 4 tests, including a real
+create/reopen/append flow. Ruff and mypy pass, the complete project suite
+reports 427 passed and 3 skipped, and Phase 5 source integration remains
+pending.
