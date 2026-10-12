@@ -21,6 +21,10 @@ src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
     # single registration site and stable exports
   lop_sf_fcc_vtkhdf_animation_writer.py
     # LopSfFccVtkhdfAnimationWriter
+  lop_sf_fcc_vtkhdf_animation_source_interface.py
+    # LopSfFccVtkhdfAnimationSourceInterface
+  hdf5_lop_sf_fcc_animation_source.py
+    # HDF5LopSfFccAnimationSource
   lop_sf_fcc_vtkhdf_animation_writer_state.py
     # immutable metadata/layout and resource-bearing writer state
   lop_sf_fcc_vtkhdf_animation_writer_value_object.py
@@ -71,11 +75,13 @@ Standing documentation in this folder:
   registry errors.
 - **Data writer utilities:** supplies the shared configuration, lifecycle,
   and target exception categories.
-- **VTKHDF backend:** the concrete VTK-compatible implementation dependency
-  will be selected during schema design and must remain isolated in the
-  concrete writer module.
-- **NumPy/HDF5 reader boundary:** used to validate and transfer source frame
-  arrays without introducing analysis logic.
+- **h5py:** selected production backend for direct VTKHDF 2.6 creation and
+  append. It is isolated in the concrete writer and HDF5 source-adapter
+  modules.
+- **VTK `vtkHDFReader`:** interoperability oracle for integration tests; it
+  is not part of the production write path.
+- **NumPy:** validates and transfers source frame arrays without introducing
+  analysis logic.
 
 ## Cross-Feature Dependencies
 

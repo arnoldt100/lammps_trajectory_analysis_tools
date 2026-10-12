@@ -29,6 +29,8 @@ The detailed delivery sequence is in
 src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
   __init__.py
   lop_sf_fcc_vtkhdf_animation_writer.py
+  lop_sf_fcc_vtkhdf_animation_source_interface.py
+  hdf5_lop_sf_fcc_animation_source.py
   lop_sf_fcc_vtkhdf_animation_writer_state.py
   lop_sf_fcc_vtkhdf_animation_writer_value_object.py
   lop_sf_fcc_vtkhdf_animation_writer_value_object_interface.py
@@ -74,7 +76,8 @@ inside this package and must be added to the README and context.
   created and populated exactly once in `vtkhdf_writer/__init__.py`.
   Implementation modules never self-register.
 - **Backend isolation:** imports of the chosen VTKHDF implementation live in
-  the concrete writer or a focused private adapter module only.
+  the concrete writer only. Source-side `h5py` reads live in the HDF5 source
+  adapter.
 - **Physics isolation:** this package translates existing values and never
   imports or reimplements the LOP SF FCC calculation.
 - **Atomic writes:** validation finishes before resizing or assigning any
@@ -151,19 +154,233 @@ positions, per-point `lop_sf_fcc`, box lengths, box angles, step numbers, and
 run metadata. The writer must preserve those scientific values exactly,
 subject only to an explicitly configured and validated output dtype.
 
-Before production implementation, this plan must be extended with:
+### Specification basis
 
-- the selected VTKHDF dataset type and version;
-- the complete file tree and required attributes;
-- the mapping of trajectories to temporal datasets or partitions;
-- topology and connectivity representation;
-- periodic and triclinic box representation;
-- simulation time representation;
-- append offsets and compatibility checks.
+The first implementation targets
+[VTKHDF 2.6](https://docs.vtk.org/en/latest/vtk_file_formats/vtkhdf_file_format/vtkhdf_changelog.html)
+temporal `PolyData`. Version 2.0 introduced temporal PolyData and version 2.6
+added dataset attribute specification, which is used to mark
+`lop_sf_fcc` as the scalar point-data array.
 
-No implementation should infer these details from a single visualization
-tool; the mapping must be backed by the supported VTKHDF specification and
-reader-based tests.
+The schema follows the official
+[VTKHDF format specification](https://docs.vtk.org/en/latest/vtk_file_formats/vtkhdf_file_format/vtkhdf_specifications.html).
+VTK's implementation-status documentation reports both temporal data and
+`vtkPolyData` reader/writer support. Direct reader interoperability, not a
+single visualization application's behavior, is the acceptance oracle.
+
+### Conversion boundary
+
+The public conversion operation receives a
+`LopSfFccVtkhdfAnimationSourceInterface`. The concrete
+`HDF5LopSfFccAnimationSource` accepts a source path, validates the HDF5
+contract, and emits decoded immutable frame values. The concrete VTKHDF
+writer receives frames and owns no source-file reading.
+
+This split allows source-reader tests without a VTKHDF target and writer
+tests without an HDF5 source. It also prevents source layout logic from
+entering shared concrete animation-writer behavior.
+
+### Source group semantics
+
+The current producer pre-creates `number_of_trajectories` groups and writes
+one analyzed frame to each group in increasing group-index order. For this
+conversion contract:
+
+- populated groups must form a contiguous prefix starting at `traj_00000`;
+- every populated group must contain exactly one frame in all five datasets;
+- trailing pre-created groups with zero frames are ignored;
+- an empty group followed by a populated group is an invalid interior gap;
+- a group containing more than one frame is unsupported and rejected;
+- source `step_number` values must be strictly increasing across the prefix;
+- every frame must have the configured fixed atom count and source dtypes.
+
+Consequently, one populated source group maps to one VTKHDF animation step
+and one VTKHDF partition. `Steps/NSteps` is the populated-prefix length, not
+the source metadata's pre-created group capacity.
+
+### Selected VTKHDF representation
+
+- `Type`: `PolyData`.
+- `Version`: integer pair `[2, 6]`.
+- One partition per time step.
+- Every atom is a point and one vertex cell, so point-only molecular data
+  renders without synthesizing bonds.
+- Point order is the source atom-array order and is preserved at every step.
+- No stable global atom identifier is invented; point index is the only
+  identity available from the source.
+- `lop_sf_fcc` is a one-component `PointData` array with HDF5 attribute
+  `Attribute = "Scalars"`.
+- `step_number`, `box_lengths`, and `box_angles` are temporal numeric
+  `FieldData` arrays.
+- `Steps/Values` stores physical time as
+  `float64(step_number) * float64(time_step)`.
+- Length and time unit labels and run provenance are copied to the custom
+  top-level `/LOPSFFCC` metadata group. The VTKHDF specification permits
+  metadata outside `/VTKHDF` and VTK readers ignore it.
+- Box lengths and angles are preserved, including triclinic angles, but the
+  first release does not generate visible box-edge geometry or periodic
+  images.
+
+### Canonical file tree
+
+```text
+/
+|-- LOPSFFCC/                              # project metadata; outside VTK model
+|   `-- attrs:
+|       source_format, time_step, time_units_label, length_units_label,
+|       generation_date, compiler_build_flags, generating_machine,
+|       lmod_modules
+`-- VTKHDF/
+    |-- attrs:
+    |   Type = "PolyData"
+    |   Version = [2, 6]
+    |-- NumberOfPoints                     # (NSteps,), all number_of_atoms
+    |-- Points                             # (NSteps * number_of_atoms, 3)
+    |-- PointData/
+    |   `-- lop_sf_fcc                     # (NSteps * number_of_atoms,)
+    |       `-- attr: Attribute = "Scalars"
+    |-- FieldData/
+    |   |-- step_number                    # (NSteps,)
+    |   |-- box_lengths                    # (NSteps, 3)
+    |   `-- box_angles                     # (NSteps, 3)
+    |-- Vertices/
+    |   |-- NumberOfCells                  # (NSteps,), all number_of_atoms
+    |   |-- NumberOfConnectivityIds        # (NSteps,), all number_of_atoms
+    |   |-- Connectivity                   # repeated [0, ..., n_atoms - 1]
+    |   `-- Offsets                        # repeated [0, ..., n_atoms]
+    |-- Lines/
+    |-- Polygons/
+    |-- Strips/
+    |   # Each empty topology has NumberOfCells and
+    |   # NumberOfConnectivityIds containing NSteps zeros,
+    |   # empty Connectivity, and one zero Offsets entry per partition.
+    `-- Steps/
+        |-- attr: NSteps
+        |-- Values                         # physical time, float64
+        |-- PartOffsets                    # [0, ..., NSteps - 1]
+        |-- NumberOfParts                  # all ones
+        |-- PointOffsets                   # point-array offsets
+        |-- CellOffsets                    # (NSteps, 4)
+        |-- ConnectivityIdOffsets          # (NSteps, 4)
+        |-- PointDataOffsets/
+        |   `-- lop_sf_fcc
+        |-- FieldDataOffsets/
+        |   |-- step_number
+        |   |-- box_lengths
+        |   `-- box_angles
+        `-- FieldDataSizes/
+            |-- step_number                # rows [1 component, 1 tuple]
+            |-- box_lengths                # rows [3 components, 1 tuple]
+            `-- box_angles                 # rows [3 components, 1 tuple]
+```
+
+The topology order in `CellOffsets` and `ConnectivityIdOffsets` is
+`Vertices`, `Lines`, `Polygons`, `Strips`, as required by the specification.
+
+### Source-to-target mapping
+
+| Source value | Target value |
+| --- | --- |
+| group index in contiguous populated prefix | animation-step ordinal |
+| `positions[0]` | appended rows in `/VTKHDF/Points` |
+| `lop_sf_fcc[0]` | appended rows in `/VTKHDF/PointData/lop_sf_fcc` |
+| `step_number[0]` | `/VTKHDF/FieldData/step_number` |
+| `step_number[0] * time_step` | `/VTKHDF/Steps/Values` |
+| `box_lengths[0]` | `/VTKHDF/FieldData/box_lengths` |
+| `box_angles[0]` | `/VTKHDF/FieldData/box_angles` |
+| atom-array index | vertex connectivity id |
+| run and units metadata | `/LOPSFFCC` attributes |
+
+### Two-step fixture and expected offsets
+
+The Phase 1 contract fixture uses:
+
+```text
+source attrs:
+  time_step = 0.5
+  time_units_label = "ps"
+  number_of_trajectories = 2
+
+layout:
+  number_of_atoms = 3
+
+traj_00000:
+  step_number = [10]
+  positions.shape = (1, 3, 3)
+  lop_sf_fcc.shape = (1, 3)
+  box_lengths = [[10.0, 10.0, 10.0]]
+  box_angles = [[90.0, 90.0, 90.0]]
+
+traj_00001:
+  step_number = [12]
+  positions.shape = (1, 3, 3)
+  lop_sf_fcc.shape = (1, 3)
+  box_lengths = [[10.5, 10.0, 10.0]]
+  box_angles = [[90.0, 90.0, 90.0]]
+```
+
+The expected temporal and topology values are:
+
+```text
+Steps.NSteps = 2
+Steps.Values = [5.0, 6.0]
+Steps.PartOffsets = [0, 1]
+Steps.NumberOfParts = [1, 1]
+Steps.PointOffsets = [0, 3]
+Steps.PointDataOffsets/lop_sf_fcc = [0, 3]
+Steps.FieldDataOffsets/{step_number,box_lengths,box_angles} = [0, 1]
+Steps.CellOffsets = [[0, 0, 0, 0], [3, 0, 0, 0]]
+Steps.ConnectivityIdOffsets = [[0, 0, 0, 0], [3, 0, 0, 0]]
+
+NumberOfPoints = [3, 3]
+Vertices.NumberOfCells = [3, 3]
+Vertices.NumberOfConnectivityIds = [3, 3]
+Vertices.Connectivity = [0, 1, 2, 0, 1, 2]
+Vertices.Offsets = [0, 1, 2, 3, 0, 1, 2, 3]
+
+Lines|Polygons|Strips.NumberOfCells = [0, 0]
+Lines|Polygons|Strips.NumberOfConnectivityIds = [0, 0]
+Lines|Polygons|Strips.Connectivity = []
+Lines|Polygons|Strips.Offsets = [0, 0]
+```
+
+`Points` and `PointData/lop_sf_fcc` contain the two source frames
+concatenated in step order. Field-data size rows are `[1, 1]` for
+`step_number` and `[3, 1]` for both box arrays.
+
+### Backend decision
+
+Production writing uses the existing `h5py` dependency directly:
+
+- VTKHDF is an HDF5 schema and `h5py` exposes the resizable datasets and
+  attributes required by it;
+- direct writing supports append without constructing a full in-memory
+  `vtkPolyData` for every time step;
+- the production package does not gain a large VTK Python-wheel dependency;
+- integration verification uses `vtkHDFReader` in a separate test
+  environment and checks the observed time steps, points, scalar array, and
+  field data.
+
+### Create, append, and recovery policy
+
+- `create()` refuses an existing final target.
+- New output is written to a same-directory staging file. Successful
+  finalization closes and atomically renames it to the requested target.
+- Failed creation removes only its known staging file and leaves any existing
+  final target untouched.
+- `open_for_append()` accepts only a complete final target; staging files are
+  never appendable.
+- Before append, the writer validates version, type, topology order, dataset
+  presence, dtypes, atom count, unit labels, output-defining metadata,
+  `NSteps`, every committed extent, and the last stored step/time.
+- Input validation completes before any dataset resize.
+- An append updates all data and offset datasets first and updates `NSteps`
+  last as the commit marker.
+- An I/O failure after mutation is reported as `DataWriterTargetError`. On a
+  later open, any extent inconsistent with `NSteps` is also a target error.
+- There is no silent truncation or repair. VTKHDF is derived from the HDF5
+  source, so the supported recovery is to remove the incomplete target and
+  regenerate it.
 
 ## Error Contract
 
@@ -250,6 +467,5 @@ third-party reader remain separate from unit tests.
 
 ## Current Phase
 
-Planning and contract definition. Production modules remain placeholders;
-the schema and backend questions listed in `context.md` are prerequisites for
-implementation.
+Phase 1 contract and schema completed on 2026-10-12. Production modules remain
+placeholders. Phase 2 state and behavior work is ready but has not started.

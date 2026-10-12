@@ -17,15 +17,21 @@ Last reviewed: 2026-10-12.
   are documented.
 - The implementation phases and validation gates are recorded in
   [the implementation plan](../../../../docs/lop_sf_fcc_vtkhdf_animation_writer_plan.md).
+- Phase 1 contract and schema are complete:
+  - VTKHDF 2.6 temporal `PolyData`;
+  - one partition and one vertex per atom at each animation step;
+  - direct `h5py` production backend and `vtkHDFReader` interoperability
+    oracle;
+  - source-adapter conversion boundary;
+  - populated contiguous HDF5 group prefix mapped to ordered animation steps;
+  - numeric box field data and physical time values;
+  - no-overwrite, strict append compatibility, and explicit regeneration
+    recovery policy;
+  - fixture-based source and expected output trees in `top_level_plan.md`.
 
 ### Pending
 
 - Correct the placeholder public class spelling from `Vtkhd` to `Vtkhdf`.
-- Select the supported VTKHDF dataset type, temporal schema, and backend.
-- Specify the exact mapping from the HDF5 source layout to animation steps,
-  topology, geometry, point data, box data, and time values.
-- Decide whether the public conversion boundary accepts an HDF5 path, a
-  source adapter, or decoded frame batches.
 - Add state types, behavior, value object, concrete writer, builders, keys,
   registry, and stable package exports.
 - Add focused unit, schema-conformance, reader-interoperability, and
@@ -56,25 +62,43 @@ Last reviewed: 2026-10-12.
 - **Feature-owned registry:** the VTKHDF package owns one registry populated
   only by its `__init__.py`; behavior receives it through injection.
 - **Backend isolation:** only the concrete writer module imports the selected
-  VTKHDF implementation.
+  VTKHDF write implementation; the HDF5 source adapter separately owns source
+  `h5py` reads.
 - **Canonical naming:** public types use `Vtkhdf`; `Vtkhd` is an unimplemented
   scaffold typo.
+- **Temporal PolyData 2.6:** atoms are moving PolyData points with one vertex
+  cell per atom; `lop_sf_fcc` is the active scalar point-data array.
+- **One source group per step:** conversion supports the current producer's
+  contiguous populated prefix, requires exactly one frame in each populated
+  group, ignores trailing empty pre-created groups, and rejects interior gaps
+  or multi-frame groups.
+- **Physical time:** `Steps/Values` stores
+  `step_number * time_step`; `step_number` is also preserved as temporal
+  numeric field data.
+- **Box preservation:** source `box_lengths` and `box_angles` are temporal
+  three-component field-data arrays. The first release does not synthesize
+  box-edge geometry.
+- **Backend selection:** direct `h5py` writing avoids a production dependency
+  on the VTK Python wheel; `vtkHDFReader` remains required for
+  interoperability verification.
+- **Recovery:** a VTKHDF file is a derived artifact. Interrupted or
+  structurally inconsistent output raises `DataWriterTargetError`; callers
+  remove and regenerate it from the source rather than relying on silent
+  repair.
 
-## Open Contract Questions
+## Resolved Phase 1 Questions
 
-These must be resolved in the schema phase rather than guessed during coding:
-
-1. Which VTKHDF dataset type and temporal organization best represent the
-   source trajectories?
-2. Does one source trajectory map to one animation, one partition, or another
-   explicit unit?
-3. How are triclinic box geometry and periodic boundaries represented?
-4. Is physical time stored directly, derived from `step_number * time_step`,
-   or both?
-5. Which backend provides reliable creation, append, and reader-based
-   interoperability?
-6. What compatibility checks are required before appending to an existing
-   file?
+1. Dataset type: VTKHDF 2.6 temporal `PolyData`.
+2. Temporal unit: one populated source group becomes one animation step with
+   one partition.
+3. Box data: preserve lengths and angles as field data; visual box edges are
+   deferred.
+4. Time: store physical time in `Steps/Values` and preserve integer
+   `step_number` as field data.
+5. Backend: `h5py` for writing; `vtkHDFReader` for interoperability tests.
+6. Append: require exact version, type, array schema, dtypes, atom count,
+   units, metadata identity, committed dataset extents, and increasing step
+   and time values before mutation.
 
 ## Planned Data Flow
 
@@ -94,6 +118,11 @@ VTKHDF animation target
   v
 VTK-compatible visualization tool
 ```
+
+## Current Phase
+
+Phase 1 is complete. Phase 2 (state and behavior) is ready but has not
+started.
 
 ## Maintenance Rule
 

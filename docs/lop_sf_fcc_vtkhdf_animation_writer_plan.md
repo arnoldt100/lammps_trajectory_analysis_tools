@@ -17,7 +17,8 @@ This document records the implementation sequence and verification gates.
 ```text
 HDF5LopSfFccTrajectoryDataWriter output
   |
-  | validated source metadata, layout, and frame arrays
+  | HDF5LopSfFccAnimationSource adapter
+  | validated source metadata, layout, and decoded frame arrays
   v
 LopSfFccVtkhdfAnimationWriterValueObject
   |
@@ -30,10 +31,10 @@ LopSfFccVtkhdfAnimationWriter
 VTKHDF animation file
 ```
 
-The first implementation may read through a dedicated source adapter or
-accept already-decoded frame arrays. That boundary must be selected before
-implementation and documented in the feature plan; the animation writer must
-not import orchestrator or MDAnalysis implementation details.
+The conversion entry point accepts a source adapter. The concrete HDF5 source
+adapter owns source-file reading and emits decoded frame batches; the VTKHDF
+writer owns output only and never imports orchestrator or MDAnalysis
+implementation details.
 
 ## Value-Semantics Design
 
@@ -157,16 +158,23 @@ public behavior. They will be renamed before implementation and export.
 
 ### Phase 1: Contract and schema
 
-1. Select and document the supported VTKHDF dataset type and temporal layout.
-2. Define the mapping from HDF5 trajectories to animation steps, points,
-   topology, point data, box data, and time values.
-3. Select the VTKHDF backend dependency and confirm append capabilities.
-4. Decide whether the writer accepts an input path, a source adapter, or
-   decoded frame batches.
-5. Record target overwrite, append-compatibility, and recovery policies.
+Status: **complete (2026-10-12)**.
+
+1. Selected VTKHDF 2.6 temporal `PolyData` with one partition per step.
+2. Defined the mapping from the populated contiguous prefix of HDF5
+   trajectory groups to animation steps, points, vertex topology,
+   `lop_sf_fcc` point data, numeric box field data, and physical time values.
+3. Selected direct `h5py` writing as the production backend; VTK's
+   `vtkHDFReader` is the interoperability oracle.
+4. Selected a source-adapter conversion boundary. The HDF5 adapter accepts an
+   input path; the concrete writer receives decoded frames.
+5. Defined no-overwrite creation, exact append compatibility, and
+   fail-explicitly/regenerate recovery for interrupted or corrupt targets.
 
 Exit gate: fixture-based examples of the source-to-VTKHDF mapping and
-expected file tree are approved in the feature plan.
+expected file tree are approved in the feature plan. The exit gate is met by
+the schema and two-step fixture in
+[the standing feature plan](../workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_vtkhdf_workspaces/top_level_plan.md).
 
 ### Phase 2: State and behavior
 
@@ -262,4 +270,3 @@ The feature is complete when:
 - focused and full tests pass;
 - static diagnostics add no errors;
 - documentation and package exports match the implementation.
-
