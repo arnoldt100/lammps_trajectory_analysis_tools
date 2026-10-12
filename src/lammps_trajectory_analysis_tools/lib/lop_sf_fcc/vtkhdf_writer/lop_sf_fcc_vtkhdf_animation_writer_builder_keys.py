@@ -12,6 +12,8 @@ LopSfFccVtkhdfAnimationWriterBuilderKey = "lop_sf_fcc_vtkhdf_animation_writer"
 LopSfFccVtkhdfAnimationWriterValueObjectBuilderKey = (
     "lop_sf_fcc_vtkhdf_animation_writer_value_object"
 )
+HDF5LopSfFccAnimationSourceBuilderKey = "hdf5_lop_sf_fcc_animation_source"
+LopSfFccVtkhdfAnimationConverterBuilderKey = "lop_sf_fcc_vtkhdf_animation_converter"
 
 
 # ----------

@@ -12,6 +12,12 @@ from typing import Any
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_registry import (
     BuilderRegistry,
 )
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.hdf5_lop_sf_fcc_animation_source import (
+    HDF5LopSfFccAnimationSource,
+)
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_converter import (
+    LopSfFccVtkhdfAnimationConverter,
+)
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer import (
     LopSfFccVtkhdfAnimationWriter,
 )
@@ -132,6 +138,32 @@ class LopSfFccVtkhdfAnimationWriterValueObjectBuilder:
             LopSfFccVtkhdfAnimationLayoutBuilderKey,
             **dict(value),
         )
+
+
+class HDF5LopSfFccAnimationSourceBuilder:
+    """Build concrete HDF5 animation source adapters."""
+
+    def __call__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HDF5LopSfFccAnimationSource:
+        """Construct and return an HDF5 animation source."""
+        return HDF5LopSfFccAnimationSource(*args, **kwargs)
+
+
+class LopSfFccVtkhdfAnimationConverterBuilder:
+    """Build registry-injected animation converters."""
+
+    __slots__ = ("_registry",)
+
+    def __init__(self, registry: BuilderRegistry[Any]) -> None:
+        """Initialize with the feature registry."""
+        self._registry = registry
+
+    def __call__(self) -> LopSfFccVtkhdfAnimationConverter:
+        """Construct and return an animation converter."""
+        return LopSfFccVtkhdfAnimationConverter(self._registry)
 
 
 # ----------

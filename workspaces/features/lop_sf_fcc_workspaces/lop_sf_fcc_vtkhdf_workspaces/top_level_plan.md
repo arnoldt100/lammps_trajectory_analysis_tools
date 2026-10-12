@@ -23,11 +23,12 @@ The feature owns:
 The detailed delivery sequence is in
 [the implementation plan](../../../../docs/lop_sf_fcc_vtkhdf_animation_writer_plan.md).
 
-## Planned Package Structure
+## Package Structure
 
 ```text
 src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
   __init__.py
+  lop_sf_fcc_vtkhdf_animation_converter.py
   lop_sf_fcc_vtkhdf_animation_writer.py
   lop_sf_fcc_vtkhdf_animation_source_interface.py
   hdf5_lop_sf_fcc_animation_source.py
@@ -370,7 +371,8 @@ Production writing uses the existing `h5py` dependency directly:
 
 - `create()` refuses an existing final target.
 - New output is written to a same-directory staging file. Successful
-  finalization closes and atomically renames it to the requested target.
+  finalization closes it, creates the final no-overwrite hard link, and then
+  removes the staging link.
 - Failed creation removes only its known staging file and leaves any existing
   final target untouched.
 - `open_for_append()` accepts only a complete final target; staging files are
@@ -407,6 +409,8 @@ At minimum, the package will define builder keys and builders for:
 - behavior when configuration is required;
 - concrete VTKHDF writer;
 - concrete VTKHDF animation writer value object.
+- HDF5 animation source adapter;
+- animation converter.
 
 The exact product split is finalized with the state model. Builders are
 focused forwarding objects; validation remains in products. The composite
@@ -418,6 +422,9 @@ All feature builders are defined in
 defined in `lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py`.
 `vtkhdf_writer/__init__.py` is the only registration site. No product,
 behavior, state, or builder module registers itself.
+
+The package registry contains exactly six builders: metadata, layout,
+concrete writer, composite value object, HDF5 source, and converter.
 
 ## Test Plan
 
@@ -461,7 +468,8 @@ third-party reader remain separate from unit tests.
 - Supporting every VTK dataset type or historical VTK format.
 - Hiding source corruption, unsupported schemas, or backend failures.
 - Sharing open resources across copied or replaced value objects.
-- Adding a consumer before the output contract is stable and tested.
+- Owning command-line or orchestration policy outside this translation
+  package.
 
 ## Acceptance Criteria
 
@@ -478,15 +486,18 @@ third-party reader remain separate from unit tests.
 
 ## Current Phase
 
-Phases 1 through 4 completed on 2026-10-12.
+Phases 1 through 5 completed on 2026-10-12.
 `LopSfFccVtkhdfAnimationMetadata`, `LopSfFccVtkhdfAnimationLayout`,
 `LopSfFccVtkhdfAnimationWriterState`, and
 `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` are covered by 44
 backend-independent tests. `LopSfFccVtkhdfAnimationWriter` is covered by 26
 normal-environment tests plus a passing optional `vtkHDFReader`
 interoperability check. The value-object interface, mutable value object,
-four builders, four keys, exact package registry, single registration site,
-and stable exports are covered by 27 focused Phase 4 tests, including a real
-create/reopen/append flow. Ruff and mypy pass, the complete project suite
-reports 427 passed and 3 skipped, and Phase 5 source integration remains
-pending.
+the original four builders and keys, package registry, single registration
+site, and stable exports are covered by 27 focused Phase 4 tests, including a
+real create/reopen/append flow. Phase 5 adds the immutable frame contract,
+source interface, HDF5 adapter, converter, package-level conversion entry
+point, and two corresponding builders and keys. The complete feature suite
+reports 113 passed and 2 optional skips; converted output also passes the
+`vtkHDFReader` interoperability oracle. The complete project suite reports
+443 passed and 4 skipped.

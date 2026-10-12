@@ -16,6 +16,12 @@ from lammps_trajectory_analysis_tools.design_patterns_templates.builder.exceptio
 )
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc import vtkhdf_writer
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer import (
+    HDF5LopSfFccAnimationSource,
+    HDF5LopSfFccAnimationSourceBuilder,
+    HDF5LopSfFccAnimationSourceBuilderKey,
+    LopSfFccVtkhdfAnimationConverter,
+    LopSfFccVtkhdfAnimationConverterBuilder,
+    LopSfFccVtkhdfAnimationConverterBuilderKey,
     LopSfFccVtkhdfAnimationLayout,
     LopSfFccVtkhdfAnimationLayoutBuilder,
     LopSfFccVtkhdfAnimationLayoutBuilderKey,
@@ -33,6 +39,8 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer import (
 
 EXPECTED_KEYS = frozenset(
     {
+        HDF5LopSfFccAnimationSourceBuilderKey,
+        LopSfFccVtkhdfAnimationConverterBuilderKey,
         LopSfFccVtkhdfAnimationMetadataBuilderKey,
         LopSfFccVtkhdfAnimationLayoutBuilderKey,
         LopSfFccVtkhdfAnimationWriterBuilderKey,
@@ -49,12 +57,16 @@ def test_all_builders_satisfy_the_builder_protocol() -> None:
         LopSfFccVtkhdfAnimationWriterValueObjectBuilder(
             lop_sf_fcc_vtkhdf_animation_writer_factory
         ),
+        HDF5LopSfFccAnimationSourceBuilder(),
+        LopSfFccVtkhdfAnimationConverterBuilder(
+            lop_sf_fcc_vtkhdf_animation_writer_factory
+        ),
     )
 
     assert all(isinstance(builder, SupportsBuild) for builder in builders)
 
 
-def test_factory_registers_exactly_the_four_documented_keys() -> None:
+def test_factory_registers_exactly_the_six_documented_keys() -> None:
     assert lop_sf_fcc_vtkhdf_animation_writer_factory.keys() == EXPECTED_KEYS
 
 
@@ -95,6 +107,21 @@ def test_factory_builds_the_concrete_writer(
 
     assert isinstance(writer, LopSfFccVtkhdfAnimationWriter)
     assert writer.configuration["file_path"] == file_path
+
+
+def test_factory_builds_the_source_and_converter(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.h5"
+    source = lop_sf_fcc_vtkhdf_animation_writer_factory.build(
+        HDF5LopSfFccAnimationSourceBuilderKey,
+        file_path=source_path,
+    )
+    converter = lop_sf_fcc_vtkhdf_animation_writer_factory.build(
+        LopSfFccVtkhdfAnimationConverterBuilderKey
+    )
+
+    assert isinstance(source, HDF5LopSfFccAnimationSource)
+    assert source.file_path == source_path
+    assert isinstance(converter, LopSfFccVtkhdfAnimationConverter)
 
 
 def test_composite_builder_accepts_values_and_argument_mappings(
@@ -188,7 +215,10 @@ def test_registry_is_owned_only_by_package_init() -> None:
     for module_name in (
         "lop_sf_fcc_vtkhdf_animation_writer_builder",
         "lop_sf_fcc_vtkhdf_animation_writer_builder_keys",
+        "lop_sf_fcc_vtkhdf_animation_converter",
+        "lop_sf_fcc_vtkhdf_animation_source_interface",
         "lop_sf_fcc_vtkhdf_animation_writer_value_object",
+        "hdf5_lop_sf_fcc_animation_source",
     ):
         importlib.reload(
             importlib.import_module(

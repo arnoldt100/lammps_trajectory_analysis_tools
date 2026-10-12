@@ -21,7 +21,10 @@ src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
     # single registration site and stable exports
   lop_sf_fcc_vtkhdf_animation_writer.py
     # LopSfFccVtkhdfAnimationWriter
+  lop_sf_fcc_vtkhdf_animation_converter.py
+    # LopSfFccVtkhdfAnimationConverter
   lop_sf_fcc_vtkhdf_animation_source_interface.py
+    # LopSfFccVtkhdfAnimationFrame
     # LopSfFccVtkhdfAnimationSourceInterface
   hdf5_lop_sf_fcc_animation_source.py
     # HDF5LopSfFccAnimationSource
@@ -34,9 +37,9 @@ src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
   lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior.py
     # LopSfFccVtkhdfAnimationWriterValueObjectBehavior
   lop_sf_fcc_vtkhdf_animation_writer_builder.py
-    # concrete builders
+    # six concrete builders
   lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py
-    # concrete builder keys
+    # six concrete builder keys
 ```
 
 `Vtkhdf` is the canonical class-name spelling. The former `Vtkhd` scaffolds
@@ -53,7 +56,7 @@ tests/lib/lop_sf_fcc/vtkhdf_writer/
   test_lop_sf_fcc_vtkhdf_animation_writer_value_object_interface.py
   test_lop_sf_fcc_vtkhdf_animation_writer_value_object.py
   test_lop_sf_fcc_vtkhdf_animation_writer_builders.py
-  # Planned for source integration:
+  test_hdf5_lop_sf_fcc_animation_source.py
   test_lop_sf_fcc_vtkhdf_animation_writer_integration.py
 ```
 
@@ -99,9 +102,9 @@ Dependencies of this feature:
   See
   [the builder workspace](../../design_patterns_workspaces/builder_design_pattern/README.md).
 
-Consumers of this feature are not yet wired. A command-line or orchestration
-consumer may be added only after the source-to-animation mapping and public
-writer contract are stable; that dependency must then be documented in both
+The package-level `convert_hdf5_lop_sf_fcc_to_vtkhdf()` operation is the
+stable conversion entry point. A command-line or orchestration consumer may
+call it later; that external dependency must then be documented in both
 feature workspaces.
 
 ## Related Documents

@@ -102,9 +102,9 @@ Consumers of this feature:
   [../lop_sf_fcc_mdanalysis_workspaces/README.md](../lop_sf_fcc_mdanalysis_workspaces/README.md).
 - **lop_sf_fcc VTKHDF animation writer** (`lop_sf_fcc_vtkhdf_workspaces`):
   consumes the persisted positions, LOP SF FCC values, box data, step
-  numbers, and run metadata as its visualization source contract. Its VTKHDF
-  2.6 temporal PolyData schema is defined; production integration remains
-  pending. See
+  numbers, and run metadata through its validated
+  `HDF5LopSfFccAnimationSource` adapter and converts them to VTKHDF 2.6
+  temporal PolyData without changing scientific values. See
   [../lop_sf_fcc_vtkhdf_workspaces/README.md](../lop_sf_fcc_vtkhdf_workspaces/README.md).
 
 Dependencies of this feature — each is documented in both workspaces:

@@ -68,12 +68,27 @@ Last reviewed: 2026-10-12.
   - Ruff and mypy passing;
   - 427 project tests passing, 3 skipped;
   - optional `vtkHDFReader` interoperability test passing.
+- Phase 5 source integration is complete:
+  - state-free animation-source interface and immutable defensive frame
+    values;
+  - lifecycle-aware HDF5 adapter with metadata, group, dataset, dtype, unit,
+    contiguous-prefix, single-frame, and cross-group step validation;
+  - registry-injected converter and package-level
+    `convert_hdf5_lop_sf_fcc_to_vtkhdf()` operation;
+  - HDF5 source and converter builders and keys in the designated modules;
+  - exact six-builder package registry populated only in `__init__.py`;
+  - realistic producer-to-VTKHDF conversion with preserved positions, LOP
+    values, box data, step numbers, physical time, and provenance;
+  - explicit output layout overrides and abort-without-publication on invalid
+    later source frames;
+  - 113 feature tests passing, 2 optional skips;
+  - 443 project tests passing, 4 skipped;
+  - converted output passing the optional `vtkHDFReader` oracle.
 
 ### Pending
 
-- Implement the HDF5 source adapter and end-to-end conversion entry point.
-- Add realistic source-to-VTKHDF conversion tests.
-- Wire a consumer only after the writer contract is stable.
+- No feature implementation remains. Command-line or orchestration wiring is
+  deferred to the workspace that owns that consumer.
 
 ### Not Planned
 
@@ -137,7 +152,7 @@ Last reviewed: 2026-10-12.
    units, metadata identity, committed dataset extents, and increasing step
    and time values before mutation.
 
-## Planned Data Flow
+## Current Data Flow
 
 ```text
 LOP SF FCC HDF5 source
@@ -158,8 +173,9 @@ VTK-compatible visualization tool
 
 ## Current Phase
 
-Phases 1 through 4 are complete. Phase 5 source integration remains pending
-and must not begin until explicitly requested.
+Phases 1 through 5 are complete. The source-to-VTKHDF feature contract,
+implementation, construction, conversion entry point, and interoperability
+verification are complete.
 
 ## Maintenance Rule
 

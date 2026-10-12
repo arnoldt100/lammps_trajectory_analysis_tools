@@ -33,6 +33,9 @@ Last reviewed: 2026-10-05.
 - Feature workspace created 2026-10-05 together with the module relocation
   from `data_writer_utils/`; suite green before and after (330 passed,
   2 skipped).
+- Downstream VTKHDF integration completed 2026-10-12:
+  `HDF5LopSfFccAnimationSource` validates and decodes this persisted contract
+  for exact conversion to temporal VTKHDF PolyData.
 
 ### Pending
 

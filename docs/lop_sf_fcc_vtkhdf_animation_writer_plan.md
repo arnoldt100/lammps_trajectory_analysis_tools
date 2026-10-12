@@ -247,16 +247,26 @@ optional `vtkHDFReader` interoperability test passes.
 
 ### Phase 5: Integration
 
-1. Add a conversion entry point in the owning consumer after the writer
-   contract is stable.
-2. Exercise conversion from a realistic HDF5 LOP SF FCC fixture.
-3. Verify animation step order, point count, LOP values, periodic box data,
-   and time values in the output.
-4. Verify that the generated file opens in at least one supported
-   VTK-compatible visualization tool.
+Status: **complete (2026-10-12)**.
+
+1. Added the state-free `LopSfFccVtkhdfAnimationSourceInterface`, immutable
+   `LopSfFccVtkhdfAnimationFrame`, and lifecycle-aware
+   `HDF5LopSfFccAnimationSource`.
+2. Added `LopSfFccVtkhdfAnimationConverter` and the package-level
+   `convert_hdf5_lop_sf_fcc_to_vtkhdf()` entry point.
+3. Added source and converter builders and keys in the designated modules,
+   expanding the package registry to exactly six builders while preserving
+   `vtkhdf_writer/__init__.py` as the only registration site.
+4. Added realistic producer-to-VTKHDF tests covering contiguous-prefix
+   semantics, trailing empty groups, metadata, dtypes, step order, point
+   count, LOP values, box data, physical time, output layout overrides, and
+   abort-without-publication failures.
+5. Verified converted output directly with `vtkHDFReader`.
 
 Exit gate: end-to-end output is readable and scientifically equivalent to
-the source fixture.
+the source fixture. Met: 113 feature tests pass with two optional skips, and
+the converted-output interoperability test passes with a temporary VTK
+installation. The complete project suite reports 443 passed and 4 skipped.
 
 ## Test Plan
 
