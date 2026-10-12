@@ -199,16 +199,23 @@ Phase 2 files.
 
 ### Phase 3: Concrete VTKHDF writer
 
-1. Implement target creation and static VTKHDF structure.
-2. Implement atomic validation before frame or batch writes.
-3. Implement temporal offsets and array append behavior required by the
-   selected VTKHDF schema.
-4. Implement append-time compatibility checks.
-5. Translate configuration, lifecycle, and target failures to the shared
-   writer exception hierarchy.
+Status: **complete (2026-10-12)**.
+
+1. Implemented staged no-overwrite target creation and the complete VTKHDF
+   2.6 temporal PolyData structure.
+2. Implemented complete frame/batch validation before persistent mutation.
+3. Implemented points, scalar point data, numeric field data, vertex
+   topology, temporal offsets, and append commit behavior.
+4. Implemented append-time identity, metadata, schema, dtype, chunk,
+   committed-extent, offset, unit, and ordering checks.
+5. Implemented configuration, lifecycle, and target error translation,
+   explicit abort, staging cleanup, and regenerate-on-corruption behavior.
 
 Exit gate: generated files match the expected HDF5 tree and reopen through
-the selected VTK-compatible reader.
+the selected VTK-compatible reader. Met: 26 concrete writer tests pass in the
+normal environment (the VTK test skips when the optional wheel is absent);
+the same interoperability test passes with a temporary VTK installation and
+confirms two time values, points, and the `lop_sf_fcc` array.
 
 ### Phase 4: Value object and builders
 

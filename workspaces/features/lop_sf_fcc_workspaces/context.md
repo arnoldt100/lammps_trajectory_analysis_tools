@@ -28,8 +28,9 @@ mirroring the feature structure.
 - [lop_sf_fcc_vtkhdf_workspaces/](lop_sf_fcc_vtkhdf_workspaces/README.md) —
   the planned value-oriented VTKHDF animation writer that translates
   persisted HDF5 LOP SF FCC trajectories for VTK-compatible visualization.
-  Phase 1 contract/schema and Phase 2 backend-independent state/behavior are
-  complete; concrete VTKHDF writing remains pending.
+  Phase 1 contract/schema, Phase 2 backend-independent state/behavior, and
+  Phase 3 concrete VTKHDF writing are complete; value-object and builder
+  integration remain pending.
 
 ## Rules
 

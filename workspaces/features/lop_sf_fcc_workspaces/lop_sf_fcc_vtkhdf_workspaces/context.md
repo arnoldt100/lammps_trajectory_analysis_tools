@@ -40,12 +40,25 @@ Last reviewed: 2026-10-12.
     exclusion;
   - 44 focused tests passing;
   - Ruff, Ruff format, and mypy passing for Phase 2 files.
+- Phase 3 concrete writer is complete:
+  - canonical `LopSfFccVtkhdfAnimationWriter` spelling;
+  - same-directory staging and hard-link publication without overwrite;
+  - explicit abort and exception-safe staging cleanup;
+  - complete VTKHDF 2.6 temporal PolyData schema creation;
+  - one vertex cell per atom and `lop_sf_fcc` scalar point data;
+  - temporal step, point, topology, point-data, and field-data offsets;
+  - validation-first single-frame and batch appends;
+  - `NSteps` updated last as the append commit marker;
+  - strict append compatibility and committed-extent validation;
+  - 26 concrete writer tests passing in the normal environment;
+  - `vtkHDFReader` interoperability test passing with a temporary optional
+    VTK installation;
+  - 400 project tests passing, 3 skipped.
 
 ### Pending
 
 - Correct the placeholder public class spelling from `Vtkhd` to `Vtkhdf`.
-- Add the value object, concrete writer, builders, keys, registry, and stable
-  package exports.
+- Add the value object, builders, keys, registry, and stable package exports.
 - Add focused unit, schema-conformance, reader-interoperability, and
   end-to-end conversion tests.
 - Wire a consumer only after the writer contract is stable.
@@ -133,8 +146,8 @@ VTK-compatible visualization tool
 
 ## Current Phase
 
-Phases 1 and 2 are complete. Phase 3 (concrete VTKHDF writer) is ready but
-has not started.
+Phases 1 through 3 are complete. Phase 4 (value object and builders) is ready
+but has not started.
 
 ## Maintenance Rule
 

@@ -119,13 +119,18 @@ only a closed object after validating the complete state.
 
 ### Lifecycle
 
-- `create()` closes a prior resource, creates a new target without accidental
-  overwrite, writes static metadata/schema, and leaves the writer open.
+- `create()` closes a prior resource, refuses existing final or staging
+  targets, creates a same-directory staging file, writes static
+  metadata/schema, and leaves the staged writer open.
 - `open_for_append()` closes a prior resource, opens an existing target,
   validates schema and metadata compatibility, and returns `self`.
-- `close()` flushes, closes, clears the resource, and is idempotent.
+- `close()` flushes, closes, and publishes staged output with a no-overwrite
+  hard link; append targets are simply finalized. It is idempotent.
+- `abort()` closes without publication and removes only a staging target
+  owned by this writer.
 - `__enter__()` creates only when closed and returns `self`.
-- `__exit__()` always closes, including when the body raises.
+- `__exit__()` publishes on success and aborts staged creation when the body
+  raises.
 
 ### Frame or batch append
 
@@ -408,6 +413,12 @@ focused forwarding objects; validation remains in products. The composite
 value-object builder receives the registry through constructor injection so
 tests can supply stub builders without modifying global state.
 
+All feature builders are defined in
+`lop_sf_fcc_vtkhdf_animation_writer_builder.py`; all feature builder keys are
+defined in `lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py`.
+`vtkhdf_writer/__init__.py` is the only registration site. No product,
+behavior, state, or builder module registers itself.
+
 ## Test Plan
 
 Tests verify observable behavior:
@@ -467,10 +478,13 @@ third-party reader remain separate from unit tests.
 
 ## Current Phase
 
-Phase 1 contract/schema and Phase 2 state/behavior completed on 2026-10-12.
+Phase 1 contract/schema, Phase 2 state/behavior, and Phase 3 concrete writer
+completed on 2026-10-12.
 `LopSfFccVtkhdfAnimationMetadata`, `LopSfFccVtkhdfAnimationLayout`,
 `LopSfFccVtkhdfAnimationWriterState`, and
-`LopSfFccVtkhdfAnimationWriterValueObjectBehavior` are implemented and
-covered by 44 backend-independent tests. Phase 3 concrete writer work is
-ready but has not started; the value object, builders, registry, and exports
-remain later-phase placeholders.
+`LopSfFccVtkhdfAnimationWriterValueObjectBehavior` are covered by 44
+backend-independent tests. `LopSfFccVtkhdfAnimationWriter` is covered by 26
+normal-environment tests plus a passing optional `vtkHDFReader`
+interoperability check. Phase 4 value-object and builder work is ready but
+has not started; builders, keys, registry wiring, stable exports, and the
+value object remain placeholders.
