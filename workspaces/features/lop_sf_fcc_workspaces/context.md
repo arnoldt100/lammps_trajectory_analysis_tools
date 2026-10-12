@@ -25,6 +25,10 @@ mirroring the feature structure.
   the HDF5 trajectory data writer (value object, layout/metadata, builders,
   concrete writer, and the `lop_sf_fcc_data_writer_factory` registry) in
   `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/hdf5_writer/`. Active.
+- [lop_sf_fcc_vtkhdf_workspaces/](lop_sf_fcc_vtkhdf_workspaces/README.md) —
+  the planned value-oriented VTKHDF animation writer that translates
+  persisted HDF5 LOP SF FCC trajectories for VTK-compatible visualization.
+  Contract definition active; production implementation pending.
 
 ## Rules
 

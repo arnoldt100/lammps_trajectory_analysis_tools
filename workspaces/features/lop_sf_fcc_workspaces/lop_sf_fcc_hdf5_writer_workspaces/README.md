@@ -100,6 +100,11 @@ Consumers of this feature:
   `LOP_SF_FCC._conclude` writes frames through the value object
   (`__enter__` creates; `open_for_append()` on later runs). See
   [../lop_sf_fcc_mdanalysis_workspaces/README.md](../lop_sf_fcc_mdanalysis_workspaces/README.md).
+- **lop_sf_fcc VTKHDF animation writer** (`lop_sf_fcc_vtkhdf_workspaces`):
+  consumes the persisted positions, LOP SF FCC values, box data, step
+  numbers, and run metadata as its visualization source contract. Production
+  integration is pending schema design. See
+  [../lop_sf_fcc_vtkhdf_workspaces/README.md](../lop_sf_fcc_vtkhdf_workspaces/README.md).
 
 Dependencies of this feature — each is documented in both workspaces:
 

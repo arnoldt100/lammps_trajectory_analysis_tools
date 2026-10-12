@@ -1,53 +1,112 @@
-# LOP SF FCC VTKHDF Writer Feature Workspace
+# LOP SF FCC VTKHDF Animation Writer Feature Workspace
 
 ## Feature Goal
-Owns the responsibility of writing an VTKHDF file for viewing the trajectory
-data the concrete trajectory writer HDF5LopSfFccTrajectoryDataWriter produces.
 
-The concrete writer VTKHDFLopSfFccTrajectoryDataWriter creates a 
-VTKHDF animation file. 
+Own the VTKHDF animation writer for persisted LOP SF FCC trajectories. The
+feature converts the trajectory data produced by
+`HDF5LopSfFccTrajectoryDataWriter` into a standards-conforming temporal
+VTKHDF file for VTK-compatible visualization tools.
 
-## Structural Boundaries.
+The feature performs translation and output only. It does not calculate
+LOP SF FCC values, alter scientific results, or own trajectory analysis.
 
-### Owned production code 
+## Structural Boundaries
+
+Planned production scope:
 
 ```text
-/src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer
- ├── __init__.py  # lop_sf_fcc_vtkhdf_animation_writer_factory
- │                # single registration site + exports
- ├── lop_sf_fcc_vtkhdf_animation_writer.py # The concrete VTKHDF writer for HDF5 LOP FCC trajectories.
- │                                         # LopSfFccVtkhdAnimationWriter
- ├── lop_sf_fcc_vtkhdf_animation_writer_value_object.py # LopSfFccVtkhdAnimationWriterValueObject
- ├── lop_sf_fcc_vtkhdf_animation_writer_value_object_interface.py # LopSfFccVtkhdAnimationWriterValueObjectInterface
- ├── lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior.py # LopSfFccVtkhdAnimationWriterValueObjectBehavior
- ├── lop_sf_fcc_vtkhdf_animation_writer_builder.py # The concrete builders
- └── lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py # The concrete builder keys.
+src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
+  __init__.py
+    # lop_sf_fcc_vtkhdf_animation_writer_factory
+    # single registration site and stable exports
+  lop_sf_fcc_vtkhdf_animation_writer.py
+    # LopSfFccVtkhdfAnimationWriter
+  lop_sf_fcc_vtkhdf_animation_writer_state.py
+    # immutable metadata/layout and resource-bearing writer state
+  lop_sf_fcc_vtkhdf_animation_writer_value_object.py
+    # LopSfFccVtkhdfAnimationWriterValueObject
+  lop_sf_fcc_vtkhdf_animation_writer_value_object_interface.py
+    # LopSfFccVtkhdfAnimationWriterValueObjectInterface
+  lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior.py
+    # LopSfFccVtkhdfAnimationWriterValueObjectBehavior
+  lop_sf_fcc_vtkhdf_animation_writer_builder.py
+    # concrete builders
+  lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py
+    # concrete builder keys
 ```
 
+`Vtkhdf` is the canonical class-name spelling. The existing `Vtkhd`
+one-line scaffolds are misspelled placeholders and are not a supported API.
 
+Centralized tests will mirror the package:
+
+```text
+tests/lib/lop_sf_fcc/vtkhdf_writer/
+  conftest.py
+  test_lop_sf_fcc_vtkhdf_animation_writer.py
+  test_lop_sf_fcc_vtkhdf_animation_writer_state.py
+  test_lop_sf_fcc_vtkhdf_animation_writer_behavior.py
+  test_lop_sf_fcc_vtkhdf_animation_writer_value_object.py
+  test_lop_sf_fcc_vtkhdf_animation_writer_builders.py
+  test_lop_sf_fcc_vtkhdf_animation_writer_integration.py
 ```
-### Centralized tests 
-Per the project-wide centralized testing rule, tests never
-live inside the feature workspace or `src`):
 
-### Standing plan and status (this folder):
+Tests never live in this feature workspace or under `src`.
 
-- `top_level_plan.md` — 
+Standing documentation in this folder:
 
-- `context.md` — current implementation status snapshot; must be updated
-  whenever the feature's behavior, data flow, or boundaries change.
-
+- `top_level_plan.md` defines the canonical feature contract, design rules,
+  tests, non-goals, and acceptance criteria.
+- `context.md` records current implementation status and decisions.
+- `uml_diagrams/` contains design aids only; diagrams do not override the
+  written contract.
 
 ## External Dependencies
 
+- **LOP SF FCC HDF5 writer:** defines the source trajectory layout and
+  metadata consumed by this feature.
+- **Value-semantics template:** supplies the state/behavior delegation model
+  adapted by the writer value object.
+- **Builder template:** supplies `BuilderRegistry`, builder protocols, and
+  registry errors.
+- **Data writer utilities:** supplies the shared configuration, lifecycle,
+  and target exception categories.
+- **VTKHDF backend:** the concrete VTK-compatible implementation dependency
+  will be selected during schema design and must remain isolated in the
+  concrete writer module.
+- **NumPy/HDF5 reader boundary:** used to validate and transfer source frame
+  arrays without introducing analysis logic.
+
 ## Cross-Feature Dependencies
 
-Consumers of this feature:
+Dependencies of this feature:
+
+- **LOP SF FCC HDF5 writer:** supplies persisted positions, LOP SF FCC point
+  values, box geometry, step numbers, and run metadata. See
+  [the HDF5 writer workspace](../lop_sf_fcc_hdf5_writer_workspaces/README.md).
+- **Value semantics:** defines defensive copying, state equality,
+  replacement, controlled mutation, and behavior delegation. See
+  [the value-semantics workspace](../../design_patterns_workspaces/value_semantics/README.md).
+- **Builder pattern:** defines builder registry ownership and construction.
+  See
+  [the builder workspace](../../design_patterns_workspaces/builder_design_pattern/README.md).
+
+Consumers of this feature are not yet wired. A command-line or orchestration
+consumer may be added only after the source-to-animation mapping and public
+writer contract are stable; that dependency must then be documented in both
+feature workspaces.
 
 ## Related Documents
 
+- Implementation plan:
+  [docs/lop_sf_fcc_vtkhdf_animation_writer_plan.md](../../../../docs/lop_sf_fcc_vtkhdf_animation_writer_plan.md)
 - Standing plan: [top_level_plan.md](top_level_plan.md)
 - Status snapshot: [context.md](context.md)
 - Collection rules: [../top_level_plan.md](../top_level_plan.md)
 - Project-wide rules: [../../../top_level_plan.md](../../../top_level_plan.md)
-- Command-line contract: [../../command_line_workspaces/top_level_plan.md](../../command_line_workspaces/top_level_plan.md)
+- HDF5 source contract:
+  [../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md](../lop_sf_fcc_hdf5_writer_workspaces/top_level_plan.md)
+- Value-semantics contract:
+  [../../design_patterns_workspaces/value_semantics/top_level_plan.md](../../design_patterns_workspaces/value_semantics/top_level_plan.md)
+- Builder contract:
+  [../../design_patterns_workspaces/builder_design_pattern/top_level_plan.md](../../design_patterns_workspaces/builder_design_pattern/top_level_plan.md)
