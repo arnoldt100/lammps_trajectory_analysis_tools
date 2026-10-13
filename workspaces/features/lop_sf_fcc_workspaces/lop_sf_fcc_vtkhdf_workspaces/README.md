@@ -14,8 +14,15 @@ LOP SF FCC values, alter scientific results, or own trajectory analysis.
 
 Production scope:
 
+The writer is a sibling of the `lop_sf_fcc` analysis package under `lib`.
+Its canonical import path is
+`lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer`.
+The package relocation changes imports only; module filenames, public
+symbols, builder keys, and conversion behavior are unchanged. No old-path
+compatibility alias is provided.
+
 ```text
-src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
+src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc_vtkhdf_writer/
   __init__.py
     # lop_sf_fcc_vtkhdf_animation_writer_factory
     # single registration site and stable exports
@@ -48,7 +55,7 @@ were misspelled placeholders and are not a supported API.
 Centralized tests will mirror the package:
 
 ```text
-tests/lib/lop_sf_fcc/vtkhdf_writer/
+tests/lib/lop_sf_fcc_vtkhdf_writer/
   conftest.py
   test_lop_sf_fcc_vtkhdf_animation_writer_state.py
   test_lop_sf_fcc_vtkhdf_animation_writer_behavior.py

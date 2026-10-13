@@ -231,7 +231,7 @@ Status: **complete (2026-10-12)**.
    concrete writer, and the composite value object.
 4. Created and populated
    `lop_sf_fcc_vtkhdf_animation_writer_factory` only in
-   `vtkhdf_writer/__init__.py`; implementation-module reloads do not mutate
+   `lop_sf_fcc_vtkhdf_writer/__init__.py`; implementation-module reloads do not mutate
    the registry.
 5. Exported the stable state, behavior, writer, value-object, construction,
    and schema surfaces.
@@ -256,7 +256,7 @@ Status: **complete (2026-10-12)**.
    `convert_hdf5_lop_sf_fcc_to_vtkhdf()` entry point.
 3. Added source and converter builders and keys in the designated modules,
    expanding the package registry to exactly six builders while preserving
-   `vtkhdf_writer/__init__.py` as the only registration site.
+   `lop_sf_fcc_vtkhdf_writer/__init__.py` as the only registration site.
 4. Added realistic producer-to-VTKHDF tests covering contiguous-prefix
    semantics, trailing empty groups, metadata, dtypes, step order, point
    count, LOP values, box data, physical time, output layout overrides, and
@@ -270,7 +270,7 @@ installation. The complete project suite reports 443 passed and 4 skipped.
 
 ## Test Plan
 
-Tests belong under `tests/lib/lop_sf_fcc/vtkhdf_writer/` and cover:
+Tests belong under `tests/lib/lop_sf_fcc_vtkhdf_writer/` and cover:
 
 1. interface abstractness and absence of base-class state;
 2. state validation and defensive copying;

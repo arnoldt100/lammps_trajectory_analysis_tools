@@ -4,12 +4,20 @@ Status snapshot for the VTKHDF animation writer feature. Update this file
 whenever feature behavior, data flow, implementation status, or boundaries
 change.
 
-Last reviewed: 2026-10-12.
+Last reviewed: 2026-10-13.
 
 ## Implementation Status
 
 ### Done
 
+- Relocated the production writer to
+  `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc_vtkhdf_writer/`
+  and mirrored its tests under `tests/lib/lop_sf_fcc_vtkhdf_writer/`.
+  The canonical import prefix is
+  `lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer`;
+  no old-path compatibility alias is provided. Public symbols, builder
+  registration, HDF5 producer dependencies, and conversion behavior remain
+  unchanged.
 - Feature workspace and intended production package exist.
 - Placeholder modules identify the concrete writer, value object, interface,
   behavior, builders, builder keys, and package registration surface.
@@ -183,7 +191,7 @@ Any change to the source mapping, VTKHDF schema, lifecycle, validation,
 exception behavior, construction, exports, or consumer wiring requires:
 
 1. corresponding focused tests under
-   `tests/lib/lop_sf_fcc/vtkhdf_writer/`;
+   `tests/lib/lop_sf_fcc_vtkhdf_writer/`;
 2. an update to `top_level_plan.md` when the standing contract changes;
 3. an update to this status snapshot;
 4. updates to both workspaces for every new cross-feature dependency;

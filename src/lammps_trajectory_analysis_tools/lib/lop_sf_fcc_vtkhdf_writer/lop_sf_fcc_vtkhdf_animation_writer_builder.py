@@ -12,29 +12,29 @@ from typing import Any
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_registry import (
     BuilderRegistry,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.hdf5_lop_sf_fcc_animation_source import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.hdf5_lop_sf_fcc_animation_source import (
     HDF5LopSfFccAnimationSource,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_converter import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_converter import (
     LopSfFccVtkhdfAnimationConverter,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer import (
     LopSfFccVtkhdfAnimationWriter,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_builder_keys import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_builder_keys import (
     LopSfFccVtkhdfAnimationLayoutBuilderKey,
     LopSfFccVtkhdfAnimationMetadataBuilderKey,
     LopSfFccVtkhdfAnimationWriterBuilderKey,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
     LopSfFccVtkhdfAnimationLayout,
     LopSfFccVtkhdfAnimationMetadata,
     LopSfFccVtkhdfAnimationWriterState,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object import (
     LopSfFccVtkhdfAnimationWriterValueObject,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior import (
     LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
 )
 

@@ -25,8 +25,14 @@ The detailed delivery sequence is in
 
 ## Package Structure
 
+The canonical import prefix is
+`lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer`.
+The writer is a sibling of the analysis package under `lib`, with no
+old-path compatibility alias. Package exports and builder registration
+remain owned by this package's `__init__.py`.
+
 ```text
-src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
+src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc_vtkhdf_writer/
   __init__.py
   lop_sf_fcc_vtkhdf_animation_converter.py
   lop_sf_fcc_vtkhdf_animation_writer.py
@@ -39,7 +45,7 @@ src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc/vtkhdf_writer/
   lop_sf_fcc_vtkhdf_animation_writer_builder.py
   lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py
 
-tests/lib/lop_sf_fcc/vtkhdf_writer/
+tests/lib/lop_sf_fcc_vtkhdf_writer/
   conftest.py
   test_lop_sf_fcc_vtkhdf_animation_writer.py
   test_lop_sf_fcc_vtkhdf_animation_writer_state.py
@@ -74,7 +80,7 @@ inside this package and must be added to the README and context.
 - **Builder construction:** application code builds supported objects through
   concrete builders following the reusable builder pattern.
 - **Registry ownership:** `lop_sf_fcc_vtkhdf_animation_writer_factory` is
-  created and populated exactly once in `vtkhdf_writer/__init__.py`.
+  created and populated exactly once in `lop_sf_fcc_vtkhdf_writer/__init__.py`.
   Implementation modules never self-register.
 - **Backend isolation:** imports of the chosen VTKHDF implementation live in
   the concrete writer only. Source-side `h5py` reads live in the HDF5 source
@@ -420,7 +426,7 @@ tests can supply stub builders without modifying global state.
 All feature builders are defined in
 `lop_sf_fcc_vtkhdf_animation_writer_builder.py`; all feature builder keys are
 defined in `lop_sf_fcc_vtkhdf_animation_writer_builder_keys.py`.
-`vtkhdf_writer/__init__.py` is the only registration site. No product,
+`lop_sf_fcc_vtkhdf_writer/__init__.py` is the only registration site. No product,
 behavior, state, or builder module registers itself.
 
 The package registry contains exactly six builders: metadata, layout,

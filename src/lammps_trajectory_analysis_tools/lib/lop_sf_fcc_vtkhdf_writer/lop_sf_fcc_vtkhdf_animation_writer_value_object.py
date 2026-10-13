@@ -14,13 +14,13 @@ from typing import Any, Self
 from lammps_trajectory_analysis_tools.data_writer_utils.exceptions import (
     DataWriterLifecycleError,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
     LopSfFccVtkhdfAnimationWriterState,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_behavior import (
     LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_interface import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_value_object_interface import (
     LopSfFccVtkhdfAnimationWriterValueObjectInterface,
 )
 

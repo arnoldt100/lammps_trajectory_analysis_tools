@@ -16,7 +16,7 @@ from lammps_trajectory_analysis_tools.data_writer_utils.exceptions import (
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_registry import (
     BuilderRegistry,
 )
-from lammps_trajectory_analysis_tools.lib.lop_sf_fcc.vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
+from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
     LopSfFccVtkhdfAnimationWriterState,
 )
 
