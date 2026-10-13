@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-""" Responsible for the LOP SF FCC comman line arguments.
+""" Responsible for the LOP SF FCC command line arguments.
 
 """
 
