@@ -46,6 +46,7 @@ The implementation follows the repository's behavior-delegation pattern.
 
 - a private copy of the animation writer state;
 - an explicitly supplied, stateless behavior object;
+- an injected construction callable supplied by the composite builder;
 - lifecycle methods that attach and release a concrete writer resource.
 
 The value object provides:
@@ -56,6 +57,12 @@ The value object provides:
 - controlled `update(changes)` while no writer is open;
 - `create()`, `open_for_append()`, frame append, and `close()`;
 - context-manager lifecycle behavior.
+
+The construction callable invokes the low-level writer builder registered in
+the package registry for each create/open operation, using current validated
+state. Replacement preserves the callable; closed-state updates affect the
+next construction. Direct construction takes `(state, behavior, writer_builder)`.
+The package factory interface remains unchanged.
 
 It is mutable, so it is explicitly unhashable. An open writer handle is a
 resource rather than value identity: it is excluded from equality and
@@ -89,11 +96,14 @@ operation boundary. It implements:
 - `states_equal`;
 - `state_repr`;
 - `hash_state` for state-level policy only;
-- construction of the concrete writer through an injected builder registry.
+- `create(state, writer)` and `open_for_append(state, writer)` using already
+  constructed writers.
 
 It delegates state-specific operations to the state object rather than
-interpreting a universal mapping. It contains no file handle, registry
-singleton, or backend-global state.
+interpreting a universal mapping. It has `__slots__ = ()`, is constructed
+without arguments, and contains no data, registry, key, file handle, or
+backend-global state. Concrete writer construction belongs to the composite
+builder's injected callable, not to shared behavior or the low-level writer.
 
 ## Shared Concrete Animation Writer Behavior
 
@@ -187,8 +197,10 @@ Status: **complete (2026-10-12)**.
    value equality, hashing policy, defensive mappings, and writer-free
    representation.
 3. Implemented
-   `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` using an injected
-   `BuilderRegistry`; it imports neither h5py nor a VTK backend.
+   `LopSfFccVtkhdfAnimationWriterValueObjectBehavior`. The 2026-10-14
+   ownership correction makes it stateless and moves registry construction
+   to a composite-builder callable injected into the value object; behavior
+   imports neither h5py nor a VTK backend.
 4. Added 44 focused tests for metadata/layout/state validation, defensive
    copying, equality, replacement, invalid state, registry forwarding, and
    open-resource update boundaries.

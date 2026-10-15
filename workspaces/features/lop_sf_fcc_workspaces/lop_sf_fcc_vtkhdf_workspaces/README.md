@@ -21,6 +21,15 @@ The package relocation changes imports only; module filenames, public
 symbols, builder keys, and conversion behavior are unchanged. No old-path
 compatibility alias is provided.
 
+Shared value-object behavior is stateless and receives constructed writers
+only for lifecycle operations. The composite builder injects a construction
+callable into the value object; this callable invokes the low-level writer
+builder registered in the package registry for each create/open operation.
+Replacement preserves the callable, and closed-state updates affect the next
+construction. Neither shared behavior nor the low-level writer owns registry
+configuration or builds another writer. See the standing plan for the direct
+constructor and lifecycle signatures.
+
 ```text
 src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc_vtkhdf_writer/
   __init__.py

@@ -1,6 +1,6 @@
 """Fixtures for backend-independent VTKHDF writer state tests."""
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -136,22 +136,35 @@ def stub_registry() -> BuilderRegistry[Any]:
 
 
 @pytest.fixture
-def behavior(
+def behavior() -> LopSfFccVtkhdfAnimationWriterValueObjectBehavior:
+    """Return stateless shared behavior."""
+    return LopSfFccVtkhdfAnimationWriterValueObjectBehavior()
+
+
+@pytest.fixture
+def writer_builder(
     stub_registry: BuilderRegistry[Any],
-) -> LopSfFccVtkhdfAnimationWriterValueObjectBehavior:
-    """Return behavior using the backend-free registry."""
-    return LopSfFccVtkhdfAnimationWriterValueObjectBehavior(
-        stub_registry,
-        WRITER_BUILDER_KEY,
-    )
+) -> Callable[[LopSfFccVtkhdfAnimationWriterState], Any]:
+    """Return a registry-backed construction callable for stub writers."""
+
+    def build(state: LopSfFccVtkhdfAnimationWriterState) -> Any:
+        return stub_registry.build(
+            WRITER_BUILDER_KEY,
+            file_path=state.file_path,
+            metadata=state.metadata,
+            layout=state.layout,
+        )
+
+    return build
 
 
 @pytest.fixture
 def value_object(
     state: LopSfFccVtkhdfAnimationWriterState,
     behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
 ) -> Iterator[LopSfFccVtkhdfAnimationWriterValueObject]:
     """Return a backend-free writer value object."""
-    value = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior)
+    value = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior, writer_builder)
     yield value
     value.abort()

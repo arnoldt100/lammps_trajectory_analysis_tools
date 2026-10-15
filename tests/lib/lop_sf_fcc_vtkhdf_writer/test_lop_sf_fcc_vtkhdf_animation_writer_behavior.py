@@ -1,6 +1,7 @@
 """Tests for backend-independent VTKHDF writer behavior."""
 
 import ast
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,17 @@ def test_behavior_implements_the_state_value_protocol(
     assert required
     for name in required:
         assert callable(getattr(behavior, name))
+
+
+@pytest.mark.parametrize("attribute", ["_writer_registry", "_writer_builder_key"])
+def test_behavior_cannot_store_instance_data(
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    attribute: str,
+) -> None:
+    assert not hasattr(behavior, "__dict__")
+    with pytest.raises(AttributeError):
+        setattr(behavior, attribute, object())
+    assert not hasattr(behavior, "build_writer")
 
 
 def test_copy_state_is_equal_independent_and_writer_free(
@@ -121,31 +133,35 @@ def test_dummy_method_returns_the_template_placeholder(
     assert behavior.dummy_method(state) is None
 
 
-def test_build_writer_forwards_state_through_the_injected_registry(
-    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
-    state: LopSfFccVtkhdfAnimationWriterState,
-) -> None:
-    product = behavior.build_writer(state)
-
-    assert product.arguments == {
-        "file_path": state.file_path,
-        "metadata": state.metadata,
-        "layout": state.layout,
-    }
-
-
 def test_create_and_open_for_append_attach_stub_writers(
     behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
     state: LopSfFccVtkhdfAnimationWriterState,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
 ) -> None:
-    created = behavior.create(state)
-    opened = behavior.open_for_append(state)
+    created = behavior.create(state, writer_builder(state))
+    opened = behavior.open_for_append(state, writer_builder(state))
 
     assert created.writer.created is True
     assert created.writer.opened_for_append is False
     assert opened.writer.created is False
     assert opened.writer.opened_for_append is True
     assert state.writer is None
+
+
+@pytest.mark.parametrize("operation", ["create", "open_for_append"])
+def test_lifecycle_validates_state_before_using_the_supplied_writer(
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    state: LopSfFccVtkhdfAnimationWriterState,
+    stub_writer: Any,
+    operation: str,
+) -> None:
+    invalid = state.replace({"file_path": Path("invalid.h5")})
+
+    with pytest.raises(DataWriterConfigurationError):
+        getattr(behavior, operation)(invalid, stub_writer)
+
+    assert not stub_writer.created
+    assert not stub_writer.opened_for_append
 
 
 def test_phase_two_modules_do_not_import_concrete_backends() -> None:

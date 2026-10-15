@@ -129,11 +129,11 @@ def test_dummy_method_returns_the_template_placeholder(
     assert behavior.dummy_method(state) is None
 
 
-def test_build_writer_uses_the_injected_registry(
+def test_create_uses_the_injected_registry(
     stub_behavior: LopSfFccTrajectoryWriterBehavior,
     state: LopSfFccTrajectoryWriterState,
 ) -> None:
-    product = stub_behavior.build_writer(state)
+    product = stub_behavior.create(state).writer
 
     assert type(product).__name__ == "StubWriterProduct"
     assert product.arguments["file_path"] == state.file_path
@@ -141,13 +141,16 @@ def test_build_writer_uses_the_injected_registry(
     assert product.arguments["layout"] is state.layout
 
 
-def test_build_writer_produces_the_concrete_writer_from_a_real_registry(
+def test_create_produces_the_concrete_writer_from_a_real_registry(
     behavior: LopSfFccTrajectoryWriterBehavior,
     state: LopSfFccTrajectoryWriterState,
 ) -> None:
-    product = behavior.build_writer(state)
+    product = behavior.create(state).writer
 
-    assert isinstance(product, HDF5LopSfFccTrajectoryDataWriter)
+    try:
+        assert isinstance(product, HDF5LopSfFccTrajectoryDataWriter)
+    finally:
+        product.close()
 
 
 def test_create_builds_creates_and_attaches_the_writer(

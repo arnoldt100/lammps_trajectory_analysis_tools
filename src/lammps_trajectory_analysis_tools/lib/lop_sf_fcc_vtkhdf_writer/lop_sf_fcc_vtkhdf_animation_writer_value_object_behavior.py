@@ -13,9 +13,6 @@ from typing import Any
 from lammps_trajectory_analysis_tools.data_writer_utils.exceptions import (
     DataWriterLifecycleError,
 )
-from lammps_trajectory_analysis_tools.design_patterns_templates.builder.builder_registry import (
-    BuilderRegistry,
-)
 from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vtkhdf_animation_writer_state import (
     LopSfFccVtkhdfAnimationWriterState,
 )
@@ -27,30 +24,11 @@ from lammps_trajectory_analysis_tools.lib.lop_sf_fcc_vtkhdf_writer.lop_sf_fcc_vt
 class LopSfFccVtkhdfAnimationWriterValueObjectBehavior:
     """Backend-independent behavior for animation writer value objects.
 
-    Concrete writer construction is delegated to an injected builder
-    registry, so this module does not import h5py or a VTK backend.
+    Lifecycle operations receive already constructed writers. This class
+    stores no data and does not import a builder registry or storage backend.
     """
 
-    __slots__ = ("_writer_builder_key", "_writer_registry")
-
-    def __init__(
-        self,
-        writer_registry: BuilderRegistry[Any],
-        writer_builder_key: str,
-    ) -> None:
-        """Initialize behavior.
-
-        Args:
-            writer_registry: Registry that constructs concrete writers.
-            writer_builder_key: Registered concrete writer builder key.
-        """
-        self._writer_registry = writer_registry
-        self._writer_builder_key = writer_builder_key
-
-    @property
-    def writer_builder_key(self) -> str:
-        """Return the concrete writer builder key."""
-        return self._writer_builder_key
+    __slots__ = ()
 
     def copy_state(
         self,
@@ -123,34 +101,23 @@ class LopSfFccVtkhdfAnimationWriterValueObjectBehavior:
         """Return the value-semantics template placeholder."""
         return None
 
-    def build_writer(
-        self,
-        state: LopSfFccVtkhdfAnimationWriterState,
-    ) -> Any:
-        """Build a concrete writer through the injected registry."""
-        state.validate_state()
-        return self._writer_registry.build(
-            self._writer_builder_key,
-            file_path=state.file_path,
-            metadata=state.metadata,
-            layout=state.layout,
-        )
-
     def create(
         self,
         state: LopSfFccVtkhdfAnimationWriterState,
+        writer: Any,
     ) -> LopSfFccVtkhdfAnimationWriterState:
-        """Create a concrete writer and return state carrying it."""
-        writer = self.build_writer(state)
+        """Create the supplied writer and return state carrying it."""
+        state.validate_state()
         writer.create()
         return state.with_writer(writer)
 
     def open_for_append(
         self,
         state: LopSfFccVtkhdfAnimationWriterState,
+        writer: Any,
     ) -> LopSfFccVtkhdfAnimationWriterState:
-        """Open a concrete writer and return state carrying it."""
-        writer = self.build_writer(state)
+        """Open the supplied writer and return state carrying it."""
+        state.validate_state()
         writer.open_for_append()
         return state.with_writer(writer)
 

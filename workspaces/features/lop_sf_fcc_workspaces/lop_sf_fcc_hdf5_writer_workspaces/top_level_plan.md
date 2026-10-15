@@ -84,6 +84,9 @@ workspaces/features/lop_sf_fcc_workspaces/lop_sf_fcc_hdf5_writer_workspaces/
   `hdf5_lop_sf_fcc_trajectory_data_writer.py`; the behavior object reaches
   the concrete writer only through the injected registry, so the value
   object stays backend-neutral and test-substitutable.
+- **Private writer construction:** `LopSfFccTrajectoryWriterBehavior._build_writer`
+  is an internal registry helper used by `create()` and `open_for_append()`,
+  not part of the public behavior contract.
 - **Registry ownership:** `lop_sf_fcc_data_writer_factory` is created and
   populated exactly once in `hdf5_writer/__init__.py`. Implementation modules
   must not register builders at import time. The composite builder receives

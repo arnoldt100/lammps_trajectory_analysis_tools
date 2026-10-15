@@ -111,11 +111,19 @@ class LopSfFccVtkhdfAnimationWriterValueObjectBuilder:
             built_metadata,
             built_layout,
         )
-        behavior = LopSfFccVtkhdfAnimationWriterValueObjectBehavior(
-            self._registry,
-            LopSfFccVtkhdfAnimationWriterBuilderKey,
+        behavior = LopSfFccVtkhdfAnimationWriterValueObjectBehavior()
+        return LopSfFccVtkhdfAnimationWriterValueObject(
+            state, behavior, self._build_writer
         )
-        return LopSfFccVtkhdfAnimationWriterValueObject(state, behavior)
+
+    def _build_writer(self, state: LopSfFccVtkhdfAnimationWriterState) -> Any:
+        state.validate_state()
+        return self._registry.build(
+            LopSfFccVtkhdfAnimationWriterBuilderKey,
+            file_path=state.file_path,
+            metadata=state.metadata,
+            layout=state.layout,
+        )
 
     def _resolve_metadata(
         self,

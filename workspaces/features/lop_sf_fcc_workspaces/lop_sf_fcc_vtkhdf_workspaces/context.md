@@ -4,12 +4,20 @@ Status snapshot for the VTKHDF animation writer feature. Update this file
 whenever feature behavior, data flow, implementation status, or boundaries
 change.
 
-Last reviewed: 2026-10-13.
+Last reviewed: 2026-10-14.
 
 ## Implementation Status
 
 ### Done
 
+- Removed all construction data and writer-building responsibility from
+  `LopSfFccVtkhdfAnimationWriterValueObjectBehavior`; it now has empty slots
+  and accepts supplied writers for create/append-open operations.
+- The composite builder injects a construction callable into the value object.
+  The callable invokes the package-registered low-level writer builder using
+  current validated state. Replacement preserves this dependency; closed-state
+  updates and repeated lifecycle operations construct independent writers.
+  Direct value-object construction now requires the callable as a third argument.
 - Relocated the production writer to
   `src/lammps_trajectory_analysis_tools/lib/lop_sf_fcc_vtkhdf_writer/`
   and mirrored its tests under `tests/lib/lop_sf_fcc_vtkhdf_writer/`.
@@ -41,8 +49,8 @@ Last reviewed: 2026-10-13.
   - immutable `LopSfFccVtkhdfAnimationLayout`;
   - resource-bearing, unhashable
     `LopSfFccVtkhdfAnimationWriterState`;
-  - `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` with injected registry
-    construction and no concrete backend import;
+  - stateless `LopSfFccVtkhdfAnimationWriterValueObjectBehavior` with
+    supplied-writer lifecycle operations and no concrete backend import;
   - whole-state validation, defensive mappings, replacement, controlled
     update, value equality, writer-free representation, and resource
     exclusion;

@@ -103,7 +103,7 @@ class LopSfFccTrajectoryWriterBehavior:
         """Return the template placeholder value."""
         return None
 
-    def build_writer(self, state: LopSfFccTrajectoryWriterState) -> Any:
+    def _build_writer(self, state: LopSfFccTrajectoryWriterState) -> Any:
         """Build a concrete data writer for ``state`` through the registry."""
         return self._writer_registry.build(
             self._writer_builder_key,
@@ -114,14 +114,14 @@ class LopSfFccTrajectoryWriterBehavior:
 
     def create(self, state: LopSfFccTrajectoryWriterState) -> Any:
         """Build and create a writer, returning the state that carries it."""
-        writer = self.build_writer(state)
+        writer = self._build_writer(state)
         writer.create()
         return state.with_writer(writer)
 
     def open_for_append(self, state: LopSfFccTrajectoryWriterState) -> Any:
         """Build a writer, open the existing target for appending, and return
         the state that carries it."""
-        writer = self.build_writer(state)
+        writer = self._build_writer(state)
         writer.open_for_append()
         return state.with_writer(writer)
 

@@ -9,6 +9,12 @@ these project-wide requirements.
 ## Global Design Rules
 
 - Target Python 3.14 and use modern Python 3.14-compatible syntax.
+- Do not increase the visibility of a method, class, or variable solely to
+accommodate unit tests. Production code must strictly adhere to encapsulation
+principles. Test private behavior through public entry points. If a private
+method is complex enough to warrant its own unit tests, extract it into a
+separate, focused service or utility class with its own public interface, then
+inject that service.
 - Keep every class-level and instance-level data attribute private with exactly one leading underscore, such as `_state` or `_file`.
 - Expose required external access through properties or explicit methods; do not expose mutable internal storage directly.
 - Give every public function, method, and class an explicit type signature and a concise Google-style docstring.

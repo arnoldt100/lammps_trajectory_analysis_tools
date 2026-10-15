@@ -2,12 +2,14 @@
 
 import importlib
 from pathlib import Path
+from typing import Any
 
 import h5py
 import numpy as np
 import pytest
 
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder import (
+    BuilderRegistry,
     SupportsBuild,
 )
 from lammps_trajectory_analysis_tools.design_patterns_templates.builder.exceptions import (
@@ -153,6 +155,95 @@ def test_composite_builder_accepts_values_and_argument_mappings(
     assert isinstance(from_values, LopSfFccVtkhdfAnimationWriterValueObject)
     assert from_values == from_mappings
     assert from_values.state.writer is None
+
+
+def test_composite_builder_routes_every_lifecycle_through_registered_writer_builder(
+    file_path: Path,
+    metadata: LopSfFccVtkhdfAnimationMetadata,
+    layout: LopSfFccVtkhdfAnimationLayout,
+    stub_writer: Any,
+    tmp_path: Path,
+) -> None:
+    products: list[Any] = []
+
+    def build_writer(**arguments: Any) -> Any:
+        product = type(stub_writer)(**arguments)
+        products.append(product)
+        return product
+
+    registry: BuilderRegistry[Any] = BuilderRegistry()
+    registry.register_builder(LopSfFccVtkhdfAnimationWriterBuilderKey, build_writer)
+    builder = LopSfFccVtkhdfAnimationWriterValueObjectBuilder(registry)
+    value = builder(file_path, metadata, layout)
+    assert products == []
+    value.create()
+    assert products[0].arguments == {
+        "file_path": file_path,
+        "metadata": metadata,
+        "layout": layout,
+    }
+    value.close()
+    value.close()
+    value.open_for_append()
+    assert products[0] is not products[1]
+    assert products[0].configuration["closed"]
+    assert products[1].opened_for_append
+    replacement = value.replace({"file_path": tmp_path / "replacement.vtkhdf"})
+    value.abort()
+    changed_layout = layout.replace({"number_of_atoms": 8})
+    replacement.update({"layout": changed_layout})
+    replacement.create()
+    assert products[2].arguments["file_path"] == replacement.state.file_path
+    assert products[2].arguments["layout"] == changed_layout
+    replacement.abort()
+    replacement.create()
+    assert products[3] is not products[2]
+    assert products[2].configuration["aborted"]
+    replacement.close()
+
+
+def test_composite_builder_propagates_missing_writer_registration(
+    file_path: Path,
+    metadata: LopSfFccVtkhdfAnimationMetadata,
+    layout: LopSfFccVtkhdfAnimationLayout,
+) -> None:
+    registry: BuilderRegistry[Any] = BuilderRegistry()
+    value = LopSfFccVtkhdfAnimationWriterValueObjectBuilder(registry)(
+        file_path, metadata, layout
+    )
+    with pytest.raises(BuilderKeyError):
+        value.create()
+    assert value.state.writer is None
+    assert not file_path.exists()
+
+
+def test_factory_replacement_and_update_use_current_state_for_real_output(
+    file_path: Path,
+    metadata: LopSfFccVtkhdfAnimationMetadata,
+    layout: LopSfFccVtkhdfAnimationLayout,
+    tmp_path: Path,
+) -> None:
+    original = lop_sf_fcc_vtkhdf_animation_writer_factory.build(
+        LopSfFccVtkhdfAnimationWriterValueObjectBuilderKey,
+        file_path=file_path,
+        metadata=metadata,
+        layout=layout,
+    )
+    replacement_path = tmp_path / "replacement.vtkhdf"
+    replacement = original.replace({"file_path": replacement_path})
+    replacement.update({"layout": layout.replace({"number_of_atoms": 8})})
+    with replacement:
+        replacement.append_frames(
+            np.asarray([0], dtype=np.int64),
+            np.zeros((1, 8, 3)),
+            np.zeros((1, 8)),
+            np.asarray([[10.0, 10.0, 10.0]]),
+            np.asarray([[90.0, 90.0, 90.0]]),
+        )
+    assert not file_path.exists()
+    assert original.state.layout == layout
+    with h5py.File(replacement_path, "r") as output:
+        assert output["VTKHDF"]["Points"].shape == (8, 3)
 
 
 def test_package_factory_builds_a_usable_value_object(

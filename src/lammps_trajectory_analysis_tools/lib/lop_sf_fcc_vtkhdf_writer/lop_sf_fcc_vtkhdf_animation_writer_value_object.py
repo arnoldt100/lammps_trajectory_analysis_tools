@@ -7,7 +7,7 @@ This module provides the following public members:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from types import TracebackType
 from typing import Any, Self
 
@@ -33,22 +33,25 @@ class LopSfFccVtkhdfAnimationWriterValueObject(
 ):
     """Mutable value object owning a concrete VTKHDF writer resource."""
 
-    __slots__ = ("_behavior", "_state_implementations")
+    __slots__ = ("_behavior", "_state_implementations", "_writer_builder")
     __hash__ = None  # type: ignore[assignment]
 
     def __init__(
         self,
         state: LopSfFccVtkhdfAnimationWriterState,
         behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+        writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
     ) -> None:
         """Initialize from copied and validated state.
 
         Args:
             state: Writer state to copy and validate.
             behavior: Shared state and lifecycle behavior.
+            writer_builder: Injected construction callable accepting current state.
         """
         self._behavior = behavior
         self._state_implementations = behavior.copy_state(state)
+        self._writer_builder = writer_builder
 
     @property
     def state_implementations(self) -> LopSfFccVtkhdfAnimationWriterState:
@@ -80,7 +83,7 @@ class LopSfFccVtkhdfAnimationWriterValueObject(
             self._state_implementations,
             changes,
         )
-        return type(self)(updated_state, self._behavior)
+        return type(self)(updated_state, self._behavior, self._writer_builder)
 
     def update(self, changes: Any) -> None:
         """Apply validated changes while no writer is attached.
@@ -99,14 +102,18 @@ class LopSfFccVtkhdfAnimationWriterValueObject(
     def create(self) -> None:
         """Create and attach a staged concrete writer."""
         self.close()
-        self._state_implementations = self._behavior.create(self._state_implementations)
+        state = self._state_implementations
+        state.validate_state()
+        writer = self._writer_builder(state)
+        self._state_implementations = self._behavior.create(state, writer)
 
     def open_for_append(self) -> Self:
         """Open an existing target for append and return this object."""
         self.close()
-        self._state_implementations = self._behavior.open_for_append(
-            self._state_implementations
-        )
+        state = self._state_implementations
+        state.validate_state()
+        writer = self._writer_builder(state)
+        self._state_implementations = self._behavior.open_for_append(state, writer)
         return self
 
     def append_frames(

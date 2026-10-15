@@ -76,9 +76,14 @@ inside this package and must be added to the README and context.
   and raises `DataWriterLifecycleError` while a writer is open.
 - **Behavior delegation:** one stateless behavior object owns state copying,
   validation delegation, replacement, update, equality, representation, and
-  concrete-writer construction through an injected registry.
+  lifecycle operations on supplied writers. It has `__slots__ = ()`, stores
+  no data, and neither owns a registry nor constructs writers.
 - **Builder construction:** application code builds supported objects through
-  concrete builders following the reusable builder pattern.
+  concrete builders following the reusable builder pattern. The composite
+  builder injects a construction callable into the value object. The callable
+  invokes the low-level writer builder registered in the package registry.
+  Every create/open operation constructs a fresh writer for current validated
+  state; the low-level writer never constructs itself.
 - **Registry ownership:** `lop_sf_fcc_vtkhdf_animation_writer_factory` is
   created and populated exactly once in `lop_sf_fcc_vtkhdf_writer/__init__.py`.
   Implementation modules never self-register.
@@ -112,8 +117,23 @@ It excludes:
 
 Two values compare equal only when they are the same concrete type and all
 identity state compares equal. `replace(changes)` returns a new handle-free
-object preserving the original behavior instance. `update(changes)` mutates
+object preserving the original behavior instance and construction callable.
+The callable is a dependency, not value identity, and is excluded from equality,
+representation, and persisted metadata. `update(changes)` mutates
 only a closed object after validating the complete state.
+
+Direct construction now takes `(state, behavior, writer_builder)`, where
+`writer_builder` accepts a `LopSfFccVtkhdfAnimationWriterState` and returns
+an unopened concrete writer. Behavior construction takes no arguments;
+its `create(state, writer)` and `open_for_append(state, writer)` operations
+receive an already constructed writer. The former behavior construction
+arguments, key property, and `build_writer()` operation are removed.
+The package factory entry points and six registered builder keys are unchanged.
+Construction remains lazy: closed value objects and replacements do not
+construct a writer or open a file. Valid closed-state updates are applied
+before the next writer construction. A writer is attached only after successful
+creation/opening; construction and lifecycle errors propagate and leave the
+value object closed.
 
 ## Shared Animation Writer Contract
 

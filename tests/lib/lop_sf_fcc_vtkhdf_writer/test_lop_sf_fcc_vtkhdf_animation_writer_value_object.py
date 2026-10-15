@@ -1,6 +1,8 @@
 """Tests for the VTKHDF animation writer value object."""
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -49,11 +51,12 @@ def test_value_object_satisfies_both_contracts(
 def test_constructor_validates_state(
     state: LopSfFccVtkhdfAnimationWriterState,
     behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
 ) -> None:
     invalid = state.replace({"file_path": Path("invalid.h5")})
 
     with pytest.raises(DataWriterConfigurationError):
-        LopSfFccVtkhdfAnimationWriterValueObject(invalid, behavior)
+        LopSfFccVtkhdfAnimationWriterValueObject(invalid, behavior, writer_builder)
 
 
 def test_state_accessors_drop_the_writer_resource(
@@ -81,9 +84,10 @@ def test_metadata_is_defensive(
 def test_equal_values_ignore_attached_writer_resources(
     state: LopSfFccVtkhdfAnimationWriterState,
     behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
 ) -> None:
-    first = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior)
-    second = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior)
+    first = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior, writer_builder)
+    second = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior, writer_builder)
 
     first.create()
 
@@ -179,3 +183,89 @@ def test_dummy_method_returns_the_template_placeholder(
     value_object: LopSfFccVtkhdfAnimationWriterValueObject,
 ) -> None:
     assert value_object.dummy_method() is None
+
+
+def test_shared_behavior_does_not_mix_construction_dependencies(
+    state: LopSfFccVtkhdfAnimationWriterState,
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
+    tmp_path: Path,
+) -> None:
+    first_states: list[LopSfFccVtkhdfAnimationWriterState] = []
+    second_states: list[LopSfFccVtkhdfAnimationWriterState] = []
+
+    def first_builder(current: LopSfFccVtkhdfAnimationWriterState) -> Any:
+        first_states.append(current)
+        return writer_builder(current)
+
+    def second_builder(current: LopSfFccVtkhdfAnimationWriterState) -> Any:
+        second_states.append(current)
+        return writer_builder(current)
+
+    first = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior, first_builder)
+    second_state = state.replace({"file_path": tmp_path / "second.vtkhdf"})
+    second = LopSfFccVtkhdfAnimationWriterValueObject(
+        second_state, behavior, second_builder
+    )
+    try:
+        first.create()
+        second.open_for_append()
+        assert first_states == [state]
+        assert second_states == [second_state]
+        assert first.writer_configuration["file_path"] == state.file_path
+        assert second.writer_configuration["file_path"] == second_state.file_path
+    finally:
+        first.abort()
+        second.abort()
+
+
+@pytest.mark.parametrize("operation", ["create", "open_for_append"])
+def test_construction_failure_leaves_the_value_closed_and_retryable(
+    state: LopSfFccVtkhdfAnimationWriterState,
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    writer_builder: Callable[[LopSfFccVtkhdfAnimationWriterState], Any],
+    operation: str,
+) -> None:
+    calls = 0
+
+    def build(current: LopSfFccVtkhdfAnimationWriterState) -> Any:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise RuntimeError("construction failed")
+        return writer_builder(current)
+
+    value = LopSfFccVtkhdfAnimationWriterValueObject(state, behavior, build)
+    with pytest.raises(RuntimeError, match="construction failed"):
+        getattr(value, operation)()
+    assert value.state == state
+    with pytest.raises(DataWriterLifecycleError):
+        _ = value.writer_configuration
+    try:
+        getattr(value, operation)()
+        assert calls == 2
+        assert value.writer_configuration["file_path"] == state.file_path
+    finally:
+        value.abort()
+
+
+@pytest.mark.parametrize("operation", ["create", "open_for_append"])
+def test_lifecycle_failure_does_not_attach_the_supplied_writer(
+    state: LopSfFccVtkhdfAnimationWriterState,
+    behavior: LopSfFccVtkhdfAnimationWriterValueObjectBehavior,
+    stub_writer: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+) -> None:
+    def fail() -> None:
+        raise RuntimeError("lifecycle failed")
+
+    monkeypatch.setattr(stub_writer, operation, fail)
+    value = LopSfFccVtkhdfAnimationWriterValueObject(
+        state, behavior, lambda current: stub_writer
+    )
+    with pytest.raises(RuntimeError, match="lifecycle failed"):
+        getattr(value, operation)()
+    assert value.state == state
+    with pytest.raises(DataWriterLifecycleError):
+        _ = value.writer_configuration
