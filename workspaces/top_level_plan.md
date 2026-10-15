@@ -23,7 +23,16 @@ inject that service.
 - Keep the public API explicit: only exported classes, functions, and modules intended for external use are public. Internal helpers, support functions, implementation details, and non-public classes must be clearly marked as internal and must not be part of the supported external contract.
 - Prefer small protocols, composition, and focused helpers over unnecessary inheritance hierarchies or universal abstractions.
 - Base classes should define the interface only; they should not store implementation data. State, configuration, and mutable working data belong in concrete subclasses, composition objects, or dedicated value objects.
-- A base class may store state only for an extraordinary reason that is explicitly documented in the owning plan and is approved by the coder before the implementation is merged. This exception must be rare, intentional, and justified as necessary to preserve the interface contract or shared behavior; it is not a default pattern and must not be introduced casually.
+- A base class may store state only for an extraordinary reason that is
+ explicitly documented in the owning plan and is approved by the coder before
+the implementation is merged. This exception must be rare, intentional, and
+justified as necessary to preserve the interface contract or shared behavior;
+it is not a default pattern and must not be introduced casually.
+- A behavoir class for may store attributes only for an extraordinary reason that is
+explicitly documented in the owning plan and is approved by the coder before
+the implementation is merged. This exception must be rare, intentional, and
+justified as necessary to preserve the interface contract or shared behavior;
+it is not a default pattern and must not be introduced casually.
 - Common classes that implement a shared protocol must provide a corresponding builder that follows the reusable `design_patterns_templates` builder pattern.
 - Keep backend-specific dependencies behind the owning integration or adapter boundary.
 - Avoid hidden global state, singleton registries, and unrelated resource ownership in reusable value-oriented code.
