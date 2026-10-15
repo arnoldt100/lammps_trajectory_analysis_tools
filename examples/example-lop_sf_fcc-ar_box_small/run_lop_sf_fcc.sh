@@ -53,7 +53,7 @@ dt=1.0
 cutoff=10.4
 
 # Define the number of parallel threads.
-nm_threads=10
+nm_threads=8
 
 # Define the json md parameter file.
 md_params_json="md_params.json"
@@ -65,7 +65,9 @@ cat argon_box_small_dcd_* >${dcd_file}
 rm -f ${output_hdf5}
 
 # Run the example.
+date > start_time.txt
 uv run lammps_analysis_tool.py lop_sf_fcc --trajectory argon_box_small.dcd \
   --psf argon_box_small.psf --edge-length 5.19 --timeunits ${timeunits} --dt ${dt} \
   --cutoff ${cutoff} --output-hdf5-file ${output_hdf5} \
   --parallel-threads=${nm_threads} --md-params-json ${md_params_json}
+date > end_time.txt

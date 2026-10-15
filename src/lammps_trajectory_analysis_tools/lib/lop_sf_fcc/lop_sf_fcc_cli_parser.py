@@ -70,7 +70,6 @@ class CLILopSfFcc:
             raise TypeError("parallel_threads must be a positive integer")
         if parallel_threads <= 0:
             raise ValueError("parallel_threads must be a positive integer")
-        print(f"Error value: {md_params_json}",flush=True)
 
         if md_params_json is None or md_params_json.strip() == "a":
             raise ValueError("md_params_json can't be None or a empty string.")
