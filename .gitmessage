@@ -1,0 +1,29 @@
+# --- COMMIT MESSAGE TEMPLATE ---
+# [type]([scope]): [Brief summary in imperative mood, max 50 chars]
+# └───┬───┘ └───┬───┘ └──────────────────────┬──────────────────────┘
+#     │         │                            └─── Keep it short. No period at the end.
+#     │         └──────────────────────────────── Module/component affected (optional).
+#     └────────────────────────────────────────── feat, fix, docs, style, refactor, chore...
+#
+# Remember: Use imperative mood ("Add feature", NOT "Added feature" or "Adds feature")
+# -----------------------------------------------------------------------------------------
+
+# Detailed body explaining WHY this change was made (Wrap text at 72 characters)
+# ─────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+# Co-authored-by: Arnold Tharrington <arnoldt@ornl.gov>
+# Issue/Ticket Reference (e.g., Fixes #123, Resolves: PROJ-456)
+# ─────────────────────────────────────────────────────────────────────────────────────────
+
+# --- QUICK REFERENCE ---
+# feat:     A new feature
+# fix:      A bug fix
+# docs:     Documentation changes only
+# style:    Changes that do not affect the meaning of the code (white-space, formatting)
+# refactor: A code change that neither fixes a bug nor adds a feature
+# perf:     A code change that improves performance
+# test:     Adding missing tests or correcting existing tests
+# chore:    Changes to the build process or auxiliary tools and libraries
+# -----------------------------------------------------------------------------------------
