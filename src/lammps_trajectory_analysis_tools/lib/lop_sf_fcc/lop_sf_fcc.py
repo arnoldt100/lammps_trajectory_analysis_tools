@@ -132,10 +132,7 @@ class LopSfFcc:
     def __call__(self, command_line_arguments:CLILopSfFcc) -> Any:
 
         self._set_attributes(command_line_arguments)
-
-        print(f"Number of trajectory frames = {self._nm_frames}")
         run_kwargs = _backend_run_arguments(self._parallel_threads)
-        print(f"Backend = {run_kwargs['backend']}, workers = {self._parallel_threads}")
         trajectory_loop_timer = (
             timer_object_factory.build(LoopTimerBuilderKey,"trajectory_loop",1,1)
         )

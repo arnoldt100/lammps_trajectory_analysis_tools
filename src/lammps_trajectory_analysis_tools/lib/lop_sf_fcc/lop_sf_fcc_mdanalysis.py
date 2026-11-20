@@ -8,6 +8,8 @@ The public members provided by this module are:
 
 # Third party library imports
 import numpy as np
+import os
+import multiprocessing
 from MDAnalysis.analysis.base import AnalysisBase
 from MDAnalysis.analysis.results import Results, ResultsGroup
 

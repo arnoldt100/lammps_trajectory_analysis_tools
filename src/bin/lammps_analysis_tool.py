@@ -11,14 +11,22 @@ model systems calculated from coexistence simulations,"
 J. Chem. Phys. 116(21), 134503 (2002). 
 
 """
+import os
+import multiprocessing
 
+# Import MDAnalysis through this package first before importing NumPy, SciPy,
+# or MDAnalysis directly. Capture and restore the scheduler-assigned CPU
+# affinity mask during initial import; otherwise, underlying C/OpenMP/BLAS
+# libraries will alter the process affinity and pin worker threads to a
+# restricted core subset.
+from lammps_trajectory_analysis_tools import MDAnalysis
 from lammps_trajectory_analysis_tools.lib import process_command_line_arguments
 from lammps_trajectory_analysis_tools.lib import CLI_ID
 from lammps_trajectory_analysis_tools.lib import LOP_SF_FCC
 
 def main ():
-    my_args: CLI_ID = process_command_line_arguments()
-    my_args.do_data_analysis(my_args)
+       my_args: CLI_ID = process_command_line_arguments()
+       my_args.do_data_analysis(my_args)
 
 if __name__ == "__main__":
     main()
